@@ -226,6 +226,15 @@ input:focus,select:focus{outline:none;border-color:var(--g);}
 .ob-step{display:none;padding:1.5rem 1rem;}
 .ob-step.active{display:block;}
 </style>
+<!-- MailerLite Universal -->
+<script>
+(function(w,d,e,u,f,l,n){w[f]=w[f]||function(){(w[f].q=w[f].q||[])
+.push(arguments);},l=d.createElement(e),l.async=1,l.src=u,
+n=d.getElementsByTagName(e)[0],n.parentNode.insertBefore(l,n);})
+(window,document,'script','https://assets.mailerlite.com/js/universal.js','ml');
+ml('account', '2355363');
+</script>
+<!-- End MailerLite Universal -->
 </head>
 <body>
 
@@ -335,6 +344,11 @@ input:focus,select:focus{outline:none;border-color:var(--g);}
       <div style="font-size:12px;opacity:0.9;margin-bottom:10px;">Scanner illimité · Recettes illimitées · 2x points · Sans pub</div>
       <button class="btn bf" style="background:#fff;color:var(--p);font-size:13px;" onclick="startApp()">Essai gratuit 30 jours →</button>
     </div>
+    <div style="background:linear-gradient(135deg,#1D9E75,#0F6E56);border-radius:16px;padding:1.5rem;margin-bottom:1rem;">
+      <div style="font-size:16px;font-weight:700;color:#fff;margin-bottom:4px;">📧 Reçois les meilleurs spéciaux</div>
+      <div style="font-size:12px;color:rgba(255,255,255,0.85);margin-bottom:0.875rem;">Chaque semaine dans ta boîte mail — gratuit !</div>
+      <div class="ml-embedded" data-form="mypcHz"></div>
+    </div>
     <button class="btn bg bf" style="font-size:15px;padding:14px;" onclick="startApp()">Commencer / Get Started →</button>
   </div>
 </div>
@@ -371,6 +385,7 @@ input:focus,select:focus{outline:none;border-color:var(--g);}
     <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:1.25rem;">
       <div><label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:0.04em;display:block;margin-bottom:4px;">Prénom / First name</label><input type="text" id="ob-name" placeholder="Ex: Tim"/></div>
       <div><label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:0.04em;display:block;margin-bottom:4px;">Budget mensuel / Monthly budget ($)</label><input type="number" id="ob-budget" value="400"/></div>
+      <div><label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:0.04em;display:block;margin-bottom:4px;">Email <span style="color:#ef4444;">*</span></label><input type="email" id="ob-email" placeholder="ton@email.com"/></div>
       <div><label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:0.04em;display:block;margin-bottom:4px;">Régime / Diet</label><select id="ob-diet"><option>Aucun / None</option><option>Végétarien</option><option>Végétalien</option><option>Sans gluten</option></select></div>
       <div><label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:0.04em;display:block;margin-bottom:4px;">Langue / Language</label><select id="ob-lang"><option value="fr">Français</option><option value="en">English</option></select></div>
     </div>
@@ -834,6 +849,16 @@ let activeCard=0;
 function startApp(){document.getElementById('landing').style.display='none';document.getElementById('onboarding').style.display='block';}
 function nextOb(n){document.querySelectorAll('.ob-step').forEach(s=>s.classList.remove('active'));document.getElementById('ob'+n).classList.add('active');}
 function finishOb(){
+  const emailEl=document.getElementById('ob-email');
+  if(emailEl){
+    const emailVal=emailEl.value.trim();
+    if(!emailVal||!emailVal.includes('@')){
+      emailEl.style.border='2px solid #ef4444';
+      showToast('⚠️ Entre ton email pour continuer!');
+      return;
+    }
+    emailEl.style.border='';
+  }
   const name=document.getElementById('ob-name').value||'Tim';
   const city=document.getElementById('ob-city').value||'Gatineau, QC';
   const budget=document.getElementById('ob-budget').value||'400';
