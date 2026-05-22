@@ -1278,10 +1278,56 @@ function toggleGr(i){groceries[i].done=!groceries[i].done;renderGr();}
 function delGr(i){groceries.splice(i,1);renderGr();}
 function getGrList(){return groceries.map(g=>g.name).join(', ');}
 function renderGr(){
-  if(groceries.length===0){document.getElementById('gr-items').innerHTML='<div style="color:var(--sub);font-size:12px;padding:8px 0;">Ta liste est vide!</div>';document.getElementById('gr-foot').style.display='none';const ql=document.getElementById('ql-list');if(ql)ql.textContent='0 article';updateLimitDots();return;}
-  document.getElementById('gr-items').innerHTML=groceries.map((g,i)=>`<div class="gi"><div class="gc ${g.done?'done':''}" onclick="toggleGr(${i})">${g.done?'✓':''}</div><div style="flex:1;font-size:12px;${g.done?'text-decoration:line-through;color:var(--sub);':''}">${g.name}</div><div style="font-size:11px;font-weight:700;">$${g.price.toFixed(2)}</div><button style="background:none;border:none;cursor:pointer;color:var(--sub);font-size:14px;padding:0 3px;" onclick="delGr(${i})">×</button></div>`).join('');
-  const t=groceries.reduce((s,g)=>s+g.price,0);document.getElementById('gr-total').textContent='$'+t.toFixed(2);document.getElementById('gr-foot').style.display='block';
-  const ql=document.getElementById('ql-list');if(ql)ql.textContent=groceries.length+' article'+(groceries.length>1?'s':'');updateLimitDots();
+  const toBuy = groceries.filter(g => !g.done);
+  const inCart = groceries.filter(g => g.done);
+  const total = groceries.reduce((s,g) => s + g.price, 0);
+  const ql = document.getElementById('ql-list');
+  
+  if(groceries.length === 0){
+    document.getElementById('gr-items').innerHTML = '<div style="color:var(--sub);font-size:12px;padding:8px 0;">Ta liste est vide / Your list is empty!</div>';
+    document.getElementById('gr-foot').style.display = 'none';
+    if(ql) ql.textContent = '0 article';
+    updateLimitDots();
+    return;
+  }
+
+  let html = '';
+
+  // TO BUY section
+  if(toBuy.length > 0){
+    html += `<div style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:0.05em;padding:6px 0 4px;">À acheter (${toBuy.length})</div>`;
+    html += toBuy.map((g,i) => {
+      const realIdx = groceries.indexOf(g);
+      return `<div class="gi" style="background:#fff;">
+        <div class="gc" onclick="toggleGr(${realIdx})" style="border-color:var(--g);">
+          <i class="ti ti-circle" style="font-size:10px;color:#d1d5db;"></i>
+        </div>
+        <div style="flex:1;font-size:13px;color:var(--text);">${g.name}</div>
+        <div style="font-size:11px;font-weight:700;color:var(--g);">$${g.price.toFixed(2)}</div>
+        <button style="background:none;border:none;cursor:pointer;color:#d1d5db;font-size:16px;padding:0 3px;" onclick="delGr(${realIdx})">×</button>
+      </div>`;
+    }).join('');
+  }
+
+  // IN CART section
+  if(inCart.length > 0){
+    html += `<div style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:0.05em;padding:10px 0 4px;border-top:1px dashed var(--border);margin-top:6px;">Dans le panier 🛒 (${inCart.length})</div>`;
+    html += inCart.map((g,i) => {
+      const realIdx = groceries.indexOf(g);
+      return `<div class="gi" style="background:#f9fafb;opacity:0.75;">
+        <div class="gc done" onclick="toggleGr(${realIdx})">✓</div>
+        <div style="flex:1;font-size:13px;color:var(--sub);text-decoration:line-through;">${g.name}</div>
+        <div style="font-size:11px;font-weight:700;color:var(--sub);">$${g.price.toFixed(2)}</div>
+        <button style="background:none;border:none;cursor:pointer;color:#d1d5db;font-size:16px;padding:0 3px;" onclick="delGr(${realIdx})">×</button>
+      </div>`;
+    }).join('');
+  }
+
+  document.getElementById('gr-items').innerHTML = html;
+  document.getElementById('gr-total').textContent = '$' + total.toFixed(2);
+  document.getElementById('gr-foot').style.display = 'block';
+  if(ql) ql.textContent = toBuy.length + ' article' + (toBuy.length > 1 ? 's' : '') + ' restant' + (toBuy.length > 1 ? 's' : '');
+  updateLimitDots();
 }
 function renderC(){document.getElementById('cl').innerHTML=cFilt.map(r=>`<div class="feed-card"><div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:8px;"><div style="width:42px;height:42px;border-radius:10px;background:var(--light);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">${r.emoji}</div><div style="flex:1"><div style="font-size:12px;font-weight:700;margin-bottom:2px;">${r.nom}</div><div style="font-size:10px;color:var(--sub);display:flex;align-items:center;gap:4px;"><div class="av">${r.ini}</div>${r.auteur} · ${r.temps}</div></div>${r.viral?'<div class="badge bdc" style="font-size:9px;">🔥 Viral</div>':''}</div><div style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:8px;">${r.tags.map(t=>`<span style="background:var(--light);color:var(--sub);font-size:9px;padding:2px 6px;border-radius:999px;">#${t}</span>`).join('')}</div><div style="display:flex;gap:5px;align-items:center;border-top:1px solid var(--light);padding-top:8px;"><button style="font-size:11px;color:${r.liked?'var(--c)':'var(--sub)'};background:none;border:none;cursor:pointer;padding:3px 6px;border-radius:6px;" onclick="likeC(${r.id})">❤️ ${r.likes}</button><button style="margin-left:auto;font-size:10px;color:var(--c);background:none;border:none;cursor:pointer;font-weight:700;" onclick="sendPrompt('Recette complète de ${r.nom.replace(/'/g,"\\'")}')">Voir ↗</button></div></div>`).join('');}
 function likeC(id){const r=commRecs.find(x=>x.id===id);r.liked=!r.liked;r.likes+=r.liked?1:-1;filterC();}
