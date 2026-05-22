@@ -5,28 +5,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <meta name="description" content="SmartGrocer — Compare grocery prices, find AI recipes, manage your food budget and store loyalty cards.">
 <meta name="theme-color" content="#1D9E75">
-<meta property="og:title" content="SmartGrocer — Smart Grocery App">
-<meta property="og:description" content="Compare prices · AI Recipes · Loyalty Cards · Budget Tracker">
-<meta property="og:url" content="https://smartgrocer.health">
 <title>SmartGrocer — Smart Grocery App</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/3.19.0/iconfont/tabler-icons.min.css">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 :root{--g:#1D9E75;--g2:#0F6E56;--c:#D85A30;--p:#534AB7;--b:#378ADD;--gold:#C9A227;--bg:#FFF8F0;--card:#fff;--border:#e5e7eb;--text:#1a1a2e;--sub:#6b7280;--light:#f3f4f6;}
 body{font-family:system-ui,-apple-system,sans-serif;font-size:14px;background:var(--bg);max-width:480px;margin:0 auto;min-height:100vh;}
-/* NAV BOTTOM */
 .nav{display:flex;background:#fff;padding:0 0.5rem;border-top:1px solid var(--border);position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;z-index:100;box-shadow:0 -4px 12px rgba(0,0,0,0.06);}
 .nb{flex:1;min-width:44px;padding:10px 2px 8px;font-size:9px;font-weight:700;cursor:pointer;text-align:center;color:#9ca3af;background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:3px;border-radius:12px;transition:all 0.2s;}
 .nb i{font-size:17px;}
 .nb.active{color:var(--g);}
-.nb.active i{transform:scale(1.15);}
-/* PAGES */
 .page{display:none;padding-bottom:90px;}
 .page.active{display:block;}
-/* HERO */
 .hero{padding:1.5rem 1.5rem 2.5rem;border-radius:0 0 32px 32px;position:relative;overflow:hidden;margin-bottom:1.5rem;}
-.hero-c1{position:absolute;top:-40px;right:-40px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,0.08);}
-.hero-c2{position:absolute;bottom:-60px;left:-30px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,0.05);}
+.hc1{position:absolute;top:-40px;right:-40px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,0.08);}
+.hc2{position:absolute;bottom:-60px;left:-30px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,0.05);}
 .logo-row{display:flex;align-items:center;gap:10px;margin-bottom:1.25rem;}
 .lsvg{width:44px;height:44px;flex-shrink:0;}
 .lt{font-size:20px;font-weight:800;color:#fff;line-height:1;}
@@ -35,7 +28,6 @@ body{font-family:system-ui,-apple-system,sans-serif;font-size:14px;background:va
 .hs{background:rgba(255,255,255,0.15);border-radius:14px;padding:10px;text-align:center;}
 .hs-n{font-size:20px;font-weight:700;color:#fff;}
 .hs-l{font-size:9px;color:rgba(255,255,255,0.8);margin-top:2px;}
-/* COMMON */
 .px{padding:0 1rem;}
 .sl{font-size:16px;font-weight:700;color:var(--text);margin-bottom:12px;}
 .sl2{font-size:11px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;}
@@ -64,41 +56,34 @@ input:focus,select:focus{outline:none;border-color:var(--g);}
 .tag{display:inline-flex;align-items:center;gap:4px;background:#dbeafe;color:#1e40af;border-radius:999px;padding:3px 10px 3px 12px;font-size:11px;margin:2px;}
 .tag button{border:none;background:none;cursor:pointer;color:#1e40af;font-size:13px;padding:0;line-height:1;}
 .tabs{display:flex;border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:1rem;}
-.tab{flex:1;padding:7px 4px;font-size:11px;font-weight:700;cursor:pointer;text-align:center;color:var(--sub);background:var(--card);border:none;transition:all 0.15s;}
+.tab{flex:1;padding:7px 4px;font-size:11px;font-weight:700;cursor:pointer;text-align:center;color:var(--sub);background:var(--card);border:none;}
 .tab.on{background:var(--g);color:#fff;}
 .tab.onc{background:var(--c);color:#fff;}
 .sugg{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:1rem;}
 .sg{background:var(--light);border:1px solid var(--border);border-radius:999px;padding:4px 12px;font-size:11px;cursor:pointer;color:var(--text);}
 .sg:hover{border-color:var(--b);color:var(--b);}
-/* QUICK GRID */
 .qgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:1.5rem;}
 .qc{border-radius:20px;padding:1.25rem 1rem;cursor:pointer;position:relative;overflow:hidden;min-height:110px;display:flex;flex-direction:column;justify-content:space-between;}
 .qc-blob{position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,0.12);}
 .qc i{font-size:24px;color:rgba(255,255,255,0.9);}
 .qc-t{font-size:13px;font-weight:700;color:#fff;}
 .qc-s{font-size:10px;color:rgba(255,255,255,0.8);margin-top:2px;}
-/* DEALS */
 .dscroll{display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;margin-bottom:1.5rem;scrollbar-width:none;}
 .dscroll::-webkit-scrollbar{display:none;}
 .dc{background:var(--card);border-radius:16px;padding:12px;min-width:150px;flex-shrink:0;border:1px solid var(--border);}
-/* POINTS */
 .pts-card{background:linear-gradient(135deg,#C9A227,#9A7A10);border-radius:20px;padding:1.25rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:12px;cursor:pointer;}
-/* TRIAL BANNER */
 .trial{background:linear-gradient(135deg,#534AB7,#378ADD);border-radius:14px;padding:10px 14px;margin-bottom:1rem;display:flex;align-items:center;gap:10px;cursor:pointer;}
-/* SCANNER */
 .sp-zone{width:100%;height:150px;background:var(--light);border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--sub);margin-bottom:1rem;border:1px solid var(--border);}
 .sf{position:relative;width:150px;height:75px;border:2px solid var(--g);border-radius:8px;}
 .sf::before{content:'';position:absolute;top:-2px;left:-2px;width:14px;height:14px;border-top:3px solid var(--g);border-left:3px solid var(--g);border-radius:3px 0 0 0;}
 .sf::after{content:'';position:absolute;bottom:-2px;right:-2px;width:14px;height:14px;border-bottom:3px solid var(--g);border-right:3px solid var(--g);border-radius:0 0 3px 0;}
 .sl3{position:absolute;width:100%;height:2px;background:var(--g);opacity:0.8;animation:scan 2s linear infinite;}
 @keyframes scan{0%{top:0;}100%{top:100%;}}
-/* PRICE RESULTS */
 .bd{background:#dcfce7;border:1px solid #86efac;border-radius:14px;padding:0.875rem;margin-bottom:1rem;display:none;}
 .bd.on{display:block;}
 .sg2{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:1rem;}
 .sc{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:0.75rem;}
 .sc.sale{border-color:#86efac;}
-/* RECIPES */
 .rg{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:1rem;}
 .rc{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:0.875rem;cursor:pointer;}
 .rc:hover,.rc.sel{border-color:var(--g);}
@@ -106,7 +91,6 @@ input:focus,select:focus{outline:none;border-color:var(--g);}
 .steps li{display:flex;gap:8px;padding:6px 0;border-bottom:1px solid var(--light);font-size:12px;color:var(--text);line-height:1.5;list-style:none;}
 .steps li:last-child{border-bottom:none;}
 .snum{width:20px;height:20px;background:#dcfce7;color:#166534;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;margin-top:1px;}
-/* VIDEOS */
 .vg{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:10px;margin-bottom:1rem;}
 .vc{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;cursor:pointer;}
 .vc:hover{border-color:var(--c);}
@@ -117,7 +101,6 @@ input:focus,select:focus{outline:none;border-color:var(--g);}
 .vi{padding:0.625rem;}
 .vtitle{font-size:11px;font-weight:700;color:var(--text);margin-bottom:2px;line-height:1.4;}
 .vmeta{font-size:10px;color:var(--sub);}
-/* COMMUNITY */
 .cv{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;cursor:pointer;}
 .cv:hover{border-color:var(--g);}
 .ct{width:100%;height:80px;background:var(--light);display:flex;align-items:center;justify-content:center;font-size:26px;position:relative;}
@@ -127,54 +110,23 @@ input:focus,select:focus{outline:none;border-color:var(--g);}
 .ctitle{font-size:11px;font-weight:700;color:var(--text);margin-bottom:2px;}
 .cmeta{font-size:10px;color:var(--sub);}
 .av{width:14px;height:14px;border-radius:50%;background:#dbeafe;color:#1e40af;display:inline-flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;}
-/* GROCERY LIST */
 .gi{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--light);}
 .gi:last-child{border-bottom:none;}
 .gc{width:18px;height:18px;border-radius:4px;border:2px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:10px;}
 .gc.done{background:var(--g);border-color:var(--g);color:#fff;}
-/* MAP */
-.map-ph{background:linear-gradient(135deg,#bae6fd,#93c5fd);border-radius:16px;height:140px;display:flex;align-items:center;justify-content:center;margin-bottom:1rem;position:relative;overflow:hidden;}
-.map-pin{position:absolute;font-size:22px;cursor:pointer;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3));}
-.store-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--card);border:1px solid var(--border);border-radius:12px;margin-bottom:8px;cursor:pointer;}
-.store-item:hover,.store-item.sel{border-color:var(--g);}
-/* WALLET */
-.loyalty-card{border-radius:20px;padding:1.5rem;cursor:pointer;box-shadow:0 12px 32px rgba(0,0,0,0.15);margin-bottom:12px;}
-.mini-card{background:var(--card);border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:12px;border:1px solid var(--border);cursor:pointer;margin-bottom:8px;transition:all 0.2s;}
-.mini-card:hover{border-color:var(--g);}
-.mini-card.active-mini{border-color:var(--g);border-width:2px;}
-/* ALERTS */
-.al{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--light);}
-.al:last-child{border-bottom:none;}
-.atog{position:relative;width:36px;height:20px;flex-shrink:0;}
-.atog input{opacity:0;width:0;height:0;position:absolute;}
-.ts{position:absolute;top:0;left:0;right:0;bottom:0;background:var(--border);border-radius:999px;cursor:pointer;transition:0.2s;}
-.ts:before{content:'';position:absolute;height:14px;width:14px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:0.2s;}
-.atog input:checked+.ts{background:var(--g);}
-.atog input:checked+.ts:before{transform:translateX(16px);}
-/* BUDGET */
-.bbar-w{background:var(--light);border-radius:999px;height:8px;margin:6px 0 3px;overflow:hidden;}
-.bbar{height:100%;border-radius:999px;transition:width 0.4s;}
-.bcat{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
-.bdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
-.bcbw{width:70px;background:var(--light);border-radius:999px;height:6px;}
-.bcb{height:100%;border-radius:999px;}
-/* FEED */
 .feed-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:0.875rem;margin-bottom:8px;}
 .pr-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--light);}
 .pr-row:last-child{border-bottom:none;}
-/* LIMIT BAR */
 .limit-bar{display:flex;align-items:center;gap:8px;background:var(--light);border-radius:8px;padding:8px 12px;margin-bottom:1rem;}
 .limit-dots{display:flex;gap:4px;}
 .ldot{width:10px;height:10px;border-radius:50%;background:var(--border);}
 .ldot.used{background:var(--g);}
 .ldot.used.warn{background:#f59e0b;}
 .ldot.used.danger{background:#ef4444;}
-/* PAYWALL */
 .modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:2000;display:none;align-items:flex-end;justify-content:center;}
 .modal-overlay.open{display:flex;}
 .modal-box{background:var(--card);border-radius:24px 24px 0 0;padding:1.5rem;width:100%;max-width:480px;animation:slideUp 0.3s ease;position:relative;}
 @keyframes slideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
-/* CHAT */
 .chat-wrap{position:fixed;bottom:80px;right:16px;z-index:1000;}
 .chat-fab{width:48px;height:48px;background:var(--g);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.2);border:none;color:#fff;font-size:20px;}
 .chat-box{width:280px;height:360px;background:var(--card);border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,0.15);display:none;flex-direction:column;border:1px solid var(--border);overflow:hidden;margin-bottom:10px;}
@@ -186,10 +138,8 @@ input:focus,select:focus{outline:none;border-color:var(--g);}
 .msg.user{background:var(--g);color:#fff;align-self:flex-end;border-radius:10px 4px 10px 10px;}
 .chat-input-row{display:flex;gap:6px;padding:0.625rem;border-top:1px solid var(--light);}
 .chat-input-row input{flex:1;padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-size:11px;}
-/* TOAST */
 .toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#111827;color:#fff;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:700;opacity:0;transition:opacity 0.3s;pointer-events:none;z-index:3000;white-space:nowrap;}
 .toast.show{opacity:1;}
-/* PLUS MENU */
 .plus-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.4);z-index:500;display:none;}
 .plus-overlay.open{display:block;}
 .plus-sheet{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);width:calc(100% - 2rem);max-width:440px;background:var(--card);border-radius:20px;padding:1.25rem;z-index:501;box-shadow:0 -8px 32px rgba(0,0,0,0.15);}
@@ -198,34 +148,198 @@ input:focus,select:focus{outline:none;border-color:var(--g);}
 .plus-item:hover{background:var(--border);}
 .plus-item i{font-size:22px;}
 .plus-item-label{font-size:11px;font-weight:700;color:var(--text);}
-/* WALLET BARCODE FULL */
+.loyalty-card{border-radius:20px;padding:1.5rem;cursor:pointer;box-shadow:0 12px 32px rgba(0,0,0,0.15);margin-bottom:12px;}
+.mini-card{background:var(--card);border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:12px;border:1px solid var(--border);cursor:pointer;margin-bottom:8px;transition:all 0.2s;}
+.mini-card:hover{border-color:var(--g);}
+.mini-card.active-mini{border-color:var(--g);border-width:2px;}
 .bc-full{position:fixed;top:0;left:0;right:0;bottom:0;background:#fff;z-index:400;display:none;flex-direction:column;align-items:center;justify-content:center;padding:2rem;}
 .bc-full.open{display:flex;}
-/* PREM PAGE */
-.prem-feature{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--light);font-size:12px;color:var(--text);}
-.prem-feature:last-child{border-bottom:none;}
-/* LANG */
+.al{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--light);}
+.al:last-child{border-bottom:none;}
+.atog{position:relative;width:36px;height:20px;flex-shrink:0;}
+.atog input{opacity:0;width:0;height:0;position:absolute;}
+.ts{position:absolute;top:0;left:0;right:0;bottom:0;background:var(--border);border-radius:999px;cursor:pointer;transition:0.2s;}
+.ts:before{content:'';position:absolute;height:14px;width:14px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:0.2s;}
+.atog input:checked+.ts{background:var(--g);}
+.atog input:checked+.ts:before{transform:translateX(16px);}
+.bbar-w{background:var(--light);border-radius:999px;height:8px;margin:6px 0 3px;overflow:hidden;}
+.bbar{height:100%;border-radius:999px;transition:width 0.4s;}
+.bcat{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.bdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.bcbw{width:70px;background:var(--light);border-radius:999px;height:6px;}
+.bcb{height:100%;border-radius:999px;}
+.map-ph{background:linear-gradient(135deg,#bae6fd,#93c5fd);border-radius:16px;height:140px;display:flex;align-items:center;justify-content:center;margin-bottom:1rem;position:relative;overflow:hidden;}
+.map-pin{position:absolute;font-size:22px;cursor:pointer;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3));}
+.store-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--card);border:1px solid var(--border);border-radius:12px;margin-bottom:8px;cursor:pointer;}
+.store-item:hover{border-color:var(--g);}
+.prof-header{background:linear-gradient(160deg,#1a1a2e,#2d2d4e);padding:1.5rem 1.5rem 2.5rem;border-radius:0 0 32px 32px;margin-bottom:1.5rem;position:relative;overflow:hidden;}
+.prof-avatar{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--g),var(--g2));display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#fff;border:3px solid rgba(255,255,255,0.2);}
 .lang-toggle{display:flex;gap:6px;background:var(--light);border-radius:8px;padding:4px;margin-bottom:1rem;}
 .lang-btn{flex:1;padding:5px;border:none;border-radius:6px;cursor:pointer;font-size:12px;font-weight:700;background:none;color:var(--sub);}
 .lang-btn.active{background:var(--card);color:var(--g);box-shadow:0 1px 3px rgba(0,0,0,0.1);}
-/* STORES GRID FOR WALLET ADD */
+.prem-feature{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--light);font-size:12px;color:var(--text);}
+.prem-feature:last-child{border-bottom:none;}
 .stores-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1rem;}
 .store-chip{background:var(--light);border:1px solid var(--border);border-radius:14px;padding:12px 8px;text-align:center;cursor:pointer;}
 .store-chip:hover{border-color:var(--g);background:#E1F5EE;}
 .store-chip-icon{font-size:24px;display:block;margin-bottom:4px;}
 .store-chip-name{font-size:11px;font-weight:700;color:var(--text);}
-/* PROF */
-.prof-header{background:linear-gradient(160deg,#1a1a2e,#2d2d4e);padding:1.5rem 1.5rem 2.5rem;border-radius:0 0 32px 32px;margin-bottom:1.5rem;position:relative;overflow:hidden;}
-.prof-avatar{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--g),var(--g2));display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#fff;border:3px solid rgba(255,255,255,0.2);}
-/* LANDING */
 .hero-landing{background:linear-gradient(160deg,#1D9E75 0%,#0F6E56 60%,#085041 100%);padding:3rem 1.5rem;text-align:center;position:relative;overflow:hidden;}
 .feature-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:1.5rem 0;}
 .feature-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1rem;text-align:center;}
 .feature-card i{font-size:28px;color:var(--g);margin-bottom:8px;display:block;}
-/* ONBOARDING */
 .ob-step{display:none;padding:1.5rem 1rem;}
 .ob-step.active{display:block;}
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js">
+// ===== REAL BARCODE SCANNER =====
+let quaggaRunning = false;
+
+function startRealScan() {
+  if (!isPremium && scansToday >= LIMITS.scans) {
+    showPaywall('Limite de scans atteinte!', 'Tu as utilisé tes 5 scans gratuits. Passe à Premium!');
+    return;
+  }
+  document.getElementById('scan-idle').style.display = 'none';
+  document.getElementById('scan-active').style.display = 'block';
+  document.getElementById('quagga-container').innerHTML = '';
+
+  if (typeof Quagga === 'undefined') {
+    showToast('⚠️ Scanner non disponible — utilise Simuler scan');
+    stopRealScan();
+    return;
+  }
+
+  Quagga.init({
+    inputStream: {
+      type: 'LiveStream',
+      target: document.getElementById('quagga-container'),
+      constraints: {
+        facingMode: 'environment',
+        width: { ideal: 1280, max: 1920 },
+        height: { ideal: 720, max: 1080 }
+      }
+    },
+    locator: { patchSize: 'medium', halfSample: true },
+    numOfWorkers: 2,
+    frequency: 10,
+    decoder: {
+      readers: ['ean_reader', 'ean_8_reader', 'upc_reader', 'upc_e_reader', 'code_128_reader']
+    },
+    locate: true
+  }, function(err) {
+    if (err) {
+      console.error('Quagga error:', err);
+      showToast('📷 Caméra non disponible — utilise Simuler scan');
+      stopRealScan();
+      return;
+    }
+    Quagga.start();
+    quaggaRunning = true;
+  });
+
+  let scanDone = false;
+
+  Quagga.onDetected(function(result) {
+    if (scanDone) return;
+    const code = result.codeResult.code;
+    if (!code || code.length < 4) return;
+    scanDone = true;
+    const status = document.getElementById('scan-status');
+    if (status) status.textContent = '✅ Code scanné: ' + code;
+    setTimeout(() => {
+      stopRealScan();
+      document.getElementById('px-bc').textContent = 'Code barre: ' + code;
+      document.getElementById('prod-in').value = code;
+      lookupBarcode(code);
+    }, 300);
+  });
+}
+
+function stopRealScan() {
+  if (quaggaRunning) {
+    try { Quagga.stop(); } catch(e) {}
+    quaggaRunning = false;
+  }
+  document.getElementById('scan-idle').style.display = 'block';
+  document.getElementById('scan-active').style.display = 'none';
+}
+
+async function lookupBarcode(code) {
+  document.getElementById('scan-btn').disabled = true;
+  document.getElementById('px-ld').classList.add('on');
+  document.getElementById('px-res').style.display = 'none';
+  document.getElementById('bd').classList.remove('on');
+  document.getElementById('sg').innerHTML = '';
+
+  try {
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer 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'
+      },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        max_completion_tokens: 1000,
+        messages: [{
+          role: 'user',
+          content: 'Le code barre ' + code + ' correspond à quel produit épicerie vendu au Québec? Donne des prix réalistes québécois. JSON seulement:\n{"emoji":"🥜","nom":"Nom complet du produit","magasins":[{"nom":"IGA","prix":5.99,"prixRegulier":7.49,"enSpecial":true,"format":"1kg"},{"nom":"Metro","prix":7.29,"prixRegulier":7.29,"enSpecial":false,"format":"1kg"},{"nom":"Maxi","prix":6.49,"prixRegulier":6.99,"enSpecial":true,"format":"1kg"},{"nom":"Walmart","prix":6.19,"prixRegulier":6.19,"enSpecial":false,"format":"1kg"},{"nom":"Costco","prix":14.99,"prixRegulier":14.99,"enSpecial":false,"format":"2.5kg"}],"formats":[{"format":"1kg","prix":5.99,"prixAu100g":0.60}]}'
+        }]
+      })
+    });
+    const data = await res.json();
+    const text = data.choices[0].message.content.replace(/```json|```/g, '').trim();
+    const d = JSON.parse(text);
+    document.getElementById('px-em').textContent = d.emoji;
+    document.getElementById('px-nm').textContent = d.nom;
+    document.getElementById('prod-in').value = d.nom;
+    const sorted = [...d.magasins].sort((a, b) => a.prix - b.prix);
+    const best = sorted[0], worst = sorted[sorted.length - 1];
+    document.getElementById('bs').textContent = best.nom;
+    document.getElementById('bp').textContent = '$' + best.prix.toFixed(2);
+    document.getElementById('bsv').textContent = 'Économise jusqu\'à $' + (worst.prix - best.prix).toFixed(2);
+    document.getElementById('bd').classList.add('on');
+    document.getElementById('sg').innerHTML = d.magasins.map(s =>
+      `<div class="sc ${s.enSpecial ? 'sale' : ''}">
+        <div style="font-size:11px;font-weight:700;margin-bottom:2px;">${s.nom}</div>
+        <div style="font-size:16px;font-weight:700;">$${s.prix.toFixed(2)}</div>
+        ${s.enSpecial ? `<div style="font-size:9px;color:var(--sub);text-decoration:line-through;">$${s.prixRegulier.toFixed(2)}</div><div class="badge bdg" style="margin-top:2px;font-size:9px;">Spécial!</div>` : ''}
+        <div style="font-size:9px;color:var(--sub);margin-top:2px;">${s.format}</div>
+      </div>`
+    ).join('');
+    document.getElementById('px-res').style.display = 'block';
+    scansToday++; totalScans++;
+    const ps = document.getElementById('prof-scans'); if (ps) ps.textContent = totalScans;
+    addPoints(10); updateLimitDots();
+    showToast('✅ Produit identifié! +' + (isPremium ? 20 : 10) + ' pts');
+  } catch(e) {
+    console.error('Barcode lookup error:', e);
+    showToast('❌ Produit non reconnu — essaie la recherche manuelle');
+  }
+  document.getElementById('px-ld').classList.remove('on');
+  document.getElementById('scan-btn').disabled = false;
+}
+
+</script>
+
+<style>
+#quagga-container video {
+  width: 100% !important;
+  height: auto !important;
+  display: block !important;
+  border-radius: 14px;
+}
+#quagga-container canvas {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+</style>
+<!-- Stripe Buy Button -->
+<script async src="https://js.stripe.com/v3/buy-button.js"></script>
 <!-- MailerLite Universal -->
 <script>
 (function(w,d,e,u,f,l,n){w[f]=w[f]||function(){(w[f].q=w[f].q||[])
@@ -234,15 +348,26 @@ n=d.getElementsByTagName(e)[0],n.parentNode.insertBefore(l,n);})
 (window,document,'script','https://assets.mailerlite.com/js/universal.js','ml');
 ml('account', '2355363');
 </script>
-<!-- End MailerLite Universal -->
-<!-- Stripe Buy Button -->
-<script async src="https://js.stripe.com/v3/buy-button.js"></script>
 </head>
 <body>
-
 <div class="toast" id="toast"></div>
 
-<!-- PAYWALL MODAL -->
+<!-- LOGO SVG TEMPLATE (reused inline) -->
+<svg style="display:none">
+  <symbol id="logo-icon" viewBox="0 0 680 500">
+    <path d="M340,60 L430,95 L430,190 Q430,240 340,270 Q250,240 250,190 L250,95 Z" fill="rgba(255,255,255,0.2)"/>
+    <path d="M340,70 L422,102 L422,188 Q422,234 340,262 Q258,234 258,188 L258,102 Z" fill="rgba(255,255,255,0.15)"/>
+    <path d="M308,215 L312,183 L368,183 L372,215 Z" fill="white"/>
+    <path d="M301,183 Q301,170 312,170 L368,170 Q379,170 379,183" fill="none" stroke="white" stroke-width="6" stroke-linecap="round"/>
+    <circle cx="320" cy="224" r="9" fill="white"/>
+    <circle cx="360" cy="224" r="9" fill="white"/>
+    <path d="M305,100 L314,85 L323,98 L340,80 L357,98 L366,85 L375,100 L372,112 L308,112 Z" fill="#C9A227"/>
+    <circle cx="292" cy="88" r="20" fill="#D85A30"/>
+    <text x="292" y="94" text-anchor="middle" font-family="system-ui" font-size="13" font-weight="700" fill="white">SG</text>
+  </symbol>
+</svg>
+
+<!-- PAYWALL -->
 <div class="modal-overlay" id="paywall">
   <div class="modal-box">
     <button onclick="closePaywall()" style="position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:20px;cursor:pointer;color:var(--sub);">✕</button>
@@ -254,16 +379,13 @@ ml('account', '2355363');
     <div style="background:linear-gradient(135deg,var(--p),var(--b));border-radius:16px;padding:1.25rem;color:#fff;text-align:center;margin-bottom:1rem;">
       <div style="font-size:13px;opacity:0.9;margin-bottom:4px;">🎉 Essai gratuit 30 jours</div>
       <div style="font-size:28px;font-weight:700;">$4.99<span style="font-size:14px;font-weight:400;">/mois</span></div>
+      <div style="font-size:11px;opacity:0.85;margin-top:2px;">Annulez à tout moment</div>
     </div>
     <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:1rem;">
       <div style="display:flex;align-items:center;gap:8px;font-size:12px;"><span style="color:var(--g);font-weight:700;">✓</span>Scanner illimité · Recettes illimitées</div>
-      <div style="display:flex;align-items:center;gap:8px;font-size:12px;"><span style="color:var(--g);font-weight:700;">✓</span>2x points · Sans pub · Upload vidéos</div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:12px;"><span style="color:var(--g);font-weight:700;">✓</span>2x points · Sans pub · Portefeuille illimité</div>
     </div>
-    <stripe-buy-button
-  buy-button-id="buy_btn_1TZxji8g6DMr5MKkOUY5K31c"
-  publishable-key="pk_live_51TZwZv8g6DMr5MKkRPebAg4U59jlMgIURfwaZcaMTgpSEFTn5jCQ2RQzowgt7RvPwE3sbDalFZADRoTj9N5kLegR00L4Tyau8k"
-></stripe-buy-button>
-    <button class="btn bo bf" onclick="closePaywall()" style="margin-top:8px;">Continuer gratuitement</button>
+    <button class="btn bf" style="background:linear-gradient(135deg,var(--p),var(--b));color:#fff;margin-bottom:8px;" onclick="activatePremium()">🚀 Démarrer l'essai gratuit de 30 jours</button>
     <button class="btn bo bf" onclick="closePaywall()">Continuer gratuitement</button>
   </div>
 </div>
@@ -329,7 +451,7 @@ ml('account', '2355363');
       </svg>
     </div>
     <h1 style="font-size:32px;font-weight:800;color:#fff;margin-bottom:6px;"><span style="color:#fff;">Smart</span><span style="color:#C9A227;">Grocer</span></h1>
-    <p style="font-size:13px;color:rgba(255,255,255,0.85);margin-bottom:8px;">Compare · Cuisinez · Économisez</p>
+    <p style="font-size:13px;color:rgba(255,255,255,0.85);margin-bottom:4px;">Compare · Cuisinez · Économisez</p>
     <p style="font-size:12px;color:rgba(255,255,255,0.7);margin-bottom:1.5rem;">Compare · Cook · Save</p>
     <div style="background:rgba(255,255,255,0.15);border-radius:12px;padding:0.875rem;margin-bottom:1.25rem;">
       <div style="font-size:13px;font-weight:700;color:#fff;">🎉 Offre de lancement!</div>
@@ -341,7 +463,7 @@ ml('account', '2355363');
     <div style="text-align:center;font-size:16px;font-weight:700;margin-bottom:1rem;">Tout ce dont tu as besoin 🛒</div>
     <div class="feature-grid">
       <div class="feature-card"><i class="ti ti-barcode"></i><div style="font-size:12px;font-weight:700;color:var(--text);">Scanner de prix</div><div style="font-size:10px;color:var(--sub);margin-top:3px;">Compare toutes les épiceries</div></div>
-      <div class="feature-card"><i class="ti ti-salad"></i><div style="font-size:12px;font-weight:700;color:var(--text);">Recettes IA</div><div style="font-size:10px;color:var(--sub);margin-top:3px;">Avec tes ingrédients</div></div>
+      <div class="feature-card"><i class="ti ti-salad"></i><div style="font-size:12px;font-weight:700;color:var(--text);">Recettes IA</div><div style="font-size:10px;color:var(--sub);margin-top:3px;">+ Vidéos YouTube virales</div></div>
       <div class="feature-card"><i class="ti ti-wallet" style="color:var(--gold);"></i><div style="font-size:12px;font-weight:700;color:var(--text);">Portefeuille</div><div style="font-size:10px;color:var(--sub);margin-top:3px;">Toutes tes cartes fidélité</div></div>
       <div class="feature-card"><i class="ti ti-trophy" style="color:var(--gold);"></i><div style="font-size:12px;font-weight:700;color:var(--text);">Points & Rewards</div><div style="font-size:10px;color:var(--sub);margin-top:3px;">Gagne à chaque scan</div></div>
     </div>
@@ -349,11 +471,6 @@ ml('account', '2355363');
       <div style="font-size:16px;font-weight:700;margin-bottom:6px;">⭐ Premium — $4.99/mois</div>
       <div style="font-size:12px;opacity:0.9;margin-bottom:10px;">Scanner illimité · Recettes illimitées · 2x points · Sans pub</div>
       <button class="btn bf" style="background:#fff;color:var(--p);font-size:13px;" onclick="startApp()">Essai gratuit 30 jours →</button>
-    </div>
-    <div style="background:linear-gradient(135deg,#1D9E75,#0F6E56);border-radius:16px;padding:1.5rem;margin-bottom:1rem;">
-      <div style="font-size:16px;font-weight:700;color:#fff;margin-bottom:4px;">📧 Reçois les meilleurs spéciaux</div>
-      <div style="font-size:12px;color:rgba(255,255,255,0.85);margin-bottom:0.875rem;">Chaque semaine dans ta boîte mail — gratuit !</div>
-      <div class="ml-embedded" data-form="mypcHz"></div>
     </div>
     <button class="btn bg bf" style="font-size:15px;padding:14px;" onclick="startApp()">Commencer / Get Started →</button>
   </div>
@@ -364,7 +481,7 @@ ml('account', '2355363');
   <div class="ob-step active" id="ob1">
     <div style="margin:0 auto 1rem;width:80px;"><svg width="80" height="80" viewBox="0 0 680 500"><path d="M340,60 L430,95 L430,190 Q430,240 340,270 Q250,240 250,190 L250,95 Z" fill="#1D9E75"/><path d="M340,70 L422,102 L422,188 Q422,234 340,262 Q258,234 258,188 L258,102 Z" fill="#0F6E56"/><path d="M308,215 L312,183 L368,183 L372,215 Z" fill="white"/><path d="M301,183 Q301,170 312,170 L368,170 Q379,170 379,183" fill="none" stroke="white" stroke-width="6" stroke-linecap="round"/><circle cx="320" cy="224" r="9" fill="white"/><circle cx="360" cy="224" r="9" fill="white"/><path d="M305,100 L314,85 L323,98 L340,80 L357,98 L366,85 L375,100 L372,112 L308,112 Z" fill="#C9A227"/><circle cx="292" cy="88" r="20" fill="#D85A30"/><text x="292" y="94" text-anchor="middle" font-family="system-ui" font-size="13" font-weight="700" fill="white">SG</text></svg></div>
     <div style="font-size:22px;font-weight:800;text-align:center;margin-bottom:8px;"><span style="color:var(--g);">Smart</span><span style="color:var(--gold);">Grocer</span></div>
-    <div style="font-size:13px;color:var(--sub);text-align:center;margin-bottom:1.5rem;line-height:1.6;">L'app intelligente pour économiser à l'épicerie.<br>The smart app to save on groceries.</div>
+    <div style="font-size:13px;color:var(--sub);text-align:center;margin-bottom:1.5rem;line-height:1.6;">L'app intelligente pour économiser à l'épicerie.</div>
     <div style="background:#dcfce7;border:1px solid #86efac;border-radius:12px;padding:1rem;margin-bottom:1rem;text-align:center;">
       <div style="font-size:14px;font-weight:700;color:#166534;">🎉 Offre de lancement!</div>
       <div style="font-size:12px;color:#166534;margin-top:4px;">Les 1000 premiers membres → <strong>30 jours Premium gratuits</strong></div>
@@ -380,8 +497,8 @@ ml('account', '2355363');
     <div style="width:64px;height:64px;background:var(--b);border-radius:20px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:30px;margin:0 auto 1rem;"><i class="ti ti-map-pin"></i></div>
     <div style="font-size:20px;font-weight:800;text-align:center;margin-bottom:8px;">Ta ville / Your city</div>
     <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:1.25rem;">
-      <div><label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:0.04em;display:block;margin-bottom:4px;">Ville / City</label><input type="text" id="ob-city" value="Gatineau, QC"/></div>
-      <div><label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:0.04em;display:block;margin-bottom:4px;">Rayon / Radius</label><select id="ob-radius"><option>2 km</option><option selected>5 km</option><option>10 km</option><option>20 km</option></select></div>
+      <div><label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:4px;">Ville / City</label><input type="text" id="ob-city" value="Gatineau, QC"/></div>
+      <div><label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:4px;">Rayon / Radius</label><select id="ob-radius"><option>2 km</option><option selected>5 km</option><option>10 km</option><option>20 km</option></select></div>
     </div>
     <button class="btn bb bf" onclick="nextOb(3)">Continuer <i class="ti ti-arrow-right"></i></button>
   </div>
@@ -389,11 +506,9 @@ ml('account', '2355363');
     <div style="width:64px;height:64px;background:var(--p);border-radius:20px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:30px;margin:0 auto 1rem;"><i class="ti ti-user"></i></div>
     <div style="font-size:20px;font-weight:800;text-align:center;margin-bottom:8px;">Ton profil / Your profile</div>
     <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:1.25rem;">
-      <div><label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:0.04em;display:block;margin-bottom:4px;">Prénom / First name</label><input type="text" id="ob-name" placeholder="Ex: Tim"/></div>
-      <div><label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:0.04em;display:block;margin-bottom:4px;">Budget mensuel / Monthly budget ($)</label><input type="number" id="ob-budget" value="400"/></div>
-      <div><label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:0.04em;display:block;margin-bottom:4px;">Email <span style="color:#ef4444;">*</span></label><input type="email" id="ob-email" placeholder="ton@email.com"/></div>
-      <div><label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:0.04em;display:block;margin-bottom:4px;">Régime / Diet</label><select id="ob-diet"><option>Aucun / None</option><option>Végétarien</option><option>Végétalien</option><option>Sans gluten</option></select></div>
-      <div><label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:0.04em;display:block;margin-bottom:4px;">Langue / Language</label><select id="ob-lang"><option value="fr">Français</option><option value="en">English</option></select></div>
+      <div><label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:4px;">Prénom / First name</label><input type="text" id="ob-name" placeholder="Ex: Tim"/></div>
+      <div><label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:4px;">Budget mensuel ($)</label><input type="number" id="ob-budget" value="400"/></div>
+      <div><label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:4px;">Régime / Diet</label><select id="ob-diet"><option>Aucun / None</option><option>Végétarien</option><option>Végétalien</option><option>Sans gluten</option></select></div>
     </div>
     <button class="btn bg bf" onclick="finishOb()"><i class="ti ti-check"></i> C'est parti — 30 jours Premium gratuits!</button>
   </div>
@@ -401,19 +516,18 @@ ml('account', '2355363');
 
 <!-- APP -->
 <div id="app" style="display:none;">
-
 <div class="trial" id="trial-banner" style="margin:0.75rem 1rem 0;" onclick="goExtra('premium')">
   <div style="font-size:18px;">⭐</div>
-  <div style="flex:1"><div style="font-size:12px;font-weight:700;color:#fff;">Premium gratuit — <span id="trial-days">30</span> jours restants</div><div style="font-size:10px;color:rgba(255,255,255,0.8);">Clique pour gérer ton abonnement</div></div>
+  <div style="flex:1"><div style="font-size:12px;font-weight:700;color:#fff;">Premium gratuit — 30 jours restants</div><div style="font-size:10px;color:rgba(255,255,255,0.8);">Clique pour gérer ton abonnement</div></div>
   <div style="background:rgba(255,255,255,0.2);color:#fff;font-size:10px;font-weight:700;padding:4px 8px;border-radius:6px;">Gérer</div>
 </div>
 
 <!-- HOME -->
 <div id="home" class="page active">
   <div class="hero" style="background:linear-gradient(160deg,#1D9E75 0%,#0F6E56 50%,#085041 100%);">
-    <div class="hero-c1"></div><div class="hero-c2"></div>
+    <div class="hc1"></div><div class="hc2"></div>
     <div class="logo-row">
-      <svg class="lsvg" viewBox="0 0 680 500"><path d="M340,60 L430,95 L430,190 Q430,240 340,270 Q250,240 250,190 L250,95 Z" fill="rgba(255,255,255,0.2)"/><path d="M340,70 L422,102 L422,188 Q422,234 340,262 Q258,234 258,188 L258,102 Z" fill="rgba(255,255,255,0.15)"/><path d="M308,215 L312,183 L368,183 L372,215 Z" fill="white"/><path d="M301,183 Q301,170 312,170 L368,170 Q379,170 379,183" fill="none" stroke="white" stroke-width="6" stroke-linecap="round"/><circle cx="320" cy="224" r="9" fill="white"/><circle cx="360" cy="224" r="9" fill="white"/><path d="M305,100 L314,85 L323,98 L340,80 L357,98 L366,85 L375,100 L372,112 L308,112 Z" fill="#C9A227"/><circle cx="292" cy="88" r="20" fill="#D85A30"/><text x="292" y="94" text-anchor="middle" font-family="system-ui" font-size="13" font-weight="700" fill="white">SG</text></svg>
+      <svg class="lsvg" viewBox="0 0 680 500"><use href="#logo-icon"/></svg>
       <div><div class="lt"><span>Smart</span><span style="color:#C9A227;">Grocer</span></div><div class="ls">Bonjour <span id="h-name">Tim</span> 👋</div></div>
     </div>
     <div class="hstats">
@@ -453,34 +567,39 @@ ml('account', '2355363');
 <!-- PRIX -->
 <div id="prix" class="page">
   <div class="hero" style="background:linear-gradient(160deg,#378ADD,#1A5FA8);">
-    <div class="hero-c1"></div>
+    <div class="hc1"></div>
     <div class="logo-row">
-      <svg class="lsvg" viewBox="0 0 680 500"><path d="M340,60 L430,95 L430,190 Q430,240 340,270 Q250,240 250,190 L250,95 Z" fill="rgba(255,255,255,0.2)"/><path d="M340,70 L422,102 L422,188 Q422,234 340,262 Q258,234 258,188 L258,102 Z" fill="rgba(255,255,255,0.15)"/><path d="M308,215 L312,183 L368,183 L372,215 Z" fill="white"/><path d="M301,183 Q301,170 312,170 L368,170 Q379,170 379,183" fill="none" stroke="white" stroke-width="6" stroke-linecap="round"/><circle cx="320" cy="224" r="9" fill="white"/><circle cx="360" cy="224" r="9" fill="white"/><path d="M305,100 L314,85 L323,98 L340,80 L357,98 L366,85 L375,100 L372,112 L308,112 Z" fill="#C9A227"/><circle cx="292" cy="88" r="20" fill="#D85A30"/><text x="292" y="94" text-anchor="middle" font-family="system-ui" font-size="13" font-weight="700" fill="white">SG</text></svg>
+      <svg class="lsvg" viewBox="0 0 680 500"><use href="#logo-icon"/></svg>
       <div><div class="lt"><span>Smart</span><span style="color:#C9A227;">Grocer</span></div><div class="ls">Comparateur de prix</div></div>
       <div class="badge bdgold" id="scan-badge" style="margin-left:auto;">⭐ Illimité</div>
     </div>
   </div>
   <div class="px">
-    <div class="limit-bar" id="scan-limit-bar" style="display:none;">
-      <div style="font-size:11px;flex:1;">Scans aujourd'hui</div>
-      <div class="limit-dots" id="scan-dots"></div>
-      <div style="font-size:11px;font-weight:700;" id="scan-count-text">0/5</div>
-    </div>
+    <div class="limit-bar" id="scan-limit-bar" style="display:none;"><div style="font-size:11px;flex:1;">Scans aujourd'hui</div><div class="limit-dots" id="scan-dots"></div><div style="font-size:11px;font-weight:700;" id="scan-count-text">0/5</div></div>
     <div id="scan-idle">
       <div class="sp-zone"><div class="sf"><div class="sl3"></div></div><div style="font-size:11px;margin-top:8px;">Prêt à scanner / Ready to scan</div></div>
       <div style="display:flex;gap:8px;margin-bottom:1rem;">
-        <button class="btn bb" style="flex:1;" onclick="startCam()"><i class="ti ti-camera"></i> Caméra</button>
+        <button class="btn bb" style="flex:1;" onclick="startRealScan()"><i class="ti ti-camera"></i> Scanner</button>
         <button class="btn bo" style="flex:1;" onclick="fakeScan()"><i class="ti ti-barcode"></i> Simuler scan</button>
       </div>
     </div>
     <div id="scan-active" style="display:none;">
-      <video id="scan-video" style="width:100%;border-radius:14px;background:#000;margin-bottom:0.875rem;max-height:180px;" autoplay playsinline muted></video>
+      <div style="position:relative;width:100%;border-radius:14px;overflow:hidden;margin-bottom:0.875rem;background:#000;">
+        <div id="quagga-container" style="width:100%;position:relative;"></div>
+        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:75%;height:80px;border:3px solid #1D9E75;border-radius:8px;pointer-events:none;z-index:10;">
+          <div style="position:absolute;top:-3px;left:-3px;width:18px;height:18px;border-top:4px solid #1D9E75;border-left:4px solid #1D9E75;border-radius:3px 0 0 0;"></div>
+          <div style="position:absolute;top:-3px;right:-3px;width:18px;height:18px;border-top:4px solid #1D9E75;border-right:4px solid #1D9E75;border-radius:0 3px 0 0;"></div>
+          <div style="position:absolute;bottom:-3px;left:-3px;width:18px;height:18px;border-bottom:4px solid #1D9E75;border-left:4px solid #1D9E75;border-radius:0 0 0 3px;"></div>
+          <div style="position:absolute;bottom:-3px;right:-3px;width:18px;height:18px;border-bottom:4px solid #1D9E75;border-right:4px solid #1D9E75;border-radius:0 0 3px 0;"></div>
+        </div>
+        <div id="scan-status" style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.65);color:#fff;font-size:11px;padding:4px 12px;border-radius:999px;white-space:nowrap;z-index:10;">📷 Pointe vers un code barre...</div>
+      </div>
       <div style="display:flex;gap:8px;margin-bottom:1rem;">
-        <button class="btn bc" style="flex:1;" onclick="stopCam()"><i class="ti ti-x"></i> Arrêter</button>
-        <button class="btn bg" style="flex:1;" onclick="simScan()"><i class="ti ti-check"></i> Scan détecté!</button>
+        <button class="btn bc" style="flex:1;" onclick="stopRealScan()"><i class="ti ti-x"></i> Arrêter</button>
+        <button class="btn bo" style="flex:1;" onclick="fakeScan()"><i class="ti ti-barcode"></i> Simuler</button>
       </div>
     </div>
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:0.875rem;"><div style="flex:1;height:1px;background:var(--light);"></div><div style="font-size:10px;color:var(--sub);">ou recherche / or search</div><div style="flex:1;height:1px;background:var(--light);"></div></div>
+    <button class="btn bo bf" onclick="testAPI()" style="margin-bottom:0.75rem;font-size:11px;">🔧 Tester la connexion API</button><div style="display:flex;align-items:center;gap:8px;margin-bottom:0.875rem;"><div style="flex:1;height:1px;background:var(--light);"></div><div style="font-size:10px;color:var(--sub);">ou recherche / or search</div><div style="flex:1;height:1px;background:var(--light);"></div></div>
     <div class="sugg">
       <div class="sg" onclick="setProd('beurre d\'arachide Kraft 1kg')">🥜 Kraft</div>
       <div class="sg" onclick="setProd('lait 2% 4L')">🥛 Lait</div>
@@ -488,7 +607,7 @@ ml('account', '2355363');
       <div class="sg" onclick="setProd('œufs douzaine')">🥚 Œufs</div>
       <div class="sg" onclick="setProd('pain tranché')">🍞 Pain</div>
     </div>
-    <div class="sr"><input type="text" id="prod-in" placeholder="Nom du produit / Product name..."/><button class="btn bb" id="scan-btn" onclick="searchProd()"><i class="ti ti-search"></i></button></div>
+    <div class="sr"><input type="text" id="prod-in" placeholder="Nom du produit..."/><button class="btn bb" id="scan-btn" onclick="searchProd()"><i class="ti ti-search"></i></button></div>
     <div class="ld" id="px-ld"><i class="ti ti-refresh"></i> Comparaison en cours...</div>
     <div id="px-res" style="display:none;">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem;"><span id="px-em" style="font-size:24px;"></span><div><div id="px-nm" style="font-size:14px;font-weight:600;"></div><div id="px-bc" style="font-size:10px;color:var(--sub);"></div></div></div>
@@ -512,19 +631,15 @@ ml('account', '2355363');
 <!-- RECETTES -->
 <div id="recettes" class="page">
   <div class="hero" style="background:linear-gradient(160deg,#D85A30,#993C1D);">
-    <div class="hero-c1"></div>
+    <div class="hc1"></div>
     <div class="logo-row">
-      <svg class="lsvg" viewBox="0 0 680 500"><path d="M340,60 L430,95 L430,190 Q430,240 340,270 Q250,240 250,190 L250,95 Z" fill="rgba(255,255,255,0.2)"/><path d="M340,70 L422,102 L422,188 Q422,234 340,262 Q258,234 258,188 L258,102 Z" fill="rgba(255,255,255,0.15)"/><path d="M308,215 L312,183 L368,183 L372,215 Z" fill="white"/><path d="M301,183 Q301,170 312,170 L368,170 Q379,170 379,183" fill="none" stroke="white" stroke-width="6" stroke-linecap="round"/><circle cx="320" cy="224" r="9" fill="white"/><circle cx="360" cy="224" r="9" fill="white"/><path d="M305,100 L314,85 L323,98 L340,80 L357,98 L366,85 L375,100 L372,112 L308,112 Z" fill="#C9A227"/><circle cx="292" cy="88" r="20" fill="#D85A30"/><text x="292" y="94" text-anchor="middle" font-family="system-ui" font-size="13" font-weight="700" fill="white">SG</text></svg>
+      <svg class="lsvg" viewBox="0 0 680 500"><use href="#logo-icon"/></svg>
       <div><div class="lt"><span>Smart</span><span style="color:#C9A227;">Grocer</span></div><div class="ls">Recettes IA + Vidéos virales</div></div>
       <div class="badge bdgold" id="rec-badge" style="margin-left:auto;">⭐ Illimitées</div>
     </div>
   </div>
   <div class="px">
-    <div class="limit-bar" id="rec-limit-bar" style="display:none;">
-      <div style="font-size:11px;flex:1;">Recettes aujourd'hui</div>
-      <div class="limit-dots" id="rec-dots"></div>
-      <div style="font-size:11px;font-weight:700;" id="rec-count-text">0/3</div>
-    </div>
+    <div class="limit-bar" id="rec-limit-bar" style="display:none;"><div style="font-size:11px;flex:1;">Recettes aujourd'hui</div><div class="limit-dots" id="rec-dots"></div><div style="font-size:11px;font-weight:700;" id="rec-count-text">0/3</div></div>
     <div class="sl2">Tes ingrédients</div>
     <div class="sr"><input type="text" id="ing-in" placeholder="Ex: poulet, riz, tomates..."/><button class="btn bg" onclick="addIng()"><i class="ti ti-plus"></i></button></div>
     <div id="ing-tags" style="margin-bottom:1rem;min-height:28px;"><span style="font-size:11px;color:var(--sub);">Ajoute des ingrédients / Add ingredients...</span></div>
@@ -546,9 +661,9 @@ ml('account', '2355363');
 <!-- LISTE -->
 <div id="liste" class="page">
   <div class="hero" style="background:linear-gradient(160deg,#0F6E56,#04342C);">
-    <div class="hero-c1"></div>
+    <div class="hc1"></div>
     <div class="logo-row">
-      <svg class="lsvg" viewBox="0 0 680 500"><path d="M340,60 L430,95 L430,190 Q430,240 340,270 Q250,240 250,190 L250,95 Z" fill="rgba(255,255,255,0.2)"/><path d="M340,70 L422,102 L422,188 Q422,234 340,262 Q258,234 258,188 L258,102 Z" fill="rgba(255,255,255,0.15)"/><path d="M308,215 L312,183 L368,183 L372,215 Z" fill="white"/><path d="M301,183 Q301,170 312,170 L368,170 Q379,170 379,183" fill="none" stroke="white" stroke-width="6" stroke-linecap="round"/><circle cx="320" cy="224" r="9" fill="white"/><circle cx="360" cy="224" r="9" fill="white"/><path d="M305,100 L314,85 L323,98 L340,80 L357,98 L366,85 L375,100 L372,112 L308,112 Z" fill="#C9A227"/><circle cx="292" cy="88" r="20" fill="#D85A30"/><text x="292" y="94" text-anchor="middle" font-family="system-ui" font-size="13" font-weight="700" fill="white">SG</text></svg>
+      <svg class="lsvg" viewBox="0 0 680 500"><use href="#logo-icon"/></svg>
       <div><div class="lt"><span>Smart</span><span style="color:#C9A227;">Grocer</span></div><div class="ls">Liste d'épicerie</div></div>
       <div class="badge bdgold" id="list-badge" style="margin-left:auto;">⭐ Illimitée</div>
     </div>
@@ -558,8 +673,8 @@ ml('account', '2355363');
     <div class="sr"><input type="text" id="gr-in" placeholder="Ajouter un article / Add item..."/><button class="btn bg" onclick="addGr()"><i class="ti ti-plus"></i> Ajouter</button></div>
     <div class="card"><div id="gr-items"><div style="color:var(--sub);font-size:12px;padding:8px 0;">Ta liste est vide / Your list is empty!</div></div></div>
     <div id="gr-foot" style="display:none;">
-      <div class="card"><div style="display:flex;justify-content:space-between;align-items:center;"><div><div style="font-size:12px;color:var(--sub);">Total estimé</div></div><div style="font-size:20px;font-weight:700;" id="gr-total">$0.00</div></div></div>
-      <button class="btn bg bf" onclick="sendPrompt('Compare le coût total de cette liste ('+getGrList()+') entre IGA, Maxi, Metro et Walmart')">Comparer le total entre épiceries ↗</button>
+      <div class="card"><div style="display:flex;justify-content:space-between;align-items:center;"><div><div style="font-size:12px;color:var(--sub);">Total estimé / Estimated total</div></div><div style="font-size:20px;font-weight:700;" id="gr-total">$0.00</div></div></div>
+      <button class="btn bg bf" onclick="sendPrompt('Compare le coût total de cette liste entre IGA, Maxi, Metro et Walmart')">Comparer le total entre épiceries ↗</button>
     </div>
   </div>
 </div>
@@ -567,9 +682,9 @@ ml('account', '2355363');
 <!-- SOCIAL -->
 <div id="social" class="page">
   <div class="hero" style="background:linear-gradient(160deg,#534AB7,#3C3489);">
-    <div class="hero-c1"></div>
+    <div class="hc1"></div>
     <div class="logo-row">
-      <svg class="lsvg" viewBox="0 0 680 500"><path d="M340,60 L430,95 L430,190 Q430,240 340,270 Q250,240 250,190 L250,95 Z" fill="rgba(255,255,255,0.2)"/><path d="M340,70 L422,102 L422,188 Q422,234 340,262 Q258,234 258,188 L258,102 Z" fill="rgba(255,255,255,0.15)"/><path d="M308,215 L312,183 L368,183 L372,215 Z" fill="white"/><path d="M301,183 Q301,170 312,170 L368,170 Q379,170 379,183" fill="none" stroke="white" stroke-width="6" stroke-linecap="round"/><circle cx="320" cy="224" r="9" fill="white"/><circle cx="360" cy="224" r="9" fill="white"/><path d="M305,100 L314,85 L323,98 L340,80 L357,98 L366,85 L375,100 L372,112 L308,112 Z" fill="#C9A227"/><circle cx="292" cy="88" r="20" fill="#D85A30"/><text x="292" y="94" text-anchor="middle" font-family="system-ui" font-size="13" font-weight="700" fill="white">SG</text></svg>
+      <svg class="lsvg" viewBox="0 0 680 500"><use href="#logo-icon"/></svg>
       <div><div class="lt"><span>Smart</span><span style="color:#C9A227;">Grocer</span></div><div class="ls">48 293 membres · 12 847 recettes</div></div>
     </div>
   </div>
@@ -596,9 +711,9 @@ ml('account', '2355363');
 <!-- POINTS -->
 <div id="points" class="page">
   <div class="hero" style="background:linear-gradient(160deg,#C9A227,#9A7A10);">
-    <div class="hero-c1"></div>
+    <div class="hc1"></div>
     <div class="logo-row">
-      <svg class="lsvg" viewBox="0 0 680 500"><path d="M340,60 L430,95 L430,190 Q430,240 340,270 Q250,240 250,190 L250,95 Z" fill="rgba(255,255,255,0.2)"/><path d="M340,70 L422,102 L422,188 Q422,234 340,262 Q258,234 258,188 L258,102 Z" fill="rgba(255,255,255,0.15)"/><path d="M308,215 L312,183 L368,183 L372,215 Z" fill="white"/><path d="M301,183 Q301,170 312,170 L368,170 Q379,170 379,183" fill="none" stroke="white" stroke-width="6" stroke-linecap="round"/><circle cx="320" cy="224" r="9" fill="white"/><circle cx="360" cy="224" r="9" fill="white"/><path d="M305,100 L314,85 L323,98 L340,80 L357,98 L366,85 L375,100 L372,112 L308,112 Z" fill="#C9A227"/><circle cx="292" cy="88" r="20" fill="#D85A30"/><text x="292" y="94" text-anchor="middle" font-family="system-ui" font-size="13" font-weight="700" fill="white">SG</text></svg>
+      <svg class="lsvg" viewBox="0 0 680 500"><use href="#logo-icon"/></svg>
       <div><div class="lt"><span>Smart</span><span style="color:#C9A227;">Grocer</span></div><div style="font-size:20px;font-weight:700;color:#fff;margin-top:4px;"><span id="pts-hero">0</span> pts · <span id="level-hero">Bronze</span> 🏆</div></div>
     </div>
     <div style="background:rgba(255,255,255,0.2);border-radius:999px;height:8px;overflow:hidden;"><div class="bbar" id="pts-bar" style="background:#fff;width:0%;"></div></div>
@@ -606,8 +721,8 @@ ml('account', '2355363');
   </div>
   <div class="px">
     <div class="sl">Récompenses disponibles</div>
-    <div style="display:flex;flex-direction:column;gap:8px;" id="rewards-list"></div>
-    <div class="card" style="background:linear-gradient(135deg,var(--p),var(--b));color:#fff;text-align:center;cursor:pointer;border:none;" onclick="goExtra('premium')">
+    <div id="rewards-list"></div>
+    <div class="card" style="background:linear-gradient(135deg,var(--p),var(--b));color:#fff;text-align:center;border:none;cursor:pointer;" onclick="goExtra('premium')">
       <div style="font-size:14px;font-weight:700;">⭐ Passer à Premium → 2x points</div>
       <div style="font-size:11px;opacity:0.85;margin-top:2px;">$4.99/mois · Essai 30 jours gratuit</div>
     </div>
@@ -617,15 +732,15 @@ ml('account', '2355363');
 <!-- CARTE -->
 <div id="carte" class="page">
   <div class="hero" style="background:linear-gradient(160deg,#378ADD,#1A5FA8);">
-    <div class="hero-c1"></div>
+    <div class="hc1"></div>
     <div class="logo-row">
-      <svg class="lsvg" viewBox="0 0 680 500"><path d="M340,60 L430,95 L430,190 Q430,240 340,270 Q250,240 250,190 L250,95 Z" fill="rgba(255,255,255,0.2)"/><path d="M340,70 L422,102 L422,188 Q422,234 340,262 Q258,234 258,188 L258,102 Z" fill="rgba(255,255,255,0.15)"/><path d="M308,215 L312,183 L368,183 L372,215 Z" fill="white"/><path d="M301,183 Q301,170 312,170 L368,170 Q379,170 379,183" fill="none" stroke="white" stroke-width="6" stroke-linecap="round"/><circle cx="320" cy="224" r="9" fill="white"/><circle cx="360" cy="224" r="9" fill="white"/><path d="M305,100 L314,85 L323,98 L340,80 L357,98 L366,85 L375,100 L372,112 L308,112 Z" fill="#C9A227"/><circle cx="292" cy="88" r="20" fill="#D85A30"/><text x="292" y="94" text-anchor="middle" font-family="system-ui" font-size="13" font-weight="700" fill="white">SG</text></svg>
-      <div><div class="lt"><span>Smart</span><span style="color:#C9A227;">Grocer</span></div><div class="ls">Épiceries · Gatineau, QC · 5 km</div></div>
+      <svg class="lsvg" viewBox="0 0 680 500"><use href="#logo-icon"/></svg>
+      <div><div class="lt"><span>Smart</span><span style="color:#C9A227;">Grocer</span></div><div class="ls" id="carte-city">Épiceries · Gatineau, QC · 5 km</div></div>
     </div>
   </div>
   <div class="px">
     <div class="map-ph">
-      <div style="position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg,#bae6fd66,#93c5fd66);border-radius:16px;"></div>
+      <div style="position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg,#bae6fd55,#93c5fd55);border-radius:16px;"></div>
       <div class="map-pin" style="top:30%;left:30%;">🏪</div>
       <div class="map-pin" style="top:50%;left:55%;">🏬</div>
       <div class="map-pin" style="top:65%;left:35%;">🏪</div>
@@ -645,20 +760,20 @@ ml('account', '2355363');
 <!-- WALLET -->
 <div id="wallet" class="page">
   <div class="hero" style="background:linear-gradient(160deg,#1a1a2e,#2d2d4e);">
-    <div class="hero-c1"></div>
+    <div class="hc1"></div>
     <div class="logo-row">
-      <svg class="lsvg" viewBox="0 0 680 500"><path d="M340,60 L430,95 L430,190 Q430,240 340,270 Q250,240 250,190 L250,95 Z" fill="rgba(255,255,255,0.2)"/><path d="M340,70 L422,102 L422,188 Q422,234 340,262 Q258,234 258,188 L258,102 Z" fill="rgba(255,255,255,0.15)"/><path d="M308,215 L312,183 L368,183 L372,215 Z" fill="white"/><path d="M301,183 Q301,170 312,170 L368,170 Q379,170 379,183" fill="none" stroke="white" stroke-width="6" stroke-linecap="round"/><circle cx="320" cy="224" r="9" fill="white"/><circle cx="360" cy="224" r="9" fill="white"/><path d="M305,100 L314,85 L323,98 L340,80 L357,98 L366,85 L375,100 L372,112 L308,112 Z" fill="#C9A227"/><circle cx="292" cy="88" r="20" fill="#D85A30"/><text x="292" y="94" text-anchor="middle" font-family="system-ui" font-size="13" font-weight="700" fill="white">SG</text></svg>
+      <svg class="lsvg" viewBox="0 0 680 500"><use href="#logo-icon"/></svg>
       <div><div class="lt"><span>Smart</span><span style="color:#C9A227;">Grocer</span></div><div class="ls">Portefeuille numérique</div></div>
     </div>
     <div class="hstats">
       <div class="hs"><div class="hs-n" id="w-count">3</div><div class="hs-l">Cartes</div></div>
       <div class="hs"><div class="hs-n" id="w-pts">4 250</div><div class="hs-l">Points total</div></div>
-      <div class="hs"><div class="hs-n" id="w-val">$42</div><div class="hs-l">Valeur estimée</div></div>
+      <div class="hs"><div class="hs-n" id="w-val">$42</div><div class="hs-l">Valeur est.</div></div>
     </div>
   </div>
   <div class="px">
-    <div class="sl2">Carte active — Appuie pour afficher le code</div>
-    <div id="active-card-display" class="loyalty-card" onclick="showBc()" style="background:linear-gradient(135deg,#E53935,#B71C1C);box-shadow:0 12px 32px rgba(229,57,53,0.35);"></div>
+    <div class="sl2">Carte active — Appuie pour le code</div>
+    <div id="active-card-display" class="loyalty-card" onclick="showBc()"></div>
     <div style="display:flex;justify-content:center;gap:6px;margin-bottom:1.5rem;" id="w-dots"></div>
     <div class="sl2">Toutes mes cartes</div>
     <div id="mini-cards-list"></div>
@@ -669,9 +784,9 @@ ml('account', '2355363');
 <!-- ALERTES -->
 <div id="alertes" class="page">
   <div class="hero" style="background:linear-gradient(160deg,#C9A227,#9A7A10);">
-    <div class="hero-c1"></div>
+    <div class="hc1"></div>
     <div class="logo-row">
-      <svg class="lsvg" viewBox="0 0 680 500"><path d="M340,60 L430,95 L430,190 Q430,240 340,270 Q250,240 250,190 L250,95 Z" fill="rgba(255,255,255,0.2)"/><path d="M340,70 L422,102 L422,188 Q422,234 340,262 Q258,234 258,188 L258,102 Z" fill="rgba(255,255,255,0.15)"/><path d="M308,215 L312,183 L368,183 L372,215 Z" fill="white"/><path d="M301,183 Q301,170 312,170 L368,170 Q379,170 379,183" fill="none" stroke="white" stroke-width="6" stroke-linecap="round"/><circle cx="320" cy="224" r="9" fill="white"/><circle cx="360" cy="224" r="9" fill="white"/><path d="M305,100 L314,85 L323,98 L340,80 L357,98 L366,85 L375,100 L372,112 L308,112 Z" fill="#C9A227"/><circle cx="292" cy="88" r="20" fill="#D85A30"/><text x="292" y="94" text-anchor="middle" font-family="system-ui" font-size="13" font-weight="700" fill="white">SG</text></svg>
+      <svg class="lsvg" viewBox="0 0 680 500"><use href="#logo-icon"/></svg>
       <div><div class="lt"><span>Smart</span><span style="color:#C9A227;">Grocer</span></div><div class="ls">Alertes spéciaux</div></div>
     </div>
   </div>
@@ -698,9 +813,9 @@ ml('account', '2355363');
 <!-- BUDGET -->
 <div id="budget" class="page">
   <div class="hero" style="background:linear-gradient(160deg,#534AB7,#3C3489);">
-    <div class="hero-c1"></div>
+    <div class="hc1"></div>
     <div class="logo-row">
-      <svg class="lsvg" viewBox="0 0 680 500"><path d="M340,60 L430,95 L430,190 Q430,240 340,270 Q250,240 250,190 L250,95 Z" fill="rgba(255,255,255,0.2)"/><path d="M340,70 L422,102 L422,188 Q422,234 340,262 Q258,234 258,188 L258,102 Z" fill="rgba(255,255,255,0.15)"/><path d="M308,215 L312,183 L368,183 L372,215 Z" fill="white"/><path d="M301,183 Q301,170 312,170 L368,170 Q379,170 379,183" fill="none" stroke="white" stroke-width="6" stroke-linecap="round"/><circle cx="320" cy="224" r="9" fill="white"/><circle cx="360" cy="224" r="9" fill="white"/><path d="M305,100 L314,85 L323,98 L340,80 L357,98 L366,85 L375,100 L372,112 L308,112 Z" fill="#C9A227"/><circle cx="292" cy="88" r="20" fill="#D85A30"/><text x="292" y="94" text-anchor="middle" font-family="system-ui" font-size="13" font-weight="700" fill="white">SG</text></svg>
+      <svg class="lsvg" viewBox="0 0 680 500"><use href="#logo-icon"/></svg>
       <div><div class="lt"><span>Smart</span><span style="color:#C9A227;">Grocer</span></div><div class="ls">Budget épicerie · Mai 2026</div></div>
     </div>
   </div>
@@ -729,7 +844,7 @@ ml('account', '2355363');
   <div class="prof-header">
     <div style="position:absolute;top:-40px;right:-40px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,0.05);"></div>
     <div class="logo-row" style="margin-bottom:1.25rem;">
-      <svg class="lsvg" viewBox="0 0 680 500"><path d="M340,60 L430,95 L430,190 Q430,240 340,270 Q250,240 250,190 L250,95 Z" fill="rgba(255,255,255,0.2)"/><path d="M340,70 L422,102 L422,188 Q422,234 340,262 Q258,234 258,188 L258,102 Z" fill="rgba(255,255,255,0.15)"/><path d="M308,215 L312,183 L368,183 L372,215 Z" fill="white"/><path d="M301,183 Q301,170 312,170 L368,170 Q379,170 379,183" fill="none" stroke="white" stroke-width="6" stroke-linecap="round"/><circle cx="320" cy="224" r="9" fill="white"/><circle cx="360" cy="224" r="9" fill="white"/><path d="M305,100 L314,85 L323,98 L340,80 L357,98 L366,85 L375,100 L372,112 L308,112 Z" fill="#C9A227"/><circle cx="292" cy="88" r="20" fill="#D85A30"/><text x="292" y="94" text-anchor="middle" font-family="system-ui" font-size="13" font-weight="700" fill="white">SG</text></svg>
+      <svg class="lsvg" viewBox="0 0 680 500"><use href="#logo-icon"/></svg>
       <div><div class="lt"><span>Smart</span><span style="color:#C9A227;">Grocer</span></div><div class="ls">Mon profil</div></div>
     </div>
     <div style="display:flex;align-items:center;gap:14px;">
@@ -763,9 +878,9 @@ ml('account', '2355363');
 <!-- PREMIUM -->
 <div id="premium" class="page">
   <div class="hero" style="background:linear-gradient(160deg,var(--p),var(--b));">
-    <div class="hero-c1"></div>
+    <div class="hc1"></div>
     <div class="logo-row">
-      <svg class="lsvg" viewBox="0 0 680 500"><path d="M340,60 L430,95 L430,190 Q430,240 340,270 Q250,240 250,190 L250,95 Z" fill="rgba(255,255,255,0.2)"/><path d="M340,70 L422,102 L422,188 Q422,234 340,262 Q258,234 258,188 L258,102 Z" fill="rgba(255,255,255,0.15)"/><path d="M308,215 L312,183 L368,183 L372,215 Z" fill="white"/><path d="M301,183 Q301,170 312,170 L368,170 Q379,170 379,183" fill="none" stroke="white" stroke-width="6" stroke-linecap="round"/><circle cx="320" cy="224" r="9" fill="white"/><circle cx="360" cy="224" r="9" fill="white"/><path d="M305,100 L314,85 L323,98 L340,80 L357,98 L366,85 L375,100 L372,112 L308,112 Z" fill="#C9A227"/><circle cx="292" cy="88" r="20" fill="#D85A30"/><text x="292" y="94" text-anchor="middle" font-family="system-ui" font-size="13" font-weight="700" fill="white">SG</text></svg>
+      <svg class="lsvg" viewBox="0 0 680 500"><use href="#logo-icon"/></svg>
       <div><div class="lt"><span>Smart</span><span style="color:#C9A227;">Grocer</span></div><div class="ls">Plans & Abonnements</div></div>
     </div>
   </div>
@@ -789,17 +904,13 @@ ml('account', '2355363');
         <div class="prem-feature"><span style="color:var(--g);font-weight:700;">✓</span>Sans publicité / Ad-free</div>
         <div class="prem-feature"><span style="color:var(--g);font-weight:700;">✓</span>Portefeuille numérique illimité</div>
       </div>
-      <stripe-buy-button
-  buy-button-id="buy_btn_1TZxji8g6DMr5MKkOUY5K31c"
-  publishable-key="pk_live_51TZwZv8g6DMr5MKkRPebAg4U59jlMgIURfwaZcaMTgpSEFTn5jCQ2RQzowgt7RvPwE3sbDalFZADRoTj9N5kLegR00L4Tyau8k"
-></stripe-buy-button>
+      <button class="btn bf" style="background:linear-gradient(135deg,var(--p),var(--b));color:#fff;margin-bottom:8px;" onclick="activatePremium()">🚀 Démarrer l'essai gratuit</button>
       <div style="text-align:center;font-size:10px;color:var(--sub);">Aucune carte requise / No credit card required</div>
     </div>
     <div class="card" style="border:2px solid var(--gold);">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.875rem;"><div style="font-size:14px;font-weight:700;">👨‍👩‍👧‍👦 Famille / Family</div><div style="font-size:18px;font-weight:700;color:var(--gold);">$8.99<span style="font-size:11px;font-weight:400;color:var(--sub);">/mois</span></div></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.875rem;"><div style="font-size:14px;font-weight:700;">👨‍👩‍👧‍👦 Famille</div><div style="font-size:18px;font-weight:700;color:var(--gold);">$8.99<span style="font-size:11px;font-weight:400;color:var(--sub);">/mois</span></div></div>
       <div style="display:flex;flex-direction:column;gap:4px;margin-bottom:1rem;">
-        <div style="font-size:12px;"><span style="color:var(--gold);font-weight:700;">✓</span> Tout ce qu'il y a dans Premium</div>
-        <div style="font-size:12px;"><span style="color:var(--gold);font-weight:700;">✓</span> Jusqu'à 5 comptes / Up to 5 accounts</div>
+        <div style="font-size:12px;"><span style="color:var(--gold);font-weight:700;">✓</span> Tout Premium + jusqu'à 5 comptes</div>
         <div style="font-size:12px;"><span style="color:var(--gold);font-weight:700;">✓</span> Liste partagée en temps réel</div>
       </div>
       <button class="btn bgold bf" onclick="showToast('🚀 Bientôt disponible / Coming soon!')">Choisir Famille</button>
@@ -831,7 +942,6 @@ ml('account', '2355363');
 </div>
 
 <script>
-// ===== STATE =====
 let isPremium=true,points=0,scansToday=0,recsToday=0,groceries=[],ings=[],selR=null,curRecs=[],currentProd='',camStream=null,totalScans=0;
 const LIMITS={scans:5,recs:3,list:10};
 const commRecs=[
@@ -842,8 +952,8 @@ const commRecs=[
 ];
 let cFilt=[...commRecs];
 const rewards=[
-  {icon:'☕',name:'Café gratuit / Free coffee',pts:100,desc:'Tim Hortons partenaire'},
-  {icon:'🛒',name:'$5 de rabais / $5 off',pts:200,desc:'Sur ta prochaine épicerie'},
+  {icon:'☕',name:'Café gratuit',pts:100,desc:'Tim Hortons partenaire'},
+  {icon:'🛒',name:'$5 de rabais',pts:200,desc:'Sur ta prochaine épicerie'},
   {icon:'🎁',name:'1 mois Premium',pts:500,desc:'SmartGrocer Premium offert'},
   {icon:'💳',name:'$20 carte-cadeau',pts:1000,desc:'IGA, Maxi, ou Metro'},
 ];
@@ -854,30 +964,18 @@ let walletCards=[
 ];
 let activeCard=0;
 
-// ===== NAVIGATION =====
 function startApp(){document.getElementById('landing').style.display='none';document.getElementById('onboarding').style.display='block';}
 function nextOb(n){document.querySelectorAll('.ob-step').forEach(s=>s.classList.remove('active'));document.getElementById('ob'+n).classList.add('active');}
 function finishOb(){
-  const emailEl=document.getElementById('ob-email');
-  if(emailEl){
-    const emailVal=emailEl.value.trim();
-    if(!emailVal||!emailVal.includes('@')){
-      emailEl.style.border='2px solid #ef4444';
-      showToast('⚠️ Entre ton email pour continuer!');
-      return;
-    }
-    emailEl.style.border='';
-  }
   const name=document.getElementById('ob-name').value||'Tim';
   const city=document.getElementById('ob-city').value||'Gatineau, QC';
   const budget=document.getElementById('ob-budget').value||'400';
   const diet=document.getElementById('ob-diet').value;
   ['h-name','pnm'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=name;});
   const pav=document.getElementById('pav');if(pav)pav.textContent=name.substring(0,2).toUpperCase();
-  ['pct'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=city;});
-  ['pp-city'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=city;});
-  ['pp-budget'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='$'+budget;});
-  ['pp-diet'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=diet;});
+  ['pct','pp-city','carte-city'].forEach((id,i)=>{const el=document.getElementById(id);if(el)el.textContent=i===2?'Épiceries · '+city+' · 5 km':city;});
+  const ppb=document.getElementById('pp-budget');if(ppb)ppb.textContent='$'+budget;
+  const ppd=document.getElementById('pp-diet');if(ppd)ppd.textContent=diet;
   document.getElementById('onboarding').style.display='none';
   document.getElementById('app').style.display='block';
   document.getElementById('chat-wrap').style.display='block';
@@ -889,7 +987,7 @@ function goTo(p,btn){
   document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
   document.getElementById(p).classList.add('active');
   if(btn)btn.classList.add('active');
-  else{const pages=['home','prix','recettes','liste','social','points'];const idx=pages.indexOf(p);if(idx>=0)document.querySelectorAll('.nb')[idx].classList.add('active');}
+  else{const idx=['home','prix','recettes','liste','social','points'].indexOf(p);if(idx>=0)document.querySelectorAll('.nb')[idx].classList.add('active');}
 }
 function goExtra(p){
   closePlus();
@@ -900,26 +998,21 @@ function goExtra(p){
 }
 function openPlus(){document.getElementById('plus-overlay').classList.add('open');}
 function closePlus(){document.getElementById('plus-overlay').classList.remove('open');}
-
-// ===== UTILS =====
 function showToast(msg,dur=3000){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
 function showPaywall(title,msg){document.getElementById('paywall-title').textContent=title;document.getElementById('paywall-msg').textContent=msg;document.getElementById('paywall').classList.add('open');}
 function closePaywall(){document.getElementById('paywall').classList.remove('open');}
 function setLang(lang){document.getElementById('lang-fr').className='lang-btn'+(lang==='fr'?' active':'');document.getElementById('lang-en').className='lang-btn'+(lang==='en'?' active':'');showToast(lang==='fr'?'🇫🇷 Français activé':'🇬🇧 English activated');}
 function sendPrompt(text){console.log('sendPrompt:',text);}
-
-// ===== PREMIUM =====
 function activatePremium(){isPremium=true;closePaywall();updatePlanUI();showToast('🎉 Premium activé — 30 jours gratuits!');}
 function downgradeFree(){isPremium=false;updatePlanUI();showToast('ℹ️ Plan gratuit activé');goTo('home',null);}
 function updatePlanUI(){
   const p=isPremium;
-  const badges=[['scan-badge','⭐ Illimité','🆓 5/jour'],['rec-badge','⭐ Illimitées','🆓 3/jour'],['list-badge','⭐ Illimitée','🆓 10 articles'],['plan-badge','⭐ Premium','🆓 Gratuit'],['prof-badge','⭐ Premium Trial','🆓 Gratuit'],['pp-plan','⭐ Premium Trial','🆓 Gratuit']];
-  badges.forEach(([id,prem,free])=>{const el=document.getElementById(id);if(el){el.textContent=p?prem:free;el.className='badge '+(p?'bdgold':'bdfree');}});
+  [['scan-badge','⭐ Illimité','🆓 5/jour'],['rec-badge','⭐ Illimitées','🆓 3/jour'],['list-badge','⭐ Illimitée','🆓 10 articles'],['plan-badge','⭐ Premium','🆓 Gratuit'],['prof-badge','⭐ Premium Trial','🆓 Gratuit'],['pp-plan','⭐ Premium Trial','🆓 Gratuit']].forEach(([id,pv,fv])=>{const el=document.getElementById(id);if(el){el.textContent=p?pv:fv;el.className='badge '+(p?'bdgold':'bdfree');}});
   ['scan-limit-bar','rec-limit-bar','list-limit-bar'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=p?'none':'flex';});
   const tb=document.getElementById('trial-banner');if(tb)tb.style.display=p?'flex':'none';
-  const texts=[['h-scans',p?'∞':(LIMITS.scans-scansToday)],['h-rec-left',p?'∞':(LIMITS.recs-recsToday)],['ql-scan',p?'Illimité ⭐':'5 scans/jour'],['upload-label',p?'Uploader ta vidéo ou photo':'Uploader ta vidéo (Premium ⭐)']];
-  texts.forEach(([id,val])=>{const el=document.getElementById(id);if(el)el.textContent=val;});
-  document.getElementById('pts-multiplier')&&(document.getElementById('pts-multiplier').textContent=p?'2x':'1x');
+  const hs=document.getElementById('h-scans');if(hs)hs.textContent=p?'∞':(LIMITS.scans-scansToday);
+  const ql=document.getElementById('ql-scan');if(ql)ql.textContent=p?'Illimité ⭐':'5 scans/jour';
+  const ul=document.getElementById('upload-label');if(ul)ul.textContent=p?'Uploader ta vidéo ou photo':'Uploader ta vidéo (Premium ⭐)';
   updateLimitDots();
 }
 function updateLimitDots(){
@@ -931,12 +1024,9 @@ function updateLimitDots(){
   const rc=document.getElementById('rec-count-text');if(rc)rc.textContent=recsToday+'/'+LIMITS.recs;
   const lc=document.getElementById('list-count-text');if(lc)lc.textContent=groceries.length+'/'+LIMITS.list;
 }
-
-// ===== POINTS =====
 function addPoints(n){const mult=isPremium?2:1;points+=n*mult;updatePointsUI();}
 function updatePointsUI(){
-  const els=[['pts-home',points+' pts'],['pts-hero',points],['h-pts',points],['prof-pts',points]];
-  els.forEach(([id,val])=>{const el=document.getElementById(id);if(el)el.textContent=val;});
+  [['pts-home',points+' pts'],['pts-hero',points],['h-pts',points],['prof-pts',points]].forEach(([id,val])=>{const el=document.getElementById(id);if(el)el.textContent=val;});
   const pb=document.getElementById('pts-bar');if(pb)pb.style.width=Math.min(points/500*100,100)+'%';
   const levels=[{name:'Bronze',max:100},{name:'Argent',max:250},{name:'Or',max:500},{name:'Platine',max:Infinity}];
   let level=levels[0];for(const l of levels){if(points>=l.max)level=l;}
@@ -944,34 +1034,324 @@ function updatePointsUI(){
   const lt=document.getElementById('pts-level-text');if(lt)lt.textContent=(next.max===Infinity?'Niveau max!':next.max-points+' pts pour '+next.name);
   ['h-level','level-hero'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='Niveau '+level.name;});
 }
-
-// ===== SCANNER =====
 async function startCam(){try{camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});document.getElementById('scan-video').srcObject=camStream;document.getElementById('scan-idle').style.display='none';document.getElementById('scan-active').style.display='block';}catch(e){showToast('📷 Caméra non disponible — utilise "Simuler scan"');}}
 function stopCam(){if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}document.getElementById('scan-idle').style.display='block';document.getElementById('scan-active').style.display='none';}
 const fakeBC=[{bc:'0068100896344',prod:'beurre d\'arachide Kraft 1kg'},{bc:'0055742000013',prod:'lait 2% 4L Natrel'},{bc:'0620786000152',prod:'pain tranché Wonder'},{bc:'0025500087168',prod:'café Folgers 920g'},{bc:'0037000119661',prod:'détergent Tide 1.47L'}];
 function fakeScan(){const f=fakeBC[Math.floor(Math.random()*fakeBC.length)];document.getElementById('prod-in').value=f.prod;document.getElementById('px-bc').textContent='Code barre: '+f.bc;searchProd();}
 function simScan(){stopCam();fakeScan();}
 function setProd(n){document.getElementById('prod-in').value=n;searchProd();}
-
-// ===== PRICE SEARCH =====
 async function searchProd(){
   if(!isPremium&&scansToday>=LIMITS.scans){showPaywall('Limite de scans atteinte!','Tu as utilisé tes 5 scans gratuits. Passe à Premium pour scanner sans limite!');return;}
   const p=document.getElementById('prod-in').value.trim();if(!p)return;
-  currentProd=p;
-  document.getElementById('scan-btn').disabled=true;
-  document.getElementById('px-ld').classList.add('on');
-  document.getElementById('px-res').style.display='none';
-  document.getElementById('bd').classList.remove('on');
-  document.getElementById('fb').style.display='none';
-  document.getElementById('sg').innerHTML='';
+  currentProd=p;document.getElementById('scan-btn').disabled=true;document.getElementById('px-ld').classList.add('on');document.getElementById('px-res').style.display='none';document.getElementById('bd').classList.remove('on');document.getElementById('fb').style.display='none';document.getElementById('sg').innerHTML='';
   try{
-    const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer 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'},body:JSON.stringify({model:'llama-3.3-70b-versatile',max_completion_tokens:1000,messages:[{role:'user',content:`Prix réalistes Québec pour "${p}". JSON seulement:\
-{"emoji":"🥜","nom":"Nom complet","magasins":[{"nom":"IGA","prix":5.99,"prixRegulier":7.49,"enSpecial":true,"format":"1kg"},{"nom":"Metro","prix":7.29,"prixRegulier":7.29,"enSpecial":false,"format":"1kg"},{"nom":"Maxi","prix":6.49,"prixRegulier":6.99,"enSpecial":true,"format":"1kg"},{"nom":"Walmart","prix":6.19,"prixRegulier":6.19,"enSpecial":false,"format":"1kg"},{"nom":"Costco","prix":14.99,"prixRegulier":14.99,"enSpecial":false,"format":"2.5kg"}],"formats":[{"format":"500g","prix":4.29,"prixAu100g":0.86},{"format":"1kg","prix":5.99,"prixAu100g":0.60},{"format":"2.5kg","prix":14.99,"prixAu100g":0.60}]}`}]})});
+    const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer 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'},body:JSON.stringify({model:'llama-3.3-70b-versatile',max_completion_tokens:1000,messages:[{role:'user',content:`Prix réalistes Québec pour "${p}". JSON seulement:\n{"emoji":"🥜","nom":"Nom complet","magasins":[{"nom":"IGA","prix":5.99,"prixRegulier":7.49,"enSpecial":true,"format":"1kg"},{"nom":"Metro","prix":7.29,"prixRegulier":7.29,"enSpecial":false,"format":"1kg"},{"nom":"Maxi","prix":6.49,"prixRegulier":6.99,"enSpecial":true,"format":"1kg"},{"nom":"Walmart","prix":6.19,"prixRegulier":6.19,"enSpecial":false,"format":"1kg"},{"nom":"Costco","prix":14.99,"prixRegulier":14.99,"enSpecial":false,"format":"2.5kg"}],"formats":[{"format":"500g","prix":4.29,"prixAu100g":0.86},{"format":"1kg","prix":5.99,"prixAu100g":0.60},{"format":"2.5kg","prix":14.99,"prixAu100g":0.60}]}`}]})});
+    const data=await res.json();const text=data.choices[0].message.content.replace(/```json|```/g,'').trim();const d=JSON.parse(text);
+    document.getElementById('px-em').textContent=d.emoji;document.getElementById('px-nm').textContent=d.nom;
+    const sorted=[...d.magasins].sort((a,b)=>a.prix-b.prix);const best=sorted[0],worst=sorted[sorted.length-1];
+    document.getElementById('bs').textContent=best.nom;document.getElementById('bp').textContent='$'+best.prix.toFixed(2);document.getElementById('bsv').textContent='Économise jusqu\'à $'+(worst.prix-best.prix).toFixed(2);document.getElementById('bd').classList.add('on');
+    document.getElementById('sg').innerHTML=d.magasins.map(s=>`<div class="sc ${s.enSpecial?'sale':''}"><div style="font-size:11px;font-weight:700;margin-bottom:2px;">${s.nom}</div><div style="font-size:16px;font-weight:700;">$${s.prix.toFixed(2)}</div>${s.enSpecial?`<div style="font-size:9px;color:var(--sub);text-decoration:line-through;">$${s.prixRegulier.toFixed(2)}</div><div class="badge bdg" style="margin-top:2px;font-size:9px;">Spécial!</div>`:''}<div style="font-size:9px;color:var(--sub);margin-top:2px;">${s.format}</div></div>`).join('');
+    if(d.formats&&d.formats.length>1){const bf=[...d.formats].sort((a,b)=>a.prixAu100g-b.prixAu100g)[0];document.getElementById('fr').innerHTML=d.formats.map(f=>`<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--light);font-size:11px;"><span>${f.format}</span><span>$${f.prix.toFixed(2)} · $${f.prixAu100g.toFixed(2)}/100g ${f.format===bf.format?'<span style="color:var(--g);font-weight:700;">✓ meilleur</span>':''}</span></div>`).join('');document.getElementById('fb').style.display='block';}
+    document.getElementById('px-res').style.display='block';
+    scansToday++;totalScans++;const ps=document.getElementById('prof-scans');if(ps)ps.textContent=totalScans;
+    addPoints(10);updateLimitDots();showToast('✅ Scan réussi! +'+(isPremium?20:10)+' pts');
+    if(!isPremium&&scansToday===4)showToast('⚠️ 1 scan gratuit restant aujourd\'hui!');
+  }catch(e){console.error('Scan error:',e);document.getElementById('sg').innerHTML='<div style="color:var(--sub);font-size:12px;">Erreur: '+e.message+'</div>';document.getElementById('px-res').style.display='block';}
+  document.getElementById('px-ld').classList.remove('on');document.getElementById('scan-btn').disabled=false;
+}
+function addScannedToList(){
+  const nm=document.getElementById('px-nm').textContent;const price=parseFloat(document.getElementById('bp').textContent.replace('$',''))||3.99;
+  if(!isPremium&&groceries.length>=LIMITS.list){showPaywall('Liste pleine!','Tu as atteint la limite de 10 articles gratuits. Passe à Premium!');return;}
+  if(nm&&nm.length>1){groceries.push({name:nm,price:price,done:false});renderGr();showToast('✅ "'+nm+'" ajouté à ta liste!');}
+}
+function addIng(){const v=document.getElementById('ing-in').value.trim();if(!v||ings.includes(v.toLowerCase()))return;ings.push(v.toLowerCase());document.getElementById('ing-in').value='';renderTags();document.getElementById('gen-btn').disabled=false;}
+function removeIng(i){ings.splice(i,1);renderTags();if(ings.length===0)document.getElementById('gen-btn').disabled=true;}
+function renderTags(){const el=document.getElementById('ing-tags');el.innerHTML=ings.length?ings.map((ing,i)=>`<div class="tag">${ing}<button onclick="removeIng(${i})">×</button></div>`).join(''):'<span style="font-size:11px;color:var(--sub);">Ajoute des ingrédients / Add ingredients...</span>';}
+async function genAll(){
+  if(!isPremium&&recsToday>=LIMITS.recs){showPaywall('Limite de recettes atteinte!','Tu as utilisé tes 3 recettes gratuites. Passe à Premium pour des recettes illimitées!');return;}
+  if(ings.length===0)return;
+  document.getElementById('gen-btn').disabled=true;document.getElementById('rec-ld').classList.add('on');document.getElementById('rec-res').style.display='none';
+  try{
+    const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer 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'},body:JSON.stringify({model:'llama-3.3-70b-versatile',max_completion_tokens:1400,messages:[{role:'user',content:`Chef cuisinier. Ingrédients: ${ings.join(', ')}. 3 recettes + 4 vidéos YouTube. JSON seulement:\n{"recettes":[{"emoji":"🍳","nom":"Nom","temps":"20 min","portions":"2 portions","match":"Utilise 4/5 ingrédients","etapes":["Étape 1","Étape 2","Étape 3","Étape 4"]}],"youtubeVideos":[{"query":"recette facile","titre":"Titre viral","channel":"Channel","views":"2.3M vues","duration":"8:42","viral":true}]}`}]})});
+    const data=await res.json();const text=data.choices[0].message.content.replace(/```json|```/g,'').trim();const parsed=JSON.parse(text);
+    curRecs=parsed.recettes;renderRecs(parsed.recettes);renderYT(parsed.youtubeVideos||[]);renderCommVids();
+    document.getElementById('rec-res').style.display='block';
+    recsToday++;addPoints(5);updateLimitDots();showToast('🍳 Recettes générées! +'+(isPremium?10:5)+' pts');
+    if(!isPremium&&recsToday===2)showToast('⚠️ 1 recette gratuite restante aujourd\'hui!');
+  }catch(e){console.error('Recipe error:',e);document.getElementById('rg').innerHTML='<div style="color:var(--sub);font-size:12px;">Erreur: '+e.message+'</div>';document.getElementById('rec-res').style.display='block';}
+  document.getElementById('rec-ld').classList.remove('on');document.getElementById('gen-btn').disabled=false;
+}
+function renderRecs(recs){document.getElementById('rg').innerHTML=recs.map((r,i)=>`<div class="rc" id="rc-${i}" onclick="selRec(${i})"><div style="font-size:22px;margin-bottom:4px;">${r.emoji}</div><div style="font-size:12px;font-weight:700;margin-bottom:2px;">${r.nom}</div><div style="font-size:10px;color:var(--sub);">${r.temps} · ${r.portions}</div><div style="font-size:10px;color:var(--g);margin-top:3px;">${r.match}</div></div>`).join('');}
+function selRec(i){document.querySelectorAll('.rc').forEach(c=>c.classList.remove('sel'));document.getElementById('rc-'+i).classList.add('sel');selR=curRecs[i];document.getElementById('de').textContent=selR.emoji;document.getElementById('dn').textContent=selR.nom;document.getElementById('dm').textContent=selR.temps+' · '+selR.portions;document.getElementById('ds').innerHTML=selR.etapes.map((e,j)=>`<li><div class="snum">${j+1}</div><span>${e}</span></li>`).join('');document.getElementById('full-rec-btn').onclick=()=>sendPrompt('Recette complète avec quantités pour '+selR.nom+' avec: '+ings.join(', '));document.getElementById('db').style.display='block';}
+function renderYT(vids){document.getElementById('vg').innerHTML=vids.map(v=>`<div class="vc" onclick="window.open('https://www.youtube.com/results?search_query='+encodeURIComponent('${(v.query||'').replace(/'/g,"\\'")} recette'),'_blank')"><div class="vt"><i class="ti ti-brand-youtube" style="font-size:26px;color:var(--c);"></i><div class="pb"><i class="ti ti-player-play"></i></div>${v.viral?'<div class="vb">🔥 Viral</div>':''}</div><div class="vi"><div class="vtitle">${v.titre}</div><div class="vmeta">${v.channel} · ${v.views} · ${v.duration}</div></div></div>`).join('');}
+function renderCommVids(){const sh=[...commRecs].sort(()=>Math.random()-0.5).slice(0,4);document.getElementById('cg').innerHTML=sh.map(v=>`<div class="cv" onclick="sendPrompt('Recette complète de ${v.nom.replace(/'/g,"\\'")}')"><div class="ct"><span>${v.emoji}</span><div class="cpb"><i class="ti ti-player-play"></i></div>${v.viral?'<div style="position:absolute;top:5px;left:5px;background:rgba(29,158,117,0.9);color:#fff;font-size:9px;padding:2px 6px;border-radius:999px;font-weight:700;">🔥 Viral</div>':''}</div><div class="ci"><div class="ctitle">${v.nom}</div><div class="cmeta"><div class="av">${v.ini}</div> ${v.auteur} · ❤️ ${v.likes}</div></div></div>`).join('');}
+function switchRT(t,btn,cls){document.querySelectorAll('#recettes .tab').forEach(x=>x.classList.remove('on','onc'));btn.classList.add(cls);['recettes','youtube','community'].forEach(p=>document.getElementById('p-'+p).style.display='none');document.getElementById('p-'+t).style.display='block';}
+function addGr(){
+  const v=document.getElementById('gr-in').value.trim();if(!v)return;
+  if(!isPremium&&groceries.length>=LIMITS.list){showPaywall('Liste pleine!','Tu as atteint la limite de 10 articles. Passe à Premium!');return;}
+  groceries.push({name:v,price:parseFloat((Math.random()*7+1.5).toFixed(2)),done:false});document.getElementById('gr-in').value='';renderGr();
+}
+function toggleGr(i){groceries[i].done=!groceries[i].done;renderGr();}
+function delGr(i){groceries.splice(i,1);renderGr();}
+function getGrList(){return groceries.map(g=>g.name).join(', ');}
+function renderGr(){
+  if(groceries.length===0){document.getElementById('gr-items').innerHTML='<div style="color:var(--sub);font-size:12px;padding:8px 0;">Ta liste est vide!</div>';document.getElementById('gr-foot').style.display='none';const ql=document.getElementById('ql-list');if(ql)ql.textContent='0 article';updateLimitDots();return;}
+  document.getElementById('gr-items').innerHTML=groceries.map((g,i)=>`<div class="gi"><div class="gc ${g.done?'done':''}" onclick="toggleGr(${i})">${g.done?'✓':''}</div><div style="flex:1;font-size:12px;${g.done?'text-decoration:line-through;color:var(--sub);':''}">${g.name}</div><div style="font-size:11px;font-weight:700;">$${g.price.toFixed(2)}</div><button style="background:none;border:none;cursor:pointer;color:var(--sub);font-size:14px;padding:0 3px;" onclick="delGr(${i})">×</button></div>`).join('');
+  const t=groceries.reduce((s,g)=>s+g.price,0);document.getElementById('gr-total').textContent='$'+t.toFixed(2);document.getElementById('gr-foot').style.display='block';
+  const ql=document.getElementById('ql-list');if(ql)ql.textContent=groceries.length+' article'+(groceries.length>1?'s':'');updateLimitDots();
+}
+function renderC(){document.getElementById('cl').innerHTML=cFilt.map(r=>`<div class="feed-card"><div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:8px;"><div style="width:42px;height:42px;border-radius:10px;background:var(--light);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">${r.emoji}</div><div style="flex:1"><div style="font-size:12px;font-weight:700;margin-bottom:2px;">${r.nom}</div><div style="font-size:10px;color:var(--sub);display:flex;align-items:center;gap:4px;"><div class="av">${r.ini}</div>${r.auteur} · ${r.temps}</div></div>${r.viral?'<div class="badge bdc" style="font-size:9px;">🔥 Viral</div>':''}</div><div style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:8px;">${r.tags.map(t=>`<span style="background:var(--light);color:var(--sub);font-size:9px;padding:2px 6px;border-radius:999px;">#${t}</span>`).join('')}</div><div style="display:flex;gap:5px;align-items:center;border-top:1px solid var(--light);padding-top:8px;"><button style="font-size:11px;color:${r.liked?'var(--c)':'var(--sub)'};background:none;border:none;cursor:pointer;padding:3px 6px;border-radius:6px;" onclick="likeC(${r.id})">❤️ ${r.likes}</button><button style="margin-left:auto;font-size:10px;color:var(--c);background:none;border:none;cursor:pointer;font-weight:700;" onclick="sendPrompt('Recette complète de ${r.nom.replace(/'/g,"\\'")}')">Voir ↗</button></div></div>`).join('');}
+function likeC(id){const r=commRecs.find(x=>x.id===id);r.liked=!r.liked;r.likes+=r.liked?1:-1;filterC();}
+function filterC(){const q=document.getElementById('cs').value.toLowerCase();cFilt=q?commRecs.filter(r=>r.nom.toLowerCase().includes(q)||r.tags.some(t=>t.includes(q))):[...commRecs];renderC();}
+function switchCT(t,btn){document.querySelectorAll('#social .tab').forEach(x=>x.classList.remove('on','onc'));btn.classList.add('onc');if(btn.textContent.includes('Partager')){document.getElementById('comm-feed').style.display='none';document.getElementById('comm-upload').style.display='block';}else{document.getElementById('comm-feed').style.display='block';document.getElementById('comm-upload').style.display='none';}}
+function checkUpload(){if(!isPremium){showPaywall('Fonctionnalité Premium!','L\'upload de vidéos est réservé aux membres Premium.');}}
+function submitUp(){if(!isPremium){checkUpload();return;}const n=document.getElementById('up-nm').value.trim();const ig=document.getElementById('up-ig').value.trim();if(!n){showToast('⚠️ Ajoute un nom!');return;}addPoints(25);showToast('🎉 Recette partagée! +'+(isPremium?50:25)+' pts');sendPrompt('Génère une recette complète pour "'+n+'" avec: '+ig);}
+function renderRewards(){const el=document.getElementById('rewards-list');if(!el)return;el.innerHTML=rewards.map(r=>`<div style="background:var(--card);border-radius:16px;padding:12px;display:flex;align-items:center;gap:10px;border:1px solid var(--border);margin-bottom:8px;"><div style="font-size:22px;">${r.icon}</div><div style="flex:1"><div style="font-size:12px;font-weight:700;">${r.name}</div><div style="font-size:10px;color:var(--sub);">${r.desc}</div></div><button class="btn bgold" style="padding:5px 10px;font-size:11px;" onclick="claimReward(${r.pts},'${r.name}')">${r.pts} pts</button></div>`).join('');}
+function claimReward(pts,name){if(points>=pts){points-=pts;updatePointsUI();showToast('🎉 Récompense: '+name+'!');}else showToast('❌ '+pts+' pts requis — tu en as '+points);}
+function addAlert(){const p=document.getElementById('alert-prod').value.trim();const pr=document.getElementById('alert-price').value;const s=document.getElementById('alert-store').value;if(!p){showToast('⚠️ Ajoute un produit!');return;}const emojis=['🛒','🍎','🥦','🍞','🧃','🥩'];const emoji=emojis[Math.floor(Math.random()*emojis.length)];const div=document.createElement('div');div.className='al';div.innerHTML=`<div style="font-size:20px;">${emoji}</div><div style="flex:1"><div style="font-size:13px;font-weight:700;">${p}</div><div style="font-size:11px;color:var(--sub);">Alerte si prix &lt; $${pr||'?'} · ${s}</div></div><label class="atog"><input type="checkbox" checked><div class="ts"></div></label>`;document.getElementById('alerts-list').appendChild(div);document.getElementById('alert-prod').value='';document.getElementById('alert-price').value='';showToast('✅ Alerte créée!');}
+function updBudget(v){['bsv','bmd'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='$'+v;});const pct=Math.round(247/v*100);document.getElementById('bbar').style.width=Math.min(pct,100)+'%';document.getElementById('bpct').textContent=pct+'% utilisé';}
+function renderBCats(){const cats=[{n:'Viandes & poissons',a:89,p:36,c:'#D85A30'},{n:'Fruits & légumes',a:54,p:22,c:'#1D9E75'},{n:'Produits laitiers',a:38,p:15,c:'#378ADD'},{n:'Épicerie sèche',a:42,p:17,c:'#534AB7'},{n:'Autres',a:24,p:10,c:'#C9A227'}];const el=document.getElementById('bcc');if(el)el.innerHTML=cats.map(c=>`<div class="bcat"><div class="bdot" style="background:${c.c};"></div><div style="flex:1;font-size:12px;">${c.n}</div><div class="bcbw"><div class="bcb" style="width:${c.p}%;background:${c.c};"></div></div><div style="font-size:12px;font-weight:700;min-width:30px;text-align:right;">$${c.a}</div></div>`).join('');}
+function genBarcode(container,count=40){container.innerHTML='';for(let i=0;i<count;i++){const bar=document.createElement('div');bar.style.cssText=`background:rgba(255,255,255,0.9);width:${Math.random()>0.5?2:1}px;height:${Math.random()>0.3?40:25}px;border-radius:1px;flex-shrink:0;`;container.appendChild(bar);}}
+function renderWallet(){
+  const c=walletCards[activeCard];const display=document.getElementById('active-card-display');if(!display)return;
+  display.style.background=c.gradient;display.style.boxShadow=`0 12px 32px ${c.shadow}`;
+  display.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;"><div><div style="font-size:20px;font-weight:800;color:#fff;">${c.name}</div><div style="font-size:10px;color:rgba(255,255,255,0.8);">${c.type}</div></div><div style="font-size:30px;">${c.icon}</div></div><div style="background:rgba(255,255,255,0.15);border-radius:12px;padding:12px;margin-bottom:10px;text-align:center;"><div style="font-size:12px;font-weight:700;color:#fff;letter-spacing:3px;margin-bottom:8px;">${c.number}</div><div style="display:flex;gap:1.5px;justify-content:center;align-items:center;height:44px;" id="wbc"></div><div style="font-size:10px;color:rgba(255,255,255,0.7);margin-top:6px;">Appuie pour agrandir le code</div></div><div style="display:flex;align-items:center;justify-content:space-between;"><div><div style="font-size:20px;font-weight:700;color:#fff;">${c.pts.toLocaleString()} pts</div><div style="font-size:10px;color:rgba(255,255,255,0.8);">≈ $${(c.pts/100).toFixed(2)} en récompenses</div></div><div style="background:rgba(255,255,255,0.2);color:#fff;font-size:10px;font-weight:700;padding:5px 12px;border-radius:999px;">Niveau Or 🏆</div></div>`;
+  setTimeout(()=>{const wbc=document.getElementById('wbc');if(wbc)genBarcode(wbc);},50);
+  const wd=document.getElementById('w-dots');if(wd)wd.innerHTML=walletCards.map((x,i)=>`<div onclick="setActiveCard(${i})" style="width:${i===activeCard?20:8}px;height:8px;border-radius:999px;background:${i===activeCard?'var(--g)':'#e5e7eb'};cursor:pointer;transition:all 0.2s;"></div>`).join('');
+  const mcl=document.getElementById('mini-cards-list');if(mcl)mcl.innerHTML=walletCards.map((card,i)=>`<div class="mini-card ${i===activeCard?'active-mini':''}" onclick="setActiveCard(${i})"><div style="font-size:24px;">${card.icon}</div><div style="flex:1"><div style="font-size:12px;font-weight:700;">${card.name} — ${card.type}</div><div style="font-size:10px;color:var(--sub);">${card.pts.toLocaleString()} pts · ≈ $${(card.pts/100).toFixed(2)}</div></div><div style="display:flex;align-items:center;gap:8px;"><div style="width:6px;height:6px;border-radius:50%;background:${i===activeCard?'var(--g)':'#e5e7eb'};"></div><button onclick="event.stopPropagation();removeWCard(${i})" style="background:none;border:none;cursor:pointer;color:#9ca3af;font-size:16px;padding:0;">×</button></div></div>`).join('');
+  const totalPts=walletCards.reduce((s,x)=>s+x.pts,0);
+  ['w-count','w-pts','w-val'].forEach((id,i)=>{const el=document.getElementById(id);if(el)el.textContent=[walletCards.length,totalPts.toLocaleString(),'$'+(totalPts/100).toFixed(0)][i];});
+  const ql=document.getElementById('ql-wallet');if(ql)ql.textContent=walletCards.length+' carte'+(walletCards.length>1?'s':'')+' fidélité';
+}
+function setActiveCard(idx){activeCard=idx;renderWallet();}
+function showBc(){const c=walletCards[activeCard];document.getElementById('bf-name').textContent=c.name;document.getElementById('bf-type').textContent=c.type;document.getElementById('bf-number').textContent=c.number;genBarcode(document.getElementById('bf-bars'),60);document.getElementById('bc-full').classList.add('open');}
+function hideBc(){document.getElementById('bc-full').classList.remove('open');}
+function openWalletModal(){document.getElementById('wallet-modal').classList.add('open');}
+function closeWalletModal(){document.getElementById('wallet-modal').classList.remove('open');}
+function addCard(name,icon,gradient){const pts=Math.floor(Math.random()*2000)+100;const num=Array.from({length:4},()=>Math.floor(Math.random()*9000+1000)).join(' ');walletCards.push({name,type:'Carte '+name,icon,gradient,number:num,pts,shadow:'rgba(0,0,0,0.2)'});closeWalletModal();activeCard=walletCards.length-1;renderWallet();showToast('✅ Carte '+name+' ajoutée!');}
+function removeWCard(idx){if(walletCards.length<=1){showToast('⚠️ Garde au moins une carte!');return;}walletCards.splice(idx,1);if(activeCard>=walletCards.length)activeCard=walletCards.length-1;renderWallet();}
+let chatOpen=false;
+function toggleChat(){chatOpen=!chatOpen;document.getElementById('chat-box').className='chat-box'+(chatOpen?' open':'');}
+function addChatMsg(role,text){const el=document.createElement('div');el.className='msg '+role;el.textContent=text;const msgs=document.getElementById('chat-msgs');msgs.appendChild(el);msgs.scrollTop=msgs.scrollHeight;}
+async function sendChat(){
+  const v=document.getElementById('chat-in').value.trim();if(!v)return;
+  addChatMsg('user',v);document.getElementById('chat-in').value='';
+  try{const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer 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'},body:JSON.stringify({model:'llama-3.3-70b-versatile',max_completion_tokens:300,messages:[{role:'user',content:'Tu es l\'assistant SmartGrocer, app épicerie bilingue FR/EN. Réponds dans la langue de la question, court et utile (max 2-3 phrases). Question: '+v}]})});const data=await res.json();addChatMsg('bot',data.choices[0].message.content.trim());}catch(e){addChatMsg('bot','Désolé, erreur de connexion!');}
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  [['prod-in',searchProd],['ing-in',addIng],['chat-in',sendChat],['gr-in',addGr]].forEach(([id,fn])=>{const el=document.getElementById(id);if(el)el.addEventListener('keydown',e=>{if(e.key==='Enter')fn();});});
+});
+
+async function testAPI(){
+  showToast('⏳ Test API en cours...');
+  try{
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'Authorization':'Bearer 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'
+      },
+      body:JSON.stringify({
+        model:'llama-3.3-70b-versatile',
+        max_completion_tokens:50,
+        messages:[{role:'user',content:'Dis juste OK'}]
+      })
+    });
+    const data = await res.json();
+    console.log('API Response:', data);
+    if(data.choices){
+      showToast('✅ API fonctionne: '+data.choices[0].message.content, 5000);
+    } else {
+      showToast('❌ Erreur API: '+JSON.stringify(data).substring(0,100), 5000);
+    }
+  }catch(e){
+    showToast('❌ Erreur réseau: '+e.message, 5000);
+    console.error(e);
+  }
+}
+
+
+// ===== REAL BARCODE SCANNER =====
+let quaggaRunning = false;
+
+function startRealScan() {
+  if (!isPremium && scansToday >= LIMITS.scans) {
+    showPaywall('Limite de scans atteinte!', 'Tu as utilisé tes 5 scans gratuits. Passe à Premium!');
+    return;
+  }
+  document.getElementById('scan-idle').style.display = 'none';
+  document.getElementById('scan-active').style.display = 'block';
+  document.getElementById('quagga-container').innerHTML = '';
+
+  if (typeof Quagga === 'undefined') {
+    showToast('⚠️ Scanner non disponible — utilise Simuler scan');
+    stopRealScan();
+    return;
+  }
+
+  Quagga.init({
+    inputStream: {
+      type: 'LiveStream',
+      target: document.getElementById('quagga-container'),
+      constraints: {
+        facingMode: 'environment',
+        width: { ideal: 1280, max: 1920 },
+        height: { ideal: 720, max: 1080 }
+      }
+    },
+    locator: { patchSize: 'medium', halfSample: true },
+    numOfWorkers: 2,
+    frequency: 10,
+    decoder: {
+      readers: ['ean_reader', 'ean_8_reader', 'upc_reader', 'upc_e_reader', 'code_128_reader']
+    },
+    locate: true
+  }, function(err) {
+    if (err) {
+      console.error('Quagga error:', err);
+      showToast('📷 Caméra non disponible — utilise Simuler scan');
+      stopRealScan();
+      return;
+    }
+    Quagga.start();
+    quaggaRunning = true;
+  });
+
+  let scanDone = false;
+
+  Quagga.onDetected(function(result) {
+    if (scanDone) return;
+    const code = result.codeResult.code;
+    if (!code || code.length < 4) return;
+    scanDone = true;
+    const status = document.getElementById('scan-status');
+    if (status) status.textContent = '✅ Code scanné: ' + code;
+    setTimeout(() => {
+      stopRealScan();
+      document.getElementById('px-bc').textContent = 'Code barre: ' + code;
+      document.getElementById('prod-in').value = code;
+      lookupBarcode(code);
+    }, 300);
+  });
+}
+
+function stopRealScan() {
+  if (quaggaRunning) {
+    try { Quagga.stop(); } catch(e) {}
+    quaggaRunning = false;
+  }
+  document.getElementById('scan-idle').style.display = 'block';
+  document.getElementById('scan-active').style.display = 'none';
+}
+
+async function lookupBarcode(code) {
+  document.getElementById('scan-btn').disabled = true;
+  document.getElementById('px-ld').classList.add('on');
+  document.getElementById('px-res').style.display = 'none';
+  document.getElementById('bd').classList.remove('on');
+  document.getElementById('sg').innerHTML = '';
+
+  try {
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer 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'
+      },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        max_completion_tokens: 1000,
+        messages: [{
+          role: 'user',
+          content: 'Le code barre ' + code + ' correspond à quel produit épicerie vendu au Québec? Donne des prix réalistes québécois. JSON seulement:\n{"emoji":"🥜","nom":"Nom complet du produit","magasins":[{"nom":"IGA","prix":5.99,"prixRegulier":7.49,"enSpecial":true,"format":"1kg"},{"nom":"Metro","prix":7.29,"prixRegulier":7.29,"enSpecial":false,"format":"1kg"},{"nom":"Maxi","prix":6.49,"prixRegulier":6.99,"enSpecial":true,"format":"1kg"},{"nom":"Walmart","prix":6.19,"prixRegulier":6.19,"enSpecial":false,"format":"1kg"},{"nom":"Costco","prix":14.99,"prixRegulier":14.99,"enSpecial":false,"format":"2.5kg"}],"formats":[{"format":"1kg","prix":5.99,"prixAu100g":0.60}]}'
+        }]
+      })
+    });
+    const data = await res.json();
+    const text = data.choices[0].message.content.replace(/```json|```/g, '').trim();
+    const d = JSON.parse(text);
+    document.getElementById('px-em').textContent = d.emoji;
+    document.getElementById('px-nm').textContent = d.nom;
+    document.getElementById('prod-in').value = d.nom;
+    const sorted = [...d.magasins].sort((a, b) => a.prix - b.prix);
+    const best = sorted[0], worst = sorted[sorted.length - 1];
+    document.getElementById('bs').textContent = best.nom;
+    document.getElementById('bp').textContent = '$' + best.prix.toFixed(2);
+    document.getElementById('bsv').textContent = 'Économise jusqu\'à $' + (worst.prix - best.prix).toFixed(2);
+    document.getElementById('bd').classList.add('on');
+    document.getElementById('sg').innerHTML = d.magasins.map(s =>
+      `<div class="sc ${s.enSpecial ? 'sale' : ''}">
+        <div style="font-size:11px;font-weight:700;margin-bottom:2px;">${s.nom}</div>
+        <div style="font-size:16px;font-weight:700;">$${s.prix.toFixed(2)}</div>
+        ${s.enSpecial ? `<div style="font-size:9px;color:var(--sub);text-decoration:line-through;">$${s.prixRegulier.toFixed(2)}</div><div class="badge bdg" style="margin-top:2px;font-size:9px;">Spécial!</div>` : ''}
+        <div style="font-size:9px;color:var(--sub);margin-top:2px;">${s.format}</div>
+      </div>`
+    ).join('');
+    document.getElementById('px-res').style.display = 'block';
+    scansToday++; totalScans++;
+    const ps = document.getElementById('prof-scans'); if (ps) ps.textContent = totalScans;
+    addPoints(10); updateLimitDots();
+    showToast('✅ Produit identifié! +' + (isPremium ? 20 : 10) + ' pts');
+  } catch(e) {
+    console.error('Barcode lookup error:', e);
+    showToast('❌ Produit non reconnu — essaie la recherche manuelle');
+  }
+  document.getElementById('px-ld').classList.remove('on');
+  document.getElementById('scan-btn').disabled = false;
+}
+
+
+async function lookupBarcode(code) {
+  document.getElementById('scan-btn').disabled = true;
+  document.getElementById('px-ld').classList.add('on');
+  document.getElementById('px-res').style.display = 'none';
+  document.getElementById('bd').classList.remove('on');
+  document.getElementById('sg').innerHTML = '';
+  try {
+    showToast('🔍 Recherche du produit...');
+    let productName = '';
+    // API 1: Open Food Facts
+    try {
+      const r1 = await fetch('https://world.openfoodfacts.org/api/v0/product/'+code+'.json');
+      const d1 = await r1.json();
+      if(d1.status===1&&d1.product){
+        const p=d1.product;
+        let n=p.product_name_fr||p.product_name||p.product_name_en||'';
+        let b=p.brands||''; let q=p.quantity||'';
+        if(b&&n&&!n.toLowerCase().includes(b.toLowerCase()))n=b+' '+n;
+        if(q)n+=' '+q;
+        productName=n.trim();
+      }
+    }catch(e){console.log('OFF:',e);}
+    // API 2: UPC Item DB
+    if(!productName){
+      try{
+        const r2=await fetch('https://api.upcitemdb.com/prod/trial/lookup?upc='+code);
+        const d2=await r2.json();
+        if(d2.code==='OK'&&d2.items&&d2.items.length>0){
+          const item=d2.items[0];
+          productName=(item.brand?item.brand+' ':'')+item.title;
+          productName=productName.trim();
+        }
+      }catch(e){console.log('UPC:',e);}
+    }
+    showToast('💰 Comparaison des prix...');
+    const prompt=productName
+      ?'Prix réalistes au Québec pour "'+productName+'". JSON seulement:\n{"emoji":"🛒","nom":"'+productName+'","magasins":[{"nom":"IGA","prix":5.99,"prixRegulier":7.49,"enSpecial":true,"format":"1kg"},{"nom":"Metro","prix":7.29,"prixRegulier":7.29,"enSpecial":false,"format":"1kg"},{"nom":"Maxi","prix":6.49,"prixRegulier":6.99,"enSpecial":true,"format":"1kg"},{"nom":"Walmart","prix":6.19,"prixRegulier":6.19,"enSpecial":false,"format":"1kg"},{"nom":"Costco","prix":14.99,"prixRegulier":14.99,"enSpecial":false,"format":"2.5kg"}],"formats":[{"format":"1kg","prix":5.99,"prixAu100g":0.60}]}'
+      :'Code barre épicerie canadien: '+code+'. Identifie ce produit et donne prix réalistes Québec. JSON seulement:\n{"emoji":"🛒","nom":"Nom du produit","magasins":[{"nom":"IGA","prix":5.99,"prixRegulier":7.49,"enSpecial":true,"format":"1kg"},{"nom":"Metro","prix":7.29,"prixRegulier":7.29,"enSpecial":false,"format":"1kg"},{"nom":"Maxi","prix":6.49,"prixRegulier":6.99,"enSpecial":true,"format":"1kg"},{"nom":"Walmart","prix":6.19,"prixRegulier":6.19,"enSpecial":false,"format":"1kg"},{"nom":"Costco","prix":14.99,"prixRegulier":14.99,"enSpecial":false,"format":"2.5kg"}],"formats":[{"format":"1kg","prix":5.99,"prixAu100g":0.60}]}';
+    const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer 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'},
+      body:JSON.stringify({model:'llama-3.3-70b-versatile',max_completion_tokens:1000,messages:[{role:'user',content:prompt}]})
+    });
     const data=await res.json();
     const text=data.choices[0].message.content.replace(/```json|```/g,'').trim();
     const d=JSON.parse(text);
+    const finalName=productName||d.nom;
     document.getElementById('px-em').textContent=d.emoji;
-    document.getElementById('px-nm').textContent=d.nom;
+    document.getElementById('px-nm').textContent=finalName;
+    document.getElementById('prod-in').value=finalName;
+    document.getElementById('px-bc').textContent='Code: '+code+(productName?' ✅ Base de données':' 🤖 Estimation IA');
     const sorted=[...d.magasins].sort((a,b)=>a.prix-b.prix);
     const best=sorted[0],worst=sorted[sorted.length-1];
     document.getElementById('bs').textContent=best.nom;
@@ -979,149 +1359,19 @@ async function searchProd(){
     document.getElementById('bsv').textContent='Économise jusqu\'à $'+(worst.prix-best.prix).toFixed(2);
     document.getElementById('bd').classList.add('on');
     document.getElementById('sg').innerHTML=d.magasins.map(s=>`<div class="sc ${s.enSpecial?'sale':''}"><div style="font-size:11px;font-weight:700;margin-bottom:2px;">${s.nom}</div><div style="font-size:16px;font-weight:700;">$${s.prix.toFixed(2)}</div>${s.enSpecial?`<div style="font-size:9px;color:var(--sub);text-decoration:line-through;">$${s.prixRegulier.toFixed(2)}</div><div class="badge bdg" style="margin-top:2px;font-size:9px;">Spécial!</div>`:''}<div style="font-size:9px;color:var(--sub);margin-top:2px;">${s.format}</div></div>`).join('');
-    if(d.formats&&d.formats.length>1){const bf=[...d.formats].sort((a,b)=>a.prixAu100g-b.prixAu100g)[0];document.getElementById('fr').innerHTML=d.formats.map(f=>`<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--light);font-size:11px;"><span>${f.format}</span><span>$${f.prix.toFixed(2)} · $${f.prixAu100g.toFixed(2)}/100g ${f.format===bf.format?'<span style="color:var(--g);font-weight:700;">✓ meilleur</span>':''}</span></div>`).join('');document.getElementById('fb').style.display='block';}
     document.getElementById('px-res').style.display='block';
     scansToday++;totalScans++;
     const ps=document.getElementById('prof-scans');if(ps)ps.textContent=totalScans;
-    addPoints(10);updateLimitDots();showToast('✅ Scan réussi! +'+(isPremium?20:10)+' pts');
-    if(!isPremium&&scansToday===4)showToast('⚠️ 1 scan gratuit restant aujourd\'hui!');
-  }catch(e){document.getElementById('sg').innerHTML='<div style="color:var(--sub);font-size:12px;">Erreur — réessaie!</div>';document.getElementById('px-res').style.display='block';}
+    addPoints(10);updateLimitDots();
+    showToast('✅ '+(productName?productName:'Produit identifié')+'! +'+(isPremium?20:10)+' pts');
+  }catch(e){
+    console.error('Barcode error:',e);
+    showToast('❌ Erreur — essaie la recherche manuelle');
+  }
   document.getElementById('px-ld').classList.remove('on');
   document.getElementById('scan-btn').disabled=false;
 }
-function addScannedToList(){
-  const nm=document.getElementById('px-nm').textContent;
-  const price=parseFloat(document.getElementById('bp').textContent.replace('$',''))||3.99;
-  if(!isPremium&&groceries.length>=LIMITS.list){showPaywall('Liste pleine!','Tu as atteint la limite de 10 articles gratuits. Passe à Premium!');return;}
-  if(nm&&nm.length>1){groceries.push({name:nm,price:price,done:false});renderGr();showToast('✅ "'+nm+'" ajouté à ta liste!');}
-}
 
-// ===== RECIPES =====
-function addIng(){const v=document.getElementById('ing-in').value.trim();if(!v||ings.includes(v.toLowerCase()))return;ings.push(v.toLowerCase());document.getElementById('ing-in').value='';renderTags();document.getElementById('gen-btn').disabled=false;}
-function removeIng(i){ings.splice(i,1);renderTags();if(ings.length===0)document.getElementById('gen-btn').disabled=true;}
-function renderTags(){const el=document.getElementById('ing-tags');el.innerHTML=ings.length?ings.map((ing,i)=>`<div class="tag">${ing}<button onclick="removeIng(${i})">×</button></div>`).join(''):'<span style="font-size:11px;color:var(--sub);">Ajoute des ingrédients / Add ingredients...</span>';}
-async function genAll(){
-  if(!isPremium&&recsToday>=LIMITS.recs){showPaywall('Limite de recettes atteinte!','Tu as utilisé tes 3 recettes gratuites. Passe à Premium pour des recettes illimitées!');return;}
-  if(ings.length===0)return;
-  document.getElementById('gen-btn').disabled=true;
-  document.getElementById('rec-ld').classList.add('on');
-  document.getElementById('rec-res').style.display='none';
-  try{
-    const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer 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'},body:JSON.stringify({model:'llama-3.3-70b-versatile',max_completion_tokens:1400,messages:[{role:'user',content:`Chef cuisinier. Ingrédients: ${ings.join(', ')}. 3 recettes + 4 vidéos YouTube. JSON seulement:\
-{"recettes":[{"emoji":"🍳","nom":"Nom","temps":"20 min","portions":"2 portions","match":"Utilise 4/5 ingrédients","etapes":["Étape 1","Étape 2","Étape 3","Étape 4"]}],"youtubeVideos":[{"query":"recette facile","titre":"Titre viral","channel":"Channel","views":"2.3M vues","duration":"8:42","viral":true}]}`}]})});
-    const data=await res.json();
-    const text=data.choices[0].message.content.replace(/```json|```/g,'').trim();
-    const parsed=JSON.parse(text);
-    curRecs=parsed.recettes;renderRecs(parsed.recettes);renderYT(parsed.youtubeVideos||[]);renderCommVids();
-    document.getElementById('rec-res').style.display='block';
-    recsToday++;addPoints(5);updateLimitDots();showToast('🍳 Recettes générées! +'+(isPremium?10:5)+' pts');
-    if(!isPremium&&recsToday===2)showToast('⚠️ 1 recette gratuite restante aujourd\'hui!');
-  }catch(e){document.getElementById('rg').innerHTML='<div style="color:var(--sub);font-size:12px;">Erreur — réessaie!</div>';document.getElementById('rec-res').style.display='block';}
-  document.getElementById('rec-ld').classList.remove('on');
-  document.getElementById('gen-btn').disabled=false;
-}
-function renderRecs(recs){document.getElementById('rg').innerHTML=recs.map((r,i)=>`<div class="rc" id="rc-${i}" onclick="selRec(${i})"><div style="font-size:22px;margin-bottom:4px;">${r.emoji}</div><div style="font-size:12px;font-weight:700;margin-bottom:2px;">${r.nom}</div><div style="font-size:10px;color:var(--sub);">${r.temps} · ${r.portions}</div><div style="font-size:10px;color:var(--g);margin-top:3px;">${r.match}</div></div>`).join('');}
-function selRec(i){document.querySelectorAll('.rc').forEach(c=>c.classList.remove('sel'));document.getElementById('rc-'+i).classList.add('sel');selR=curRecs[i];document.getElementById('de').textContent=selR.emoji;document.getElementById('dn').textContent=selR.nom;document.getElementById('dm').textContent=selR.temps+' · '+selR.portions;document.getElementById('ds').innerHTML=selR.etapes.map((e,j)=>`<li><div class="snum">${j+1}</div><span>${e}</span></li>`).join('');document.getElementById('full-rec-btn').onclick=()=>sendPrompt('Recette complète avec quantités pour '+selR.nom+' avec: '+ings.join(', '));document.getElementById('db').style.display='block';}
-function renderYT(vids){document.getElementById('vg').innerHTML=vids.map(v=>`<div class="vc" onclick="window.open('https://www.youtube.com/results?search_query='+encodeURIComponent('${(v.query||'').replace(/'/g,"\\'")} recette'),'_blank')"><div class="vt"><i class="ti ti-brand-youtube" style="font-size:26px;color:var(--c);"></i><div class="pb"><i class="ti ti-player-play"></i></div>${v.viral?'<div class="vb">🔥 Viral</div>':''}</div><div class="vi"><div class="vtitle">${v.titre}</div><div class="vmeta">${v.channel} · ${v.views} · ${v.duration}</div></div></div>`).join('');}
-function renderCommVids(){const sh=[...commRecs].sort(()=>Math.random()-0.5).slice(0,4);document.getElementById('cg').innerHTML=sh.map(v=>`<div class="cv" onclick="sendPrompt('Recette complète de ${v.nom.replace(/'/g,"\\'")}')"><div class="ct"><span>${v.emoji}</span><div class="cpb"><i class="ti ti-player-play"></i></div>${v.viral?'<div style="position:absolute;top:5px;left:5px;background:rgba(29,158,117,0.9);color:#fff;font-size:9px;padding:2px 6px;border-radius:999px;font-weight:700;">🔥 Viral</div>':''}</div><div class="ci"><div class="ctitle">${v.nom}</div><div class="cmeta"><div class="av">${v.ini}</div> ${v.auteur} · ❤️ ${v.likes}</div></div></div>`).join('');}
-function switchRT(t,btn,cls){document.querySelectorAll('#recettes .tab').forEach(x=>x.classList.remove('on','onc'));btn.classList.add(cls);['recettes','youtube','community'].forEach(p=>document.getElementById('p-'+p).style.display='none');document.getElementById('p-'+t).style.display='block';}
-
-// ===== GROCERY LIST =====
-function addGr(){
-  const v=document.getElementById('gr-in').value.trim();if(!v)return;
-  if(!isPremium&&groceries.length>=LIMITS.list){showPaywall('Liste pleine!','Tu as atteint la limite de 10 articles gratuits. Passe à Premium!');return;}
-  groceries.push({name:v,price:parseFloat((Math.random()*7+1.5).toFixed(2)),done:false});
-  document.getElementById('gr-in').value='';renderGr();
-}
-function toggleGr(i){groceries[i].done=!groceries[i].done;renderGr();}
-function delGr(i){groceries.splice(i,1);renderGr();}
-function getGrList(){return groceries.map(g=>g.name).join(', ');}
-function renderGr(){
-  if(groceries.length===0){document.getElementById('gr-items').innerHTML='<div style="color:var(--sub);font-size:12px;padding:8px 0;">Ta liste est vide / Your list is empty!</div>';document.getElementById('gr-foot').style.display='none';document.getElementById('h-list-n')&&(document.getElementById('h-list-n').textContent='0');document.getElementById('ql-list').textContent='0 article';updateLimitDots();return;}
-  document.getElementById('gr-items').innerHTML=groceries.map((g,i)=>`<div class="gi"><div class="gc ${g.done?'done':''}" onclick="toggleGr(${i})">${g.done?'✓':''}</div><div style="flex:1;font-size:12px;${g.done?'text-decoration:line-through;color:var(--sub);':''}">${g.name}</div><div style="font-size:11px;font-weight:700;">$${g.price.toFixed(2)}</div><button style="background:none;border:none;cursor:pointer;color:var(--sub);font-size:14px;padding:0 3px;" onclick="delGr(${i})">×</button></div>`).join('');
-  const t=groceries.reduce((s,g)=>s+g.price,0);
-  document.getElementById('gr-total').textContent='$'+t.toFixed(2);
-  document.getElementById('gr-foot').style.display='block';
-  document.getElementById('ql-list').textContent=groceries.length+' article'+(groceries.length>1?'s':'');
-  updateLimitDots();
-}
-
-// ===== COMMUNITY =====
-function renderC(){document.getElementById('cl').innerHTML=cFilt.map(r=>`<div class="feed-card"><div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:8px;"><div style="width:42px;height:42px;border-radius:10px;background:var(--light);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">${r.emoji}</div><div style="flex:1"><div style="font-size:12px;font-weight:700;margin-bottom:2px;">${r.nom}</div><div style="font-size:10px;color:var(--sub);display:flex;align-items:center;gap:4px;"><div class="av">${r.ini}</div>${r.auteur} · ${r.temps}</div></div>${r.viral?'<div class="badge bdc" style="font-size:9px;">🔥 Viral</div>':''}</div><div style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:8px;">${r.tags.map(t=>`<span style="background:var(--light);color:var(--sub);font-size:9px;padding:2px 6px;border-radius:999px;">#${t}</span>`).join('')}</div><div style="display:flex;gap:5px;align-items:center;border-top:1px solid var(--light);padding-top:8px;"><button style="display:flex;align-items:center;gap:3px;font-size:11px;color:${r.liked?'var(--c)':'var(--sub)'};background:none;border:none;cursor:pointer;padding:3px 6px;border-radius:6px;" onclick="likeC(${r.id})">❤️ ${r.likes}</button><button style="margin-left:auto;font-size:10px;color:var(--c);background:none;border:none;cursor:pointer;font-weight:700;" onclick="sendPrompt('Recette complète de ${r.nom.replace(/'/g,"\\'")}')">Voir ↗</button></div></div>`).join('');}
-function likeC(id){const r=commRecs.find(x=>x.id===id);r.liked=!r.liked;r.likes+=r.liked?1:-1;filterC();}
-function filterC(){const q=document.getElementById('cs').value.toLowerCase();cFilt=q?commRecs.filter(r=>r.nom.toLowerCase().includes(q)||r.tags.some(t=>t.includes(q))):[...commRecs];renderC();}
-function switchCT(t,btn){document.querySelectorAll('#social .tab').forEach(x=>x.classList.remove('on','onc'));btn.classList.add('onc');if(btn.textContent.includes('Partager')){document.getElementById('comm-feed').style.display='none';document.getElementById('comm-upload').style.display='block';}else{document.getElementById('comm-feed').style.display='block';document.getElementById('comm-upload').style.display='none';}}
-function checkUpload(){if(!isPremium){showPaywall('Fonctionnalité Premium!','L\'upload de vidéos est réservé aux membres Premium.');}}
-function submitUp(){if(!isPremium){checkUpload();return;}const n=document.getElementById('up-nm').value.trim();const ig=document.getElementById('up-ig').value.trim();if(!n){showToast('⚠️ Ajoute un nom!');return;}addPoints(25);showToast('🎉 Recette partagée! +'+(isPremium?50:25)+' pts');sendPrompt(`Génère une recette complète pour "${n}" avec: ${ig}`);}
-
-// ===== REWARDS =====
-function renderRewards(){const el=document.getElementById('rewards-list');if(!el)return;el.innerHTML=rewards.map(r=>`<div style="background:var(--card);border-radius:16px;padding:12px;display:flex;align-items:center;gap:10px;border:1px solid var(--border);margin-bottom:8px;"><div style="font-size:22px;">${r.icon}</div><div style="flex:1"><div style="font-size:12px;font-weight:700;">${r.name}</div><div style="font-size:10px;color:var(--sub);">${r.desc}</div></div><button class="btn bgold" style="padding:5px 10px;font-size:11px;" onclick="claimReward(${r.pts},'${r.name}')">${r.pts} pts</button></div>`).join('');}
-function claimReward(pts,name){if(points>=pts){points-=pts;updatePointsUI();showToast('🎉 Récompense: '+name+'!');}else showToast('❌ '+pts+' pts requis — tu en as '+points);}
-
-// ===== ALERTS =====
-function addAlert(){const p=document.getElementById('alert-prod').value.trim();const pr=document.getElementById('alert-price').value;const s=document.getElementById('alert-store').value;if(!p){showToast('⚠️ Ajoute un produit!');return;}const emojis=['🛒','🍎','🥦','🍞','🧃','🥩'];const emoji=emojis[Math.floor(Math.random()*emojis.length)];const div=document.createElement('div');div.className='al';div.innerHTML=`<div style="font-size:20px;">${emoji}</div><div style="flex:1"><div style="font-size:13px;font-weight:700;">${p}</div><div style="font-size:11px;color:var(--sub);">Alerte si prix &lt; $${pr||'?'} · ${s}</div></div><label class="atog"><input type="checkbox" checked><div class="ts"></div></label>`;document.getElementById('alerts-list').appendChild(div);document.getElementById('alert-prod').value='';document.getElementById('alert-price').value='';showToast('✅ Alerte créée!');}
-
-// ===== BUDGET =====
-function updBudget(v){document.getElementById('bsv').textContent='$'+v;document.getElementById('bmd').textContent='$'+v;document.getElementById('pp-budget')&&(document.getElementById('pp-budget').textContent='$'+v);const pct=Math.round(247/v*100);document.getElementById('bbar').style.width=Math.min(pct,100)+'%';document.getElementById('bpct').textContent=pct+'% utilisé';}
-function renderBCats(){const cats=[{n:'Viandes & poissons',a:89,p:36,c:'#D85A30'},{n:'Fruits & légumes',a:54,p:22,c:'#1D9E75'},{n:'Produits laitiers',a:38,p:15,c:'#378ADD'},{n:'Épicerie sèche',a:42,p:17,c:'#534AB7'},{n:'Autres',a:24,p:10,c:'#C9A227'}];const el=document.getElementById('bcc');if(el)el.innerHTML=cats.map(c=>`<div class="bcat"><div class="bdot" style="background:${c.c};"></div><div style="flex:1;font-size:12px;">${c.n}</div><div class="bcbw"><div class="bcb" style="width:${c.p}%;background:${c.c};"></div></div><div style="font-size:12px;font-weight:700;min-width:30px;text-align:right;">$${c.a}</div></div>`).join('');}
-
-// ===== WALLET =====
-function genBarcode(container,count=40){container.innerHTML='';for(let i=0;i<count;i++){const bar=document.createElement('div');const w=Math.random()>0.5?2:1;const h=Math.random()>0.3?40:25;bar.style.cssText=`background:rgba(255,255,255,0.9);width:${w}px;height:${h}px;border-radius:1px;flex-shrink:0;`;container.appendChild(bar);}}
-function renderWallet(){
-  const c=walletCards[activeCard];
-  const display=document.getElementById('active-card-display');
-  if(!display)return;
-  display.style.background=c.gradient;
-  display.style.boxShadow=`0 12px 32px ${c.shadow}`;
-  display.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;"><div><div style="font-size:20px;font-weight:800;color:#fff;">${c.name}</div><div style="font-size:10px;color:rgba(255,255,255,0.8);">${c.type}</div></div><div style="font-size:30px;">${c.icon}</div></div><div style="background:rgba(255,255,255,0.15);border-radius:12px;padding:12px;margin-bottom:10px;text-align:center;"><div style="font-size:12px;font-weight:700;color:#fff;letter-spacing:3px;margin-bottom:8px;">${c.number}</div><div style="display:flex;gap:1.5px;justify-content:center;align-items:center;height:44px;" id="wbc"></div><div style="font-size:10px;color:rgba(255,255,255,0.7);margin-top:6px;">Appuie pour agrandir le code</div></div><div style="display:flex;align-items:center;justify-content:space-between;"><div><div style="font-size:20px;font-weight:700;color:#fff;">${c.pts.toLocaleString()} pts</div><div style="font-size:10px;color:rgba(255,255,255,0.8);">≈ $${(c.pts/100).toFixed(2)} en récompenses</div></div><div style="background:rgba(255,255,255,0.2);color:#fff;font-size:10px;font-weight:700;padding:5px 12px;border-radius:999px;">Niveau Or 🏆</div></div>`;
-  setTimeout(()=>{const wbc=document.getElementById('wbc');if(wbc)genBarcode(wbc);},50);
-  const wdots=document.getElementById('w-dots');
-  if(wdots)wdots.innerHTML=walletCards.map((x,i)=>`<div onclick="setActiveCard(${i})" style="width:${i===activeCard?20:8}px;height:8px;border-radius:999px;background:${i===activeCard?'var(--g)':'#e5e7eb'};cursor:pointer;transition:all 0.2s;"></div>`).join('');
-  const mcl=document.getElementById('mini-cards-list');
-  if(mcl)mcl.innerHTML=walletCards.map((card,i)=>`<div class="mini-card ${i===activeCard?'active-mini':''}" onclick="setActiveCard(${i})"><div style="font-size:24px;">${card.icon}</div><div style="flex:1"><div style="font-size:12px;font-weight:700;">${card.name} — ${card.type}</div><div style="font-size:10px;color:var(--sub);">${card.pts.toLocaleString()} pts · ≈ $${(card.pts/100).toFixed(2)}</div></div><div style="display:flex;align-items:center;gap:8px;"><div style="width:6px;height:6px;border-radius:50%;background:${i===activeCard?'var(--g)':'#e5e7eb'};"></div><button onclick="event.stopPropagation();removeWCard(${i})" style="background:none;border:none;cursor:pointer;color:#9ca3af;font-size:16px;padding:0;">×</button></div></div>`).join('');
-  const wc=document.getElementById('w-count');if(wc)wc.textContent=walletCards.length;
-  const totalPts=walletCards.reduce((s,x)=>s+x.pts,0);
-  const wp=document.getElementById('w-pts');if(wp)wp.textContent=totalPts.toLocaleString();
-  const wv=document.getElementById('w-val');if(wv)wv.textContent='$'+(totalPts/100).toFixed(0);
-  const ql=document.getElementById('ql-wallet');if(ql)ql.textContent=walletCards.length+' carte'+(walletCards.length>1?'s':'')+' fidélité';
-}
-function setActiveCard(idx){activeCard=idx;renderWallet();}
-function showBc(){
-  const c=walletCards[activeCard];
-  document.getElementById('bf-name').textContent=c.name;
-  document.getElementById('bf-type').textContent=c.type;
-  document.getElementById('bf-number').textContent=c.number;
-  genBarcode(document.getElementById('bf-bars'),60);
-  document.getElementById('bc-full').classList.add('open');
-}
-function hideBc(){document.getElementById('bc-full').classList.remove('open');}
-function openWalletModal(){document.getElementById('wallet-modal').classList.add('open');}
-function closeWalletModal(){document.getElementById('wallet-modal').classList.remove('open');}
-function addCard(name,icon,gradient){
-  const pts=Math.floor(Math.random()*2000)+100;
-  const num=Array.from({length:4},()=>Math.floor(Math.random()*9000+1000)).join(' ');
-  walletCards.push({name,type:'Carte '+name,icon,gradient,number:num,pts,shadow:'rgba(0,0,0,0.2)'});
-  closeWalletModal();activeCard=walletCards.length-1;renderWallet();showToast('✅ Carte '+name+' ajoutée!');
-}
-function removeWCard(idx){if(walletCards.length<=1){showToast('⚠️ Garde au moins une carte!');return;}walletCards.splice(idx,1);if(activeCard>=walletCards.length)activeCard=walletCards.length-1;renderWallet();}
-
-// ===== CHATBOT =====
-let chatOpen=false;
-function toggleChat(){chatOpen=!chatOpen;document.getElementById('chat-box').className='chat-box'+(chatOpen?' open':'');}
-function addChatMsg(role,text){const el=document.createElement('div');el.className='msg '+role;el.textContent=text;const msgs=document.getElementById('chat-msgs');msgs.appendChild(el);msgs.scrollTop=msgs.scrollHeight;}
-async function sendChat(){
-  const v=document.getElementById('chat-in').value.trim();if(!v)return;
-  addChatMsg('user',v);document.getElementById('chat-in').value='';
-  try{
-    const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer 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'},body:JSON.stringify({model:'llama-3.3-70b-versatile',max_completion_tokens:300,messages:[{role:'user',content:'Tu es l\'assistant SmartGrocer, app épicerie bilingue FR/EN. Réponds dans la langue de la question, court et utile (max 2-3 phrases). Question: '+v}]})});
-    const data=await res.json();addChatMsg('bot',data.choices[0].message.content.trim());
-  }catch(e){addChatMsg('bot','Désolé, erreur de connexion!');}
-}
-
-// ===== EVENT LISTENERS =====
-document.addEventListener('DOMContentLoaded',()=>{
-  [['prod-in',searchProd],['ing-in',addIng],['chat-in',sendChat],['gr-in',addGr]].forEach(([id,fn])=>{const el=document.getElementById(id);if(el)el.addEventListener('keydown',e=>{if(e.key==='Enter')fn();});});
-});
 </script>
 </body>
 </html>
