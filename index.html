@@ -235,6 +235,8 @@ n=d.getElementsByTagName(e)[0],n.parentNode.insertBefore(l,n);})
 ml('account', '2355363');
 </script>
 <!-- End MailerLite Universal -->
+<!-- Stripe Buy Button -->
+<script async src="https://js.stripe.com/v3/buy-button.js"></script>
 </head>
 <body>
 
@@ -257,7 +259,11 @@ ml('account', '2355363');
       <div style="display:flex;align-items:center;gap:8px;font-size:12px;"><span style="color:var(--g);font-weight:700;">✓</span>Scanner illimité · Recettes illimitées</div>
       <div style="display:flex;align-items:center;gap:8px;font-size:12px;"><span style="color:var(--g);font-weight:700;">✓</span>2x points · Sans pub · Upload vidéos</div>
     </div>
-    <button class="btn bf" style="background:linear-gradient(135deg,var(--p),var(--b));color:#fff;margin-bottom:8px;" onclick="activatePremium()">🚀 Démarrer l'essai gratuit de 30 jours</button>
+    <stripe-buy-button
+  buy-button-id="buy_btn_1TZxji8g6DMr5MKkOUY5K31c"
+  publishable-key="pk_live_51TZwZv8g6DMr5MKkRPebAg4U59jlMgIURfwaZcaMTgpSEFTn5jCQ2RQzowgt7RvPwE3sbDalFZADRoTj9N5kLegR00L4Tyau8k"
+></stripe-buy-button>
+    <button class="btn bo bf" onclick="closePaywall()" style="margin-top:8px;">Continuer gratuitement</button>
     <button class="btn bo bf" onclick="closePaywall()">Continuer gratuitement</button>
   </div>
 </div>
@@ -783,7 +789,10 @@ ml('account', '2355363');
         <div class="prem-feature"><span style="color:var(--g);font-weight:700;">✓</span>Sans publicité / Ad-free</div>
         <div class="prem-feature"><span style="color:var(--g);font-weight:700;">✓</span>Portefeuille numérique illimité</div>
       </div>
-      <button class="btn bf" style="background:linear-gradient(135deg,var(--p),var(--b));color:#fff;margin-bottom:8px;" onclick="activatePremium()">🚀 Démarrer l'essai gratuit</button>
+      <stripe-buy-button
+  buy-button-id="buy_btn_1TZxji8g6DMr5MKkOUY5K31c"
+  publishable-key="pk_live_51TZwZv8g6DMr5MKkRPebAg4U59jlMgIURfwaZcaMTgpSEFTn5jCQ2RQzowgt7RvPwE3sbDalFZADRoTj9N5kLegR00L4Tyau8k"
+></stripe-buy-button>
       <div style="text-align:center;font-size:10px;color:var(--sub);">Aucune carte requise / No credit card required</div>
     </div>
     <div class="card" style="border:2px solid var(--gold);">
