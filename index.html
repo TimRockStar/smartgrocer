@@ -766,18 +766,63 @@ ml('account', '2355363');
       <div><div class="lt"><span>Smart</span><span style="color:#C9A227;">Grocer</span></div><div class="ls">Portefeuille numérique</div></div>
     </div>
     <div class="hstats">
-      <div class="hs"><div class="hs-n" id="w-count">3</div><div class="hs-l">Cartes</div></div>
-      <div class="hs"><div class="hs-n" id="w-pts">4 250</div><div class="hs-l">Points total</div></div>
-      <div class="hs"><div class="hs-n" id="w-val">$42</div><div class="hs-l">Valeur est.</div></div>
+      <div class="hs"><div class="hs-n" id="w-count">0</div><div class="hs-l">Cartes</div></div>
+      <div class="hs"><div class="hs-n" id="w-pts">0</div><div class="hs-l">Points total</div></div>
+      <div class="hs"><div class="hs-n" id="w-val">$0</div><div class="hs-l">Valeur est.</div></div>
     </div>
   </div>
   <div class="px">
-    <div class="sl2">Carte active — Appuie pour le code</div>
-    <div id="active-card-display" class="loyalty-card" onclick="showBc()"></div>
+    <!-- Scanner Section -->
+    <div id="w-scan-idle">
+      <div style="background:linear-gradient(135deg,#1D9E75,#0F6E56);border-radius:16px;padding:1.25rem;margin-bottom:1rem;text-align:center;cursor:pointer;" onclick="startCardScan()">
+        <div style="font-size:28px;margin-bottom:6px;">📷</div>
+        <div style="font-size:14px;font-weight:700;color:#fff;">Scanner une carte de fidélité</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.85);margin-top:4px;">IGA · Maxi · Metro · PC Optimum · Air Miles · CAA · et plus!</div>
+      </div>
+    </div>
+    <div id="w-scan-active" style="display:none;">
+      <div style="position:relative;width:100%;border-radius:14px;overflow:hidden;margin-bottom:0.875rem;background:#000;">
+        <div id="w-quagga-container" style="width:100%;"></div>
+        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:75%;height:60px;border:3px solid #C9A227;border-radius:8px;pointer-events:none;z-index:10;">
+          <div style="position:absolute;top:-3px;left:-3px;width:18px;height:18px;border-top:4px solid #C9A227;border-left:4px solid #C9A227;border-radius:3px 0 0 0;"></div>
+          <div style="position:absolute;top:-3px;right:-3px;width:18px;height:18px;border-top:4px solid #C9A227;border-right:4px solid #C9A227;border-radius:0 3px 0 0;"></div>
+          <div style="position:absolute;bottom:-3px;left:-3px;width:18px;height:18px;border-bottom:4px solid #C9A227;border-left:4px solid #C9A227;border-radius:0 0 0 3px;"></div>
+          <div style="position:absolute;bottom:-3px;right:-3px;width:18px;height:18px;border-bottom:4px solid #C9A227;border-right:4px solid #C9A227;border-radius:0 0 3px 0;"></div>
+        </div>
+        <div id="w-scan-status" style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.65);color:#fff;font-size:11px;padding:4px 12px;border-radius:999px;white-space:nowrap;z-index:10;">📷 Scanne le code barre de ta carte...</div>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:1rem;">
+        <button class="btn bc" style="flex:1;" onclick="stopCardScan()"><i class="ti ti-x"></i> Annuler</button>
+      </div>
+    </div>
+
+    <!-- Card Name Modal -->
+    <div id="w-name-modal" style="display:none;background:#fff;border:2px solid var(--gold);border-radius:16px;padding:1.25rem;margin-bottom:1rem;">
+      <div style="font-size:14px;font-weight:700;margin-bottom:10px;">✅ Code scanné! Nom de la carte?</div>
+      <div style="font-size:11px;color:var(--sub);margin-bottom:10px;" id="w-scanned-code"></div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;" id="w-card-suggestions"></div>
+      <input type="text" id="w-card-name" placeholder="Ou entre le nom manuellement..." style="margin-bottom:8px;"/>
+      <div style="display:flex;gap:8px;">
+        <button class="btn bgold" style="flex:1;" onclick="confirmAddCard()"><i class="ti ti-check"></i> Ajouter</button>
+        <button class="btn bo" style="flex:1;" onclick="cancelCardScan()">Annuler</button>
+      </div>
+    </div>
+
+    <!-- Active Card Display -->
+    <div class="sl2" id="w-active-label" style="display:none;">Carte active — Appuie pour le code</div>
+    <div id="active-card-display" class="loyalty-card" onclick="showBc()" style="display:none;"></div>
     <div style="display:flex;justify-content:center;gap:6px;margin-bottom:1.5rem;" id="w-dots"></div>
-    <div class="sl2">Toutes mes cartes</div>
+
+    <!-- All Cards -->
+    <div class="sl2" id="w-list-label" style="display:none;">Toutes mes cartes</div>
     <div id="mini-cards-list"></div>
-    <button class="btn bg bf" onclick="openWalletModal()"><i class="ti ti-plus"></i> Ajouter une carte de fidélité</button>
+
+    <!-- Empty state -->
+    <div id="w-empty" style="text-align:center;padding:2rem 1rem;color:var(--sub);">
+      <div style="font-size:40px;margin-bottom:8px;">💳</div>
+      <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px;">Aucune carte encore</div>
+      <div style="font-size:12px;">Scanne ta première carte de fidélité!</div>
+    </div>
   </div>
 </div>
 
@@ -952,12 +997,13 @@ const commRecs=[
 ];
 let cFilt=[...commRecs];
 const rewards=[
-  {icon:'☕',name:'Café gratuit',pts:100,desc:'Tim Hortons partenaire'},
-  {icon:'🛒',name:'$5 de rabais',pts:200,desc:'Sur ta prochaine épicerie'},
-  {icon:'🎁',name:'1 mois Premium',pts:500,desc:'SmartGrocer Premium offert'},
-  {icon:'💳',name:'$20 carte-cadeau',pts:1000,desc:'IGA, Maxi, ou Metro'},
+  {icon:'⭐',name:'1 mois Premium gratuit',pts:100,desc:'Code promo envoyé par email'},
+  {icon:'🎁',name:'2 mois Premium gratuits',pts:250,desc:'Code promo envoyé par email'},
+  {icon:'👨‍👩‍👧‍👦',name:'Plan Famille 1 mois',pts:500,desc:'5 comptes Premium gratuits'},
+  {icon:'🏆',name:'1 an Premium gratuit',pts:1000,desc:'Code promo envoyé par email'},
 ];
-let walletCards=[
+let walletCards=[];
+let walletCards_DEFAULT=[
   {name:'IGA',type:'Carte Méritas',icon:'🏪',gradient:'linear-gradient(135deg,#E53935,#B71C1C)',number:'6234 5678 9012 3456',pts:1850,shadow:'rgba(229,57,53,0.35)'},
   {name:'Maxi',type:'Carte Merci',icon:'🏬',gradient:'linear-gradient(135deg,#C62828,#880E4F)',number:'9876 5432 1098 7654',pts:1200,shadow:'rgba(198,40,40,0.35)'},
   {name:'Metro',type:'Carte Metro&Moi',icon:'🛒',gradient:'linear-gradient(135deg,#1565C0,#0D47A1)',number:'1122 3344 5566 7788',pts:1200,shadow:'rgba(21,101,192,0.35)'},
@@ -1107,12 +1153,44 @@ function switchCT(t,btn){document.querySelectorAll('#social .tab').forEach(x=>x.
 function checkUpload(){if(!isPremium){showPaywall('Fonctionnalité Premium!','L\'upload de vidéos est réservé aux membres Premium.');}}
 function submitUp(){if(!isPremium){checkUpload();return;}const n=document.getElementById('up-nm').value.trim();const ig=document.getElementById('up-ig').value.trim();if(!n){showToast('⚠️ Ajoute un nom!');return;}addPoints(25);showToast('🎉 Recette partagée! +'+(isPremium?50:25)+' pts');sendPrompt('Génère une recette complète pour "'+n+'" avec: '+ig);}
 function renderRewards(){const el=document.getElementById('rewards-list');if(!el)return;el.innerHTML=rewards.map(r=>`<div style="background:var(--card);border-radius:16px;padding:12px;display:flex;align-items:center;gap:10px;border:1px solid var(--border);margin-bottom:8px;"><div style="font-size:22px;">${r.icon}</div><div style="flex:1"><div style="font-size:12px;font-weight:700;">${r.name}</div><div style="font-size:10px;color:var(--sub);">${r.desc}</div></div><button class="btn bgold" style="padding:5px 10px;font-size:11px;" onclick="claimReward(${r.pts},'${r.name}')">${r.pts} pts</button></div>`).join('');}
-function claimReward(pts,name){if(points>=pts){points-=pts;updatePointsUI();showToast('🎉 Récompense: '+name+'!');}else showToast('❌ '+pts+' pts requis — tu en as '+points);}
+function claimReward(pts,name){
+  if(points>=pts){
+    points-=pts;
+    updatePointsUI();
+    saveData();
+    showToast('🎉 Récompense réclamée! Vérifie ton email dans 24h pour ton code promo!',5000);
+    addChatMsg('bot','🎉 Tu as réclamé: '+name+'! On va t\'envoyer ton code promo par email dans les 24 prochaines heures. Assure-toi que ton email est à jour dans ton profil!');
+    // Open chatbot to confirm
+    chatOpen=true;
+    document.getElementById('chat-box').className='chat-box open';
+  } else {
+    showToast('❌ '+pts+' pts requis — tu en as '+points);
+  }
+}
 function addAlert(){const p=document.getElementById('alert-prod').value.trim();const pr=document.getElementById('alert-price').value;const s=document.getElementById('alert-store').value;if(!p){showToast('⚠️ Ajoute un produit!');return;}const emojis=['🛒','🍎','🥦','🍞','🧃','🥩'];const emoji=emojis[Math.floor(Math.random()*emojis.length)];const div=document.createElement('div');div.className='al';div.innerHTML=`<div style="font-size:20px;">${emoji}</div><div style="flex:1"><div style="font-size:13px;font-weight:700;">${p}</div><div style="font-size:11px;color:var(--sub);">Alerte si prix &lt; $${pr||'?'} · ${s}</div></div><label class="atog"><input type="checkbox" checked><div class="ts"></div></label>`;document.getElementById('alerts-list').appendChild(div);document.getElementById('alert-prod').value='';document.getElementById('alert-price').value='';showToast('✅ Alerte créée!');}
 function updBudget(v){['bsv','bmd'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='$'+v;});const pct=Math.round(247/v*100);document.getElementById('bbar').style.width=Math.min(pct,100)+'%';document.getElementById('bpct').textContent=pct+'% utilisé';}
 function renderBCats(){const cats=[{n:'Viandes & poissons',a:89,p:36,c:'#D85A30'},{n:'Fruits & légumes',a:54,p:22,c:'#1D9E75'},{n:'Produits laitiers',a:38,p:15,c:'#378ADD'},{n:'Épicerie sèche',a:42,p:17,c:'#534AB7'},{n:'Autres',a:24,p:10,c:'#C9A227'}];const el=document.getElementById('bcc');if(el)el.innerHTML=cats.map(c=>`<div class="bcat"><div class="bdot" style="background:${c.c};"></div><div style="flex:1;font-size:12px;">${c.n}</div><div class="bcbw"><div class="bcb" style="width:${c.p}%;background:${c.c};"></div></div><div style="font-size:12px;font-weight:700;min-width:30px;text-align:right;">$${c.a}</div></div>`).join('');}
 function genBarcode(container,count=40){container.innerHTML='';for(let i=0;i<count;i++){const bar=document.createElement('div');bar.style.cssText=`background:rgba(255,255,255,0.9);width:${Math.random()>0.5?2:1}px;height:${Math.random()>0.3?40:25}px;border-radius:1px;flex-shrink:0;`;container.appendChild(bar);}}
 function renderWallet(){
+  const isEmpty = walletCards.length === 0;
+  const emptyEl = document.getElementById('w-empty');
+  const activeLabel = document.getElementById('w-active-label');
+  const listLabel = document.getElementById('w-list-label');
+  const activeDisplay = document.getElementById('active-card-display');
+  
+  if(emptyEl) emptyEl.style.display = isEmpty ? 'block' : 'none';
+  if(activeLabel) activeLabel.style.display = isEmpty ? 'none' : 'block';
+  if(listLabel) listLabel.style.display = isEmpty ? 'none' : 'block';
+  if(activeDisplay) activeDisplay.style.display = isEmpty ? 'none' : 'block';
+  
+  if(isEmpty) {
+    const wd = document.getElementById('w-dots'); if(wd) wd.innerHTML = '';
+    const mcl = document.getElementById('mini-cards-list'); if(mcl) mcl.innerHTML = '';
+    ['w-count','w-pts','w-val'].forEach((id,i) => {const el=document.getElementById(id);if(el)el.textContent=['0','0','$0'][i];});
+    const ql=document.getElementById('ql-wallet');if(ql)ql.textContent='0 carte';
+    return;
+  }
+
   const c=walletCards[activeCard];const display=document.getElementById('active-card-display');if(!display)return;
   display.style.background=c.gradient;display.style.boxShadow=`0 12px 32px ${c.shadow}`;
   display.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;"><div><div style="font-size:20px;font-weight:800;color:#fff;">${c.name}</div><div style="font-size:10px;color:rgba(255,255,255,0.8);">${c.type}</div></div><div style="font-size:30px;">${c.icon}</div></div><div style="background:rgba(255,255,255,0.15);border-radius:12px;padding:12px;margin-bottom:10px;text-align:center;"><div style="font-size:12px;font-weight:700;color:#fff;letter-spacing:3px;margin-bottom:8px;">${c.number}</div><div style="display:flex;gap:1.5px;justify-content:center;align-items:center;height:44px;" id="wbc"></div><div style="font-size:10px;color:rgba(255,255,255,0.7);margin-top:6px;">Appuie pour agrandir le code</div></div><div style="display:flex;align-items:center;justify-content:space-between;"><div><div style="font-size:20px;font-weight:700;color:#fff;">${c.pts.toLocaleString()} pts</div><div style="font-size:10px;color:rgba(255,255,255,0.8);">≈ $${(c.pts/100).toFixed(2)} en récompenses</div></div><div style="background:rgba(255,255,255,0.2);color:#fff;font-size:10px;font-weight:700;padding:5px 12px;border-radius:999px;">Niveau Or 🏆</div></div>`;
@@ -1370,6 +1448,126 @@ async function lookupBarcode(code) {
   }
   document.getElementById('px-ld').classList.remove('on');
   document.getElementById('scan-btn').disabled=false;
+}
+
+
+// ===== WALLET CARD SCANNER =====
+let walletScanDone = false;
+const KNOWN_CARDS = [
+  {name:'PC Optimum', keywords:['628915','622633','PC optimum','loblaws','maxi','pharmaprix'], icon:'💙', gradient:'linear-gradient(135deg,#003087,#0057B8)', shadow:'rgba(0,48,135,0.35)'},
+  {name:'Air Miles', keywords:['airMiles','air miles','626652'], icon:'✈️', gradient:'linear-gradient(135deg,#C62828,#1565C0)', shadow:'rgba(198,40,40,0.35)'},
+  {name:'Méritas IGA', keywords:['IGA','623456','meritas'], icon:'🏪', gradient:'linear-gradient(135deg,#E53935,#B71C1C)', shadow:'rgba(229,57,53,0.35)'},
+  {name:'Metro & Moi', keywords:['metro','624567'], icon:'🛒', gradient:'linear-gradient(135deg,#1565C0,#0D47A1)', shadow:'rgba(21,101,192,0.35)'},
+  {name:'Maxi', keywords:['maxi','625678'], icon:'🏬', gradient:'linear-gradient(135deg,#C62828,#880E4F)', shadow:'rgba(198,40,40,0.35)'},
+  {name:'CAA', keywords:['CAA','626789'], icon:'🚗', gradient:'linear-gradient(135deg,#1B5E20,#2E7D32)', shadow:'rgba(27,94,32,0.35)'},
+  {name:'Petro-Points', keywords:['petro','627890'], icon:'⛽', gradient:'linear-gradient(135deg,#E65100,#F57F17)', shadow:'rgba(230,81,0,0.35)'},
+  {name:'Jean Coutu', keywords:['jean coutu','629012'], icon:'💊', gradient:'linear-gradient(135deg,#2E7D32,#1B5E20)', shadow:'rgba(46,125,50,0.35)'},
+  {name:'Pharmaprix', keywords:['pharmaprix','630123'], icon:'💙', gradient:'linear-gradient(135deg,#1565C0,#283593)', shadow:'rgba(21,101,192,0.35)'},
+  {name:'Costco', keywords:['costco','631234'], icon:'🏭', gradient:'linear-gradient(135deg,#C62828,#1565C0)', shadow:'rgba(0,0,0,0.3)'},
+  {name:'RONA', keywords:['rona','632345'], icon:'🔨', gradient:'linear-gradient(135deg,#E65100,#BF360C)', shadow:'rgba(230,81,0,0.35)'},
+  {name:'Tim Hortons', keywords:['tim hortons','633456'], icon:'☕', gradient:'linear-gradient(135deg,#C62828,#B71C1C)', shadow:'rgba(198,40,40,0.35)'},
+];
+
+let scannedCardCode = '';
+
+function startCardScan() {
+  document.getElementById('w-scan-idle').style.display = 'none';
+  document.getElementById('w-scan-active').style.display = 'block';
+  document.getElementById('w-name-modal').style.display = 'none';
+  document.getElementById('w-quagga-container').innerHTML = '';
+  walletScanDone = false;
+
+  if (typeof Quagga === 'undefined') {
+    showToast('⚠️ Scanner non disponible');
+    stopCardScan();
+    return;
+  }
+
+  Quagga.init({
+    inputStream: {
+      type: 'LiveStream',
+      target: document.getElementById('w-quagga-container'),
+      constraints: { facingMode: 'environment', width: {ideal:1280}, height: {ideal:720} }
+    },
+    locator: {patchSize:'medium', halfSample:true},
+    numOfWorkers: 2,
+    frequency: 10,
+    decoder: { readers: ['ean_reader','ean_8_reader','upc_reader','upc_e_reader','code_128_reader','code_39_reader','itf_reader'] },
+    locate: true
+  }, function(err) {
+    if (err) { showToast('📷 Caméra non disponible'); stopCardScan(); return; }
+    Quagga.start();
+  });
+
+  Quagga.onDetected(function(result) {
+    if (walletScanDone) return;
+    const code = result.codeResult.code;
+    if (!code || code.length < 4) return;
+    walletScanDone = true;
+    stopCardScan();
+    scannedCardCode = code;
+    showCardNameModal(code);
+  });
+}
+
+function stopCardScan() {
+  try { Quagga.stop(); } catch(e) {}
+  document.getElementById('w-scan-idle').style.display = 'block';
+  document.getElementById('w-scan-active').style.display = 'none';
+}
+
+function cancelCardScan() {
+  document.getElementById('w-name-modal').style.display = 'none';
+  scannedCardCode = '';
+}
+
+function showCardNameModal(code) {
+  document.getElementById('w-scanned-code').textContent = 'Code détecté: ' + code;
+  
+  // Auto-detect card type
+  const suggestions = KNOWN_CARDS.slice(0, 6);
+  const suggestionsEl = document.getElementById('w-card-suggestions');
+  suggestionsEl.innerHTML = suggestions.map(c => 
+    `<div onclick="selectCardName('${c.name}')" style="background:var(--light);border:1px solid var(--border);border-radius:8px;padding:5px 10px;font-size:11px;cursor:pointer;display:flex;align-items:center;gap:4px;">
+      <span>${c.icon}</span><span>${c.name}</span>
+    </div>`
+  ).join('');
+  
+  document.getElementById('w-name-modal').style.display = 'block';
+  document.getElementById('w-card-name').value = '';
+}
+
+function selectCardName(name) {
+  document.getElementById('w-card-name').value = name;
+}
+
+function confirmAddCard() {
+  const name = document.getElementById('w-card-name').value.trim();
+  if (!name) { showToast('⚠️ Entre le nom de la carte!'); return; }
+  
+  // Find matching card config
+  const known = KNOWN_CARDS.find(c => c.name.toLowerCase() === name.toLowerCase());
+  const gradient = known ? known.gradient : 'linear-gradient(135deg,#1D9E75,#0F6E56)';
+  const icon = known ? known.icon : '💳';
+  const shadow = known ? known.shadow : 'rgba(29,158,117,0.35)';
+  
+  walletCards.push({
+    name: name,
+    type: name,
+    icon: icon,
+    gradient: gradient,
+    number: scannedCardCode,
+    pts: 0,
+    shadow: shadow,
+    isReal: true
+  });
+  
+  document.getElementById('w-name-modal').style.display = 'none';
+  scannedCardCode = '';
+  activeCard = walletCards.length - 1;
+  renderWallet();
+  saveData();
+  showToast('✅ Carte ' + name + ' ajoutée!');
 }
 
 </script>
