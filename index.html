@@ -465,6 +465,66 @@ ml('account', '2355363');
 </div>
 
 <!-- LANDING -->
+<!-- BETA ACCESS GATE -->
+<div id="beta-gate" style="position:fixed;top:0;left:0;right:0;bottom:0;background:linear-gradient(160deg,#1D9E75,#0F6E56);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1.5rem;">
+  <div style="background:#fff;border-radius:24px;padding:2rem;width:100%;max-width:380px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+    <svg width="70" height="70" viewBox="0 0 680 500" style="margin-bottom:12px;"><path d="M340,60 L430,95 L430,190 Q430,240 340,270 Q250,240 250,190 L250,95 Z" fill="#1D9E75"/><path d="M340,70 L422,102 L422,188 Q422,234 340,262 Q258,234 258,188 L258,102 Z" fill="#0F6E56"/><path d="M308,215 L312,183 L368,183 L372,215 Z" fill="white"/><path d="M301,183 Q301,170 312,170 L368,170 Q379,170 379,183" fill="none" stroke="white" stroke-width="6" stroke-linecap="round"/><circle cx="320" cy="224" r="9" fill="white"/><circle cx="360" cy="224" r="9" fill="white"/><path d="M305,100 L314,85 L323,98 L340,80 L357,98 L366,85 L375,100 L372,112 L308,112 Z" fill="#C9A227"/><circle cx="292" cy="88" r="20" fill="#D85A30"/><text x="292" y="94" text-anchor="middle" font-family="system-ui" font-size="13" font-weight="700" fill="white">SG</text></svg>
+    <div style="font-size:24px;font-weight:800;margin-bottom:4px;"><span style="color:#1D9E75;">Smart</span><span style="color:#C9A227;">Grocer</span></div>
+    <div style="font-size:13px;color:#6b7280;margin-bottom:6px;">🧪 Version Bêta — Accès restreint</div>
+    <div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:10px;padding:10px;margin-bottom:1.25rem;font-size:12px;color:#92400e;">
+      Tu as reçu un code d'accès bêta de SmartGrocer? Entre-le ci-dessous!
+    </div>
+    <input type="text" id="beta-code-input" placeholder="Ex: SG-BETA-001" 
+      style="width:100%;padding:12px;border:2px solid #e5e7eb;border-radius:12px;font-size:14px;text-align:center;text-transform:uppercase;letter-spacing:2px;margin-bottom:10px;font-family:monospace;"
+      oninput="this.value=this.value.toUpperCase()"
+      onkeydown="if(event.key==='Enter')checkBetaCode()"/>
+    <button onclick="checkBetaCode()" style="width:100%;background:linear-gradient(135deg,#1D9E75,#0F6E56);color:#fff;border:none;border-radius:12px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px;">
+      🚀 Accéder à la version bêta
+    </button>
+    <div id="beta-error" style="display:none;color:#ef4444;font-size:12px;margin-top:6px;">❌ Code invalide — vérifie ton code et réessaie!</div>
+    <div style="font-size:11px;color:#9ca3af;margin-top:10px;">Tu n'as pas de code? Contacte<br><a href="mailto:smartgrocer@yahoo.com" style="color:#1D9E75;">smartgrocer@yahoo.com</a></div>
+  </div>
+</div>
+
+<script>
+const BETA_CODES = ["SG-BETA-001", "SG-BETA-002", "SG-BETA-003", "SG-BETA-004", "SG-BETA-005", "SG-BETA-006", "SG-BETA-007", "SG-BETA-008", "SG-BETA-009", "SG-BETA-010", "SG-BETA-011", "SG-BETA-012", "SG-BETA-013", "SG-BETA-014", "SG-BETA-015", "SG-BETA-016", "SG-BETA-017", "SG-BETA-018", "SG-BETA-019", "SG-BETA-020"];
+
+function checkBetaCode() {
+  const input = document.getElementById('beta-code-input').value.trim().toUpperCase();
+  const errorEl = document.getElementById('beta-error');
+  
+  if(BETA_CODES.includes(input)) {
+    // Valid code - save to localStorage and show app
+    localStorage.setItem('smartgrocer_beta_code', input);
+    document.getElementById('beta-gate').style.display = 'none';
+    document.body.style.overflow = '';
+  } else {
+    errorEl.style.display = 'block';
+    document.getElementById('beta-code-input').style.border = '2px solid #ef4444';
+    setTimeout(() => {
+      errorEl.style.display = 'none';
+      document.getElementById('beta-code-input').style.border = '2px solid #e5e7eb';
+    }, 3000);
+  }
+}
+
+// Check if already has valid code in localStorage
+window.addEventListener('DOMContentLoaded', () => {
+  const savedCode = localStorage.getItem('smartgrocer_beta_code');
+  if(savedCode && BETA_CODES.includes(savedCode)) {
+    document.getElementById('beta-gate').style.display = 'none';
+  } else {
+    document.body.style.overflow = 'hidden';
+  }
+});
+</script>
+
+<!-- BETA BANNER -->
+<div style="background:linear-gradient(135deg,#D85A30,#993C1D);padding:8px 16px;text-align:center;position:sticky;top:0;z-index:200;">
+  <div style="font-size:12px;font-weight:700;color:#fff;">🧪 Version Bêta — Toutes les fonctionnalités débloquées pour les testeurs!</div>
+  <div style="font-size:10px;color:rgba(255,255,255,0.85);margin-top:2px;">Ton feedback nous aide à améliorer l'app · <a href="mailto:smartgrocer@yahoo.com" style="color:#fff;font-weight:700;">smartgrocer@yahoo.com</a></div>
+</div>
+
 <div id="landing">
   <div class="hero-landing">
     <div style="position:absolute;top:-60px;right:-60px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,0.06);"></div>
@@ -566,7 +626,7 @@ ml('account', '2355363');
 
 <!-- APP -->
 <div id="app" style="display:none;">
-<div class="trial" id="trial-banner" style="margin:0.75rem 1rem 0;" onclick="goExtra('premium')">
+<div class="trial" id="trial-banner" style="display:none!important;" style="margin:0.75rem 1rem 0;" onclick="goExtra('premium')">
   <div style="font-size:18px;">⭐</div>
   <div style="flex:1"><div style="font-size:12px;font-weight:700;color:#fff;">Premium gratuit — 30 jours restants</div><div style="font-size:10px;color:rgba(255,255,255,0.8);">Clique pour gérer ton abonnement</div></div>
   <div style="background:rgba(255,255,255,0.2);color:#fff;font-size:10px;font-weight:700;padding:4px 8px;border-radius:6px;">Gérer</div>
