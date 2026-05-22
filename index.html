@@ -504,49 +504,57 @@ ml('account', '2355363');
 </div>
 
 <!-- ONBOARDING -->
-<div id="onboarding" style="display:none;">
-  <div class="ob-step active" id="ob1">
-    <div style="margin:0 auto 1rem;width:80px;"><svg width="80" height="80" viewBox="0 0 680 500"><path d="M340,60 L430,95 L430,190 Q430,240 340,270 Q250,240 250,190 L250,95 Z" fill="#1D9E75"/><path d="M340,70 L422,102 L422,188 Q422,234 340,262 Q258,234 258,188 L258,102 Z" fill="#0F6E56"/><path d="M308,215 L312,183 L368,183 L372,215 Z" fill="white"/><path d="M301,183 Q301,170 312,170 L368,170 Q379,170 379,183" fill="none" stroke="white" stroke-width="6" stroke-linecap="round"/><circle cx="320" cy="224" r="9" fill="white"/><circle cx="360" cy="224" r="9" fill="white"/><path d="M305,100 L314,85 L323,98 L340,80 L357,98 L366,85 L375,100 L372,112 L308,112 Z" fill="#C9A227"/><circle cx="292" cy="88" r="20" fill="#D85A30"/><text x="292" y="94" text-anchor="middle" font-family="system-ui" font-size="13" font-weight="700" fill="white">SG</text></svg></div>
-    <div style="font-size:22px;font-weight:800;text-align:center;margin-bottom:8px;"><span style="color:var(--g);">Smart</span><span style="color:var(--gold);">Grocer</span></div>
-    <div style="font-size:13px;color:var(--sub);text-align:center;margin-bottom:1.5rem;line-height:1.6;">L'app intelligente pour économiser à l'épicerie.</div>
-    <div style="background:#dcfce7;border:1px solid #86efac;border-radius:12px;padding:1rem;margin-bottom:1rem;text-align:center;">
-      <div style="font-size:14px;font-weight:700;color:#166534;">🎉 Offre de lancement!</div>
-      <div style="font-size:12px;color:#166534;margin-top:4px;">Les 1000 premiers membres → <strong>30 jours Premium gratuits</strong></div>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:1.5rem;">
-      <div style="display:flex;align-items:center;gap:12px;padding:10px;background:var(--light);border-radius:10px;"><span style="font-size:18px;">🏷️</span><div><div style="font-size:12px;font-weight:700;">Scanner + comparateur de prix</div><div style="font-size:10px;color:var(--sub);">5 scans/jour gratuit · Illimité Premium</div></div></div>
-      <div style="display:flex;align-items:center;gap:12px;padding:10px;background:var(--light);border-radius:10px;"><span style="font-size:18px;">🍳</span><div><div style="font-size:12px;font-weight:700;">Recettes IA + Vidéos virales</div><div style="font-size:10px;color:var(--sub);">3 recettes/jour gratuit · Illimité Premium</div></div></div>
-      <div style="display:flex;align-items:center;gap:12px;padding:10px;background:var(--light);border-radius:10px;"><span style="font-size:18px;">💳</span><div><div style="font-size:12px;font-weight:700;">Portefeuille numérique</div><div style="font-size:10px;color:var(--sub);">Toutes tes cartes de fidélité</div></div></div>
-    </div>
-    <button class="btn bg bf" onclick="nextOb(2)">Commencer <i class="ti ti-arrow-right"></i></button>
+<div id="onboarding" style="display:none;padding:1.5rem 1rem;">
+  <div style="margin:0 auto 1rem;width:70px;text-align:center;">
+    <svg width="70" height="70" viewBox="0 0 680 500"><path d="M340,60 L430,95 L430,190 Q430,240 340,270 Q250,240 250,190 L250,95 Z" fill="#1D9E75"/><path d="M340,70 L422,102 L422,188 Q422,234 340,262 Q258,234 258,188 L258,102 Z" fill="#0F6E56"/><path d="M308,215 L312,183 L368,183 L372,215 Z" fill="white"/><path d="M301,183 Q301,170 312,170 L368,170 Q379,170 379,183" fill="none" stroke="white" stroke-width="6" stroke-linecap="round"/><circle cx="320" cy="224" r="9" fill="white"/><circle cx="360" cy="224" r="9" fill="white"/><path d="M305,100 L314,85 L323,98 L340,80 L357,98 L366,85 L375,100 L372,112 L308,112 Z" fill="#C9A227"/><circle cx="292" cy="88" r="20" fill="#D85A30"/><text x="292" y="94" text-anchor="middle" font-family="system-ui" font-size="13" font-weight="700" fill="white">SG</text></svg>
   </div>
-  <div class="ob-step" id="ob2">
-    <div style="width:64px;height:64px;background:var(--b);border-radius:20px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:30px;margin:0 auto 1rem;"><i class="ti ti-map-pin"></i></div>
-    <div style="font-size:20px;font-weight:800;text-align:center;margin-bottom:8px;">Ton adresse / Your address</div>
-    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:1.25rem;">
-      <div><label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:4px;">Ville / City <span style="color:#ef4444;">*</span></label><input type="text" id="ob-city" placeholder="Ex: Joliette"/></div>
-      <div><label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:4px;">Province</label><select id="ob-province"><option>Québec</option><option>Ontario</option><option>Colombie-Britannique</option><option>Alberta</option><option>Manitoba</option><option>Saskatchewan</option><option>Nouveau-Brunswick</option><option>Nouvelle-Écosse</option></select></div>
-      <div><label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:4px;">Code postal / Postal code</label><input type="text" id="ob-postal" placeholder="Ex: J6E 2B1" style="text-transform:uppercase;"/></div>
-    </div>
-    <button class="btn bb bf" onclick="nextOb(3)">Continuer <i class="ti ti-arrow-right"></i></button>
+  <div style="font-size:22px;font-weight:800;text-align:center;margin-bottom:6px;"><span style="color:var(--g);">Smart</span><span style="color:var(--gold);">Grocer</span></div>
+  <div style="font-size:13px;color:var(--sub);text-align:center;margin-bottom:1.25rem;">Crée ton compte en 30 secondes!</div>
+  
+  <div style="background:#dcfce7;border:1px solid #86efac;border-radius:12px;padding:10px;margin-bottom:1.25rem;text-align:center;">
+    <div style="font-size:13px;font-weight:700;color:#166534;">🎉 Essai Premium 30 jours gratuits!</div>
+    <div style="font-size:11px;color:#166534;margin-top:3px;">Carte de crédit requise · Annulable à tout moment</div>
   </div>
-  <div class="ob-step" id="ob3">
-    <div style="width:64px;height:64px;background:var(--p);border-radius:20px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:30px;margin:0 auto 1rem;"><i class="ti ti-user"></i></div>
-    <div style="font-size:20px;font-weight:800;text-align:center;margin-bottom:8px;">Ton profil / Your profile</div>
-    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:1.25rem;">
-      <div><label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:4px;">Prénom / First name <span style="color:#ef4444;">*</span></label><input type="text" id="ob-name" placeholder="Ex: Tim"/></div>
-      <div><label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:4px;">Email <span style="color:#ef4444;">*</span></label><input type="email" id="ob-email" placeholder="ton@email.com"/></div>
-      <div><label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:4px;">Budget mensuel épicerie ($)</label><input type="number" id="ob-budget" value="400" placeholder="400"/></div>
+
+  <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:1.25rem;">
+    <div>
+      <label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:4px;">Prénom / First name <span style="color:#ef4444;">*</span></label>
+      <input type="text" id="ob-name" placeholder="Ex: Tim"/>
     </div>
-    <div style="background:#dcfce7;border:1px solid #86efac;border-radius:12px;padding:10px;margin-bottom:1rem;text-align:center;">
-      <div style="font-size:12px;font-weight:700;color:#166534;">🎉 Essai Premium 30 jours gratuits!</div>
-      <div style="font-size:11px;color:#166534;margin-top:3px;">Carte de crédit requise — annulable à tout moment</div>
+    <div>
+      <label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:4px;">Email <span style="color:#ef4444;">*</span></label>
+      <input type="email" id="ob-email" placeholder="ton@email.com"/>
     </div>
-    <button class="btn bg bf" onclick="finishOb()"><i class="ti ti-credit-card"></i> Continuer vers le paiement</button>
-    <div style="font-size:10px;color:var(--sub);text-align:center;margin-top:6px;">🔒 Paiement sécurisé par Stripe · Annulable à tout moment</div>
+    <div>
+      <label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:4px;">Ville / City <span style="color:#ef4444;">*</span></label>
+      <input type="text" id="ob-city" placeholder="Ex: Joliette"/>
+    </div>
+    <div>
+      <label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:4px;">Province</label>
+      <select id="ob-province">
+        <option>Québec</option>
+        <option>Ontario</option>
+        <option>Colombie-Britannique</option>
+        <option>Alberta</option>
+        <option>Manitoba</option>
+        <option>Saskatchewan</option>
+        <option>Nouveau-Brunswick</option>
+        <option>Nouvelle-Écosse</option>
+      </select>
+    </div>
+    <div>
+      <label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:4px;">Code postal / Postal code</label>
+      <input type="text" id="ob-postal" placeholder="Ex: J6E 2B1" style="text-transform:uppercase;"/>
+    </div>
   </div>
-  </div>
+
+  <button class="btn bg bf" onclick="finishOb()" style="font-size:14px;padding:13px;">
+    <i class="ti ti-credit-card"></i> Créer mon compte → Paiement
+  </button>
+  <div style="font-size:10px;color:var(--sub);text-align:center;margin-top:8px;">🔒 Paiement sécurisé par Stripe · Annulable à tout moment</div>
 </div>
+
+
 
 <!-- APP -->
 <div id="app" style="display:none;">
@@ -966,8 +974,7 @@ ml('account', '2355363');
         <input type="email" id="pp-email-input" placeholder="ton@email.com" onchange="saveProfile()"/></div>
         <div><label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:3px;">Ville / City</label>
         <input type="text" id="pp-city-input" placeholder="Ex: Joliette, QC" onchange="saveProfile()"/></div>
-        <div><label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:3px;">Budget mensuel ($)</label>
-        <input type="number" id="pp-budget-input" placeholder="400" onchange="saveProfile()"/></div>
+
         <div><label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:3px;">Régime / Diet</label>
         <select id="pp-diet-input" onchange="saveProfile()"><option>Aucun / None</option><option>Végétarien</option><option>Végétalien</option><option>Sans gluten</option><option>Sans lactose</option></select></div>
         <button class="btn bg bf" onclick="saveProfile();showToast('✅ Profil sauvegardé!')"><i class="ti ti-check"></i> Sauvegarder</button>
