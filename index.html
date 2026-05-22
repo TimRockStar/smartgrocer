@@ -513,7 +513,7 @@ ml('account', '2355363');
   
   <div style="background:#dcfce7;border:1px solid #86efac;border-radius:12px;padding:10px;margin-bottom:1.25rem;text-align:center;">
     <div style="font-size:13px;font-weight:700;color:#166534;">🎉 Essai Premium 30 jours gratuits!</div>
-    <div style="font-size:11px;color:#166534;margin-top:3px;">Carte de crédit requise · Annulable à tout moment</div>
+    <div style="font-size:11px;color:#166534;margin-top:3px;">Les 1000 premiers membres · Essai Premium inclus!</div>
   </div>
 
   <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:1.25rem;">
@@ -549,9 +549,9 @@ ml('account', '2355363');
   </div>
 
   <button class="btn bg bf" onclick="finishOb()" style="font-size:14px;padding:13px;">
-    <i class="ti ti-credit-card"></i> Créer mon compte → Paiement
+    <i class="ti ti-check"></i> Commencer gratuitement!
   </button>
-  <div style="font-size:10px;color:var(--sub);text-align:center;margin-top:8px;">🔒 Paiement sécurisé par Stripe · Annulable à tout moment</div>
+  <div style="font-size:10px;color:var(--sub);text-align:center;margin-top:8px;">Tu peux passer à Premium à tout moment depuis l'app</div>
 </div>
 
 
@@ -1138,11 +1138,7 @@ function finishOb(){
   updatePlanUI(); renderRewards(); renderC(); renderBCats(); renderWallet(); renderGr(); updatePointsUI();
   addChatMsg('bot', 'Bonjour ' + name + '! 👋 Bienvenue sur SmartGrocer! Pour activer ton essai Premium de 30 jours, clique sur le bouton ci-dessous pour entrer ta carte de crédit. Annulable à tout moment!');
   
-  // Open premium page with Stripe button
-  setTimeout(() => {
-    goExtra('premium');
-    showToast('👆 Entre ta carte de crédit pour activer le Premium!', 5000);
-  }, 1500);
+  showToast('🎉 Bienvenue ' + name + '! Explore SmartGrocer gratuitement!', 4000);
 }
 function goTo(p,btn){
   document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
