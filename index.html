@@ -522,10 +522,11 @@ ml('account', '2355363');
   </div>
   <div class="ob-step" id="ob2">
     <div style="width:64px;height:64px;background:var(--b);border-radius:20px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:30px;margin:0 auto 1rem;"><i class="ti ti-map-pin"></i></div>
-    <div style="font-size:20px;font-weight:800;text-align:center;margin-bottom:8px;">Ta ville / Your city</div>
+    <div style="font-size:20px;font-weight:800;text-align:center;margin-bottom:8px;">Ton adresse / Your address</div>
     <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:1.25rem;">
-      <div><label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:4px;">Ville / City</label><input type="text" id="ob-city" value="Gatineau, QC"/></div>
-      <div><label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:4px;">Rayon / Radius</label><select id="ob-radius"><option>2 km</option><option selected>5 km</option><option>10 km</option><option>20 km</option></select></div>
+      <div><label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:4px;">Ville / City <span style="color:#ef4444;">*</span></label><input type="text" id="ob-city" placeholder="Ex: Joliette"/></div>
+      <div><label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:4px;">Province</label><select id="ob-province"><option>Québec</option><option>Ontario</option><option>Colombie-Britannique</option><option>Alberta</option><option>Manitoba</option><option>Saskatchewan</option><option>Nouveau-Brunswick</option><option>Nouvelle-Écosse</option></select></div>
+      <div><label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:4px;">Code postal / Postal code</label><input type="text" id="ob-postal" placeholder="Ex: J6E 2B1" style="text-transform:uppercase;"/></div>
     </div>
     <button class="btn bb bf" onclick="nextOb(3)">Continuer <i class="ti ti-arrow-right"></i></button>
   </div>
@@ -533,11 +534,17 @@ ml('account', '2355363');
     <div style="width:64px;height:64px;background:var(--p);border-radius:20px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:30px;margin:0 auto 1rem;"><i class="ti ti-user"></i></div>
     <div style="font-size:20px;font-weight:800;text-align:center;margin-bottom:8px;">Ton profil / Your profile</div>
     <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:1.25rem;">
-      <div><label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:4px;">Prénom / First name</label><input type="text" id="ob-name" placeholder="Ex: Tim"/></div>
-      <div><label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:4px;">Budget mensuel ($)</label><input type="number" id="ob-budget" value="400"/></div>
-      <div><label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:4px;">Régime / Diet</label><select id="ob-diet"><option>Aucun / None</option><option>Végétarien</option><option>Végétalien</option><option>Sans gluten</option></select></div>
+      <div><label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:4px;">Prénom / First name <span style="color:#ef4444;">*</span></label><input type="text" id="ob-name" placeholder="Ex: Tim"/></div>
+      <div><label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:4px;">Email <span style="color:#ef4444;">*</span></label><input type="email" id="ob-email" placeholder="ton@email.com"/></div>
+      <div><label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:4px;">Budget mensuel épicerie ($)</label><input type="number" id="ob-budget" value="400" placeholder="400"/></div>
     </div>
-    <button class="btn bg bf" onclick="finishOb()"><i class="ti ti-check"></i> C'est parti — 30 jours Premium gratuits!</button>
+    <div style="background:#dcfce7;border:1px solid #86efac;border-radius:12px;padding:10px;margin-bottom:1rem;text-align:center;">
+      <div style="font-size:12px;font-weight:700;color:#166534;">🎉 Essai Premium 30 jours gratuits!</div>
+      <div style="font-size:11px;color:#166534;margin-top:3px;">Carte de crédit requise — annulable à tout moment</div>
+    </div>
+    <button class="btn bg bf" onclick="finishOb()"><i class="ti ti-credit-card"></i> Continuer vers le paiement</button>
+    <div style="font-size:10px;color:var(--sub);text-align:center;margin-top:6px;">🔒 Paiement sécurisé par Stripe · Annulable à tout moment</div>
+  </div>
   </div>
 </div>
 
@@ -1069,20 +1076,66 @@ let activeCard=0;
 function startApp(){document.getElementById('landing').style.display='none';document.getElementById('onboarding').style.display='block';}
 function nextOb(n){document.querySelectorAll('.ob-step').forEach(s=>s.classList.remove('active'));document.getElementById('ob'+n).classList.add('active');}
 function finishOb(){
-  const name=document.getElementById('ob-name').value||'Tim';
-  const city=document.getElementById('ob-city').value||'Gatineau, QC';
-  const budget=document.getElementById('ob-budget').value||'400';
-  const diet=document.getElementById('ob-diet').value;
+  // Validate required fields
+  const nameEl = document.getElementById('ob-name');
+  const emailEl = document.getElementById('ob-email');
+  const cityEl = document.getElementById('ob-city');
+  
+  if(!nameEl || !nameEl.value.trim()){
+    if(nameEl) nameEl.style.border='2px solid #ef4444';
+    showToast('⚠️ Entre ton prénom!'); return;
+  }
+  if(!emailEl || !emailEl.value.trim() || !emailEl.value.includes('@')){
+    if(emailEl){emailEl.style.border='2px solid #ef4444';}
+    showToast('⚠️ Entre un email valide!'); return;
+  }
+  if(!cityEl || !cityEl.value.trim()){
+    if(cityEl) cityEl.style.border='2px solid #ef4444';
+    showToast('⚠️ Entre ta ville!'); return;
+  }
+  
+  const name = nameEl.value.trim();
+  const email = emailEl.value.trim();
+  const city = cityEl.value.trim();
+  const province = document.getElementById('ob-province')?.value || 'Québec';
+  const postal = document.getElementById('ob-postal')?.value?.trim() || '';
+  const budget = document.getElementById('ob-budget')?.value || '400';
+  const fullCity = city + ', ' + province + (postal ? ' ' + postal : '');
+
+  // Update UI with user info
   ['h-name','pnm'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=name;});
   const pav=document.getElementById('pav');if(pav)pav.textContent=name.substring(0,2).toUpperCase();
-  ['pct','pp-city','carte-city'].forEach((id,i)=>{const el=document.getElementById(id);if(el)el.textContent=i===2?'Épiceries · '+city+' · 5 km':city;});
+  ['pct','pp-city'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=fullCity;});
+  const carte=document.getElementById('carte-city');if(carte)carte.textContent='Épiceries · '+fullCity+' · 5 km';
   const ppb=document.getElementById('pp-budget');if(ppb)ppb.textContent='$'+budget;
-  const ppd=document.getElementById('pp-diet');if(ppd)ppd.textContent=diet;
+
+  // Save to localStorage
+  const data = {
+    name, email, city: fullCity, budget: '$'+budget,
+    diet: 'Aucun', onboardingDone: true,
+    isPremium: false, points: 0, totalScans: 0,
+    groceries: [], walletCards: []
+  };
+  try { localStorage.setItem('smartgrocer_data', JSON.stringify(data)); } catch(e) {}
+
+  // Show app
   document.getElementById('onboarding').style.display='none';
   document.getElementById('app').style.display='block';
   document.getElementById('chat-wrap').style.display='block';
-  updatePlanUI();renderRewards();renderC();renderBCats();renderWallet();
-  addChatMsg('bot','Bonjour '+name+'! 👋 Bienvenue sur SmartGrocer. Ton essai Premium de 30 jours est activé! Comment puis-je t\'aider?');
+  
+  // Subscribe to MailerLite
+  try {
+    if(typeof ml !== 'undefined') ml('webforms', 'show', 'mypcHz', {email: email, name: name});
+  } catch(e) {}
+
+  updatePlanUI(); renderRewards(); renderC(); renderBCats(); renderWallet(); renderGr(); updatePointsUI();
+  addChatMsg('bot', 'Bonjour ' + name + '! 👋 Bienvenue sur SmartGrocer! Pour activer ton essai Premium de 30 jours, clique sur le bouton ci-dessous pour entrer ta carte de crédit. Annulable à tout moment!');
+  
+  // Open premium page with Stripe button
+  setTimeout(() => {
+    goExtra('premium');
+    showToast('👆 Entre ta carte de crédit pour activer le Premium!', 5000);
+  }, 1500);
 }
 function goTo(p,btn){
   document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
