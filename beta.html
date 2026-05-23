@@ -265,85 +265,7 @@ function stopRealScan() {
   document.getElementById('scan-active').style.display = 'none';
 }
 
-async function lookupBarcode(code) {
-  document.getElementById('scan-btn').disabled = true;
-  document.getElementById('px-ld').classList.add('on');
-  document.getElementById('px-res').style.display = 'none';
-  document.getElementById('bd').classList.remove('on');
-  document.getElementById('sg').innerHTML = '';
-  try {
-    showToast('🔍 Recherche du produit...');
-    let productName = ''; let productFound = false;
-    try {
-      const r1 = await fetch('https://world.openfoodfacts.org/api/v0/product/'+code+'.json');
-      const d1 = await r1.json();
-      if(d1.status===1&&d1.product){
-        const p=d1.product;
-        let n=p.product_name_fr||p.product_name||p.product_name_en||'';
-        let b=p.brands||''; let q=p.quantity||'';
-        if(b&&n&&!n.toLowerCase().includes(b.toLowerCase()))n=b+' '+n;
-        if(q)n+=' '+q; productName=n.trim(); if(productName)productFound=true;
-      }
-    }catch(e){console.log('OFF:',e);}
-    if(!productFound){
-      try{
-        const r2=await fetch('https://api.upcitemdb.com/prod/trial/lookup?upc='+code);
-        const d2=await r2.json();
-        if(d2.code==='OK'&&d2.items&&d2.items.length>0){
-          const item=d2.items[0]; let n=item.title||''; let b=item.brand||'';
-          if(b&&n&&!n.toLowerCase().includes(b.toLowerCase()))n=b+' '+n;
-          productName=n.trim(); if(productName)productFound=true;
-        }
-      }catch(e){console.log('UPC:',e);}
-    }
-    if(!productFound){
-      document.getElementById('px-em').textContent='❓';
-      document.getElementById('px-nm').textContent='Produit non reconnu';
-      document.getElementById('px-bc').textContent='Code: '+code;
-      document.getElementById('sg').innerHTML=`<div style="grid-column:1/-1;background:#fef3c7;border:1px solid #fcd34d;border-radius:12px;padding:1rem;text-align:center;">
-  <div style="font-size:14px;font-weight:700;color:#92400e;margin-bottom:6px;">⚠️ Produit non trouvé</div>
-  <div style="font-size:12px;color:#78350f;margin-bottom:12px;">Ce produit n'est pas encore dans notre base de données. Tu peux l'ajouter pour aider toute la communauté!</div>
-  <div style="display:flex;flex-direction:column;gap:8px;">
-    <button class="btn" style="background:#1D9E75;color:#fff;width:100%;justify-content:center;padding:10px;" onclick="window.open('https://world.openfoodfacts.org/cgi/product.pl?type=add&barcode=${code}','_blank')">
-      🌍 Ajouter ce produit à la base de données mondiale
-    </button>
-    <button class="btn bo" onclick="document.getElementById('prod-in').focus();document.getElementById('px-res').style.display='none';" style="width:100%;justify-content:center;padding:10px;font-size:12px;">
-      🔍 Rechercher manuellement
-    </button>
-  </div>
-  <div style="font-size:10px;color:#92400e;margin-top:8px;">En ajoutant ce produit, tu aides des millions d'utilisateurs dans le monde! 🌱</div>
-</div>`;
-      document.getElementById('px-res').style.display='block';
-      showToast('⚠️ Produit non reconnu — essaie la recherche manuelle');
-      document.getElementById('px-ld').classList.remove('on');
-      document.getElementById('scan-btn').disabled=false;
-      return;
-    }
-    showToast('💰 Comparaison des prix...');
-    const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer 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'},body:JSON.stringify({model:'llama-3.3-70b-versatile',max_completion_tokens:1000,messages:[{role:'user',content:'Prix réalistes au Québec pour "'+productName+'". JSON seulement:\n{"emoji":"🛒","nom":"'+productName+'","magasins":[{"nom":"IGA","prix":5.99,"prixRegulier":7.49,"enSpecial":true,"format":"1kg"},{"nom":"Metro","prix":7.29,"prixRegulier":7.29,"enSpecial":false,"format":"1kg"},{"nom":"Maxi","prix":6.49,"prixRegulier":6.99,"enSpecial":true,"format":"1kg"},{"nom":"Walmart","prix":6.19,"prixRegulier":6.19,"enSpecial":false,"format":"1kg"},{"nom":"Costco","prix":14.99,"prixRegulier":14.99,"enSpecial":false,"format":"2.5kg"}],"formats":[{"format":"1kg","prix":5.99,"prixAu100g":0.60}]}'}]})});
-    const data=await res.json();
-    const text=data.choices[0].message.content.replace(/```json|```/g,'').trim();
-    const d=JSON.parse(text);
-    document.getElementById('px-em').textContent=d.emoji;
-    document.getElementById('px-nm').textContent=productName;
-    document.getElementById('prod-in').value=productName;
-    document.getElementById('px-bc').textContent='Code: '+code+' ✅ Base de données';
-    const sorted=[...d.magasins].sort((a,b)=>a.prix-b.prix);
-    const best=sorted[0],worst=sorted[sorted.length-1];
-    document.getElementById('bs').textContent=best.nom;
-    document.getElementById('bp').textContent='$'+best.prix.toFixed(2);
-    document.getElementById('bsv').textContent='Économise jusqu\'à $'+(worst.prix-best.prix).toFixed(2);
-    document.getElementById('bd').classList.add('on');
-    document.getElementById('sg').innerHTML=d.magasins.map(s=>`<div class="sc ${s.enSpecial?'sale':''}"><div style="font-size:11px;font-weight:700;margin-bottom:2px;">${s.nom}</div><div style="font-size:16px;font-weight:700;">$${s.prix.toFixed(2)}</div>${s.enSpecial?`<div style="font-size:9px;color:var(--sub);text-decoration:line-through;">$${s.prixRegulier.toFixed(2)}</div><div class="badge bdg" style="margin-top:2px;font-size:9px;">Spécial!</div>`:''}<div style="font-size:9px;color:var(--sub);margin-top:2px;">${s.format}</div></div>`).join('');
-    document.getElementById('px-res').style.display='block';
-    scansToday++;totalScans++;
-    const ps=document.getElementById('prof-scans');if(ps)ps.textContent=totalScans;
-    addPoints(10);updateLimitDots();saveData();
-    showToast('✅ '+productName+'! +'+(isPremium?20:10)+' pts');
-  }catch(e){console.error('Barcode error:',e);showToast('❌ Erreur — réessaie!');}
-  document.getElementById('px-ld').classList.remove('on');
-  document.getElementById('scan-btn').disabled=false;
-}
+
 
 </script>
 
@@ -1639,133 +1561,12 @@ async function testAPI(){
 
 
 // ===== REAL BARCODE SCANNER =====
-let quaggaRunning = false;
 
-function startRealScan() {
-  if (!isPremium && scansToday >= LIMITS.scans) {
-    showPaywall('Limite de scans atteinte!', 'Tu as utilisé tes 5 scans gratuits. Passe à Premium!');
-    return;
-  }
-  document.getElementById('scan-idle').style.display = 'none';
-  document.getElementById('scan-active').style.display = 'block';
-  document.getElementById('quagga-container').innerHTML = '';
 
-  if (typeof Quagga === 'undefined') {
-    showToast('⚠️ Scanner non disponible — utilise Simuler scan');
-    stopRealScan();
-    return;
-  }
 
-  Quagga.init({
-    inputStream: {
-      type: 'LiveStream',
-      target: document.getElementById('quagga-container'),
-      constraints: {
-        facingMode: 'environment',
-        width: { ideal: 1280, max: 1920 },
-        height: { ideal: 720, max: 1080 }
-      }
-    },
-    locator: { patchSize: 'medium', halfSample: true },
-    numOfWorkers: 2,
-    frequency: 10,
-    decoder: {
-      readers: ['ean_reader', 'ean_8_reader', 'upc_reader', 'upc_e_reader', 'code_128_reader']
-    },
-    locate: true
-  }, function(err) {
-    if (err) {
-      console.error('Quagga error:', err);
-      showToast('📷 Caméra non disponible — utilise Simuler scan');
-      stopRealScan();
-      return;
-    }
-    Quagga.start();
-    quaggaRunning = true;
-  });
 
-  let scanDone = false;
 
-  Quagga.onDetected(function(result) {
-    if (scanDone) return;
-    const code = result.codeResult.code;
-    if (!code || code.length < 4) return;
-    scanDone = true;
-    const status = document.getElementById('scan-status');
-    if (status) status.textContent = '✅ Code scanné: ' + code;
-    setTimeout(() => {
-      stopRealScan();
-      document.getElementById('px-bc').textContent = 'Code barre: ' + code;
-      document.getElementById('prod-in').value = code;
-      lookupBarcode(code);
-    }, 300);
-  });
-}
 
-function stopRealScan() {
-  if (quaggaRunning) {
-    try { Quagga.stop(); } catch(e) {}
-    quaggaRunning = false;
-  }
-  document.getElementById('scan-idle').style.display = 'block';
-  document.getElementById('scan-active').style.display = 'none';
-}
-
-async function lookupBarcode(code) {
-  document.getElementById('scan-btn').disabled = true;
-  document.getElementById('px-ld').classList.add('on');
-  document.getElementById('px-res').style.display = 'none';
-  document.getElementById('bd').classList.remove('on');
-  document.getElementById('sg').innerHTML = '';
-
-  try {
-    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer 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'
-      },
-      body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
-        max_completion_tokens: 1000,
-        messages: [{
-          role: 'user',
-          content: 'Le code barre ' + code + ' correspond à quel produit épicerie vendu au Québec? Donne des prix réalistes québécois. JSON seulement:\n{"emoji":"🥜","nom":"Nom complet du produit","magasins":[{"nom":"IGA","prix":5.99,"prixRegulier":7.49,"enSpecial":true,"format":"1kg"},{"nom":"Metro","prix":7.29,"prixRegulier":7.29,"enSpecial":false,"format":"1kg"},{"nom":"Maxi","prix":6.49,"prixRegulier":6.99,"enSpecial":true,"format":"1kg"},{"nom":"Walmart","prix":6.19,"prixRegulier":6.19,"enSpecial":false,"format":"1kg"},{"nom":"Costco","prix":14.99,"prixRegulier":14.99,"enSpecial":false,"format":"2.5kg"}],"formats":[{"format":"1kg","prix":5.99,"prixAu100g":0.60}]}'
-        }]
-      })
-    });
-    const data = await res.json();
-    const text = data.choices[0].message.content.replace(/```json|```/g, '').trim();
-    const d = JSON.parse(text);
-    document.getElementById('px-em').textContent = d.emoji;
-    document.getElementById('px-nm').textContent = d.nom;
-    document.getElementById('prod-in').value = d.nom;
-    const sorted = [...d.magasins].sort((a, b) => a.prix - b.prix);
-    const best = sorted[0], worst = sorted[sorted.length - 1];
-    document.getElementById('bs').textContent = best.nom;
-    document.getElementById('bp').textContent = '$' + best.prix.toFixed(2);
-    document.getElementById('bsv').textContent = 'Économise jusqu\'à $' + (worst.prix - best.prix).toFixed(2);
-    document.getElementById('bd').classList.add('on');
-    document.getElementById('sg').innerHTML = d.magasins.map(s =>
-      `<div class="sc ${s.enSpecial ? 'sale' : ''}">
-        <div style="font-size:11px;font-weight:700;margin-bottom:2px;">${s.nom}</div>
-        <div style="font-size:16px;font-weight:700;">$${s.prix.toFixed(2)}</div>
-        ${s.enSpecial ? `<div style="font-size:9px;color:var(--sub);text-decoration:line-through;">$${s.prixRegulier.toFixed(2)}</div><div class="badge bdg" style="margin-top:2px;font-size:9px;">Spécial!</div>` : ''}
-        <div style="font-size:9px;color:var(--sub);margin-top:2px;">${s.format}</div>
-      </div>`
-    ).join('');
-    document.getElementById('px-res').style.display = 'block';
-    scansToday++; totalScans++;
-    const ps = document.getElementById('prof-scans'); if (ps) ps.textContent = totalScans;
-    addPoints(10); updateLimitDots();
-    showToast('✅ Produit identifié! +' + (isPremium ? 20 : 10) + ' pts');
-  } catch(e) {
-    console.error('Barcode lookup error:', e);
-    showToast('❌ Produit non reconnu — essaie la recherche manuelle');
-  }
-  document.getElementById('px-ld').classList.remove('on');
-  document.getElementById('scan-btn').disabled = false;
-}
 
 
 async function lookupBarcode(code) {
@@ -1870,103 +1671,111 @@ function startCardScan() {
 
   const container = document.getElementById('w-quagga-container');
   container.innerHTML = '';
+  container.style.position = 'relative';
 
-  // Create video element
+  // Create video + canvas
   const video = document.createElement('video');
   video.style.cssText = 'width:100%;height:auto;display:block;border-radius:14px;';
   video.autoplay = true;
   video.playsInline = true;
   video.muted = true;
 
-  // Create canvas for QR scanning
   const canvas = document.createElement('canvas');
-  canvas.style.display = 'none';
+  canvas.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;';
+  
   container.appendChild(video);
   container.appendChild(canvas);
 
   navigator.mediaDevices.getUserMedia({
-    video: { facingMode: 'environment', width: {ideal:1280}, height: {ideal:720} }
+    video: { facingMode: 'environment', width: {ideal:1920}, height: {ideal:1080} }
   }).then(stream => {
     cardScanStream = stream;
     video.srcObject = stream;
     video.play();
 
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', {willReadFrequently: true});
 
-    // Try jsQR for QR codes every 200ms
-    cardScanInterval = setInterval(() => {
-      if(walletScanDone) return;
-      if(video.readyState !== video.HAVE_ENOUGH_DATA) return;
+    video.addEventListener('loadedmetadata', () => {
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      
-      // Try jsQR
+    });
+
+    cardScanInterval = setInterval(() => {
+      if(walletScanDone) return;
+      if(video.readyState < 2 || video.videoWidth === 0) return;
+
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0);
+
+      // Try jsQR first
       if(typeof jsQR !== 'undefined') {
-        const qr = jsQR(imageData.data, imageData.width, imageData.height);
-        if(qr && qr.data && qr.data.length > 3) {
-          walletScanDone = true;
-          const status = document.getElementById('w-scan-status');
-          if(status) status.textContent = '✅ Code QR détecté!';
-          setTimeout(() => {
-            stopCardScan();
-            scannedCardCode = qr.data;
-            showCardNameModal(qr.data);
-          }, 300);
-          return;
-        }
+        try {
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const qr = jsQR(imageData.data, imageData.width, imageData.height, {
+            inversionAttempts: 'dontInvert'
+          });
+          if(qr && qr.data && qr.data.length > 2) {
+            walletScanDone = true;
+            clearInterval(cardScanInterval);
+            const status = document.getElementById('w-scan-status');
+            if(status) status.textContent = '✅ Code QR détecté!';
+            setTimeout(() => { stopCardScan(); scannedCardCode = qr.data; showCardNameModal(qr.data); }, 400);
+            return;
+          }
+        } catch(e) {}
       }
-    }, 200);
+    }, 150);
 
-    // Also try Quagga for barcodes
-    if(typeof Quagga !== 'undefined') {
-      Quagga.init({
-        inputStream: {
-          type: 'LiveStream',
-          target: container,
-          constraints: { facingMode: 'environment', width: {ideal:1280}, height: {ideal:720} }
-        },
-        locator: {patchSize:'medium', halfSample:true},
-        numOfWorkers: 2,
-        frequency: 10,
-        decoder: { readers: ['ean_reader','ean_8_reader','upc_reader','upc_e_reader','code_128_reader','code_39_reader','itf_reader','codabar_reader'] },
-        locate: true
-      }, function(err) {
-        if(!err) Quagga.start();
-      });
-
-      Quagga.onDetected(function(result) {
-        if(walletScanDone) return;
-        const code = result.codeResult.code;
-        if(!code || code.length < 4) return;
-        walletScanDone = true;
-        const status = document.getElementById('w-scan-status');
-        if(status) status.textContent = '✅ Code détecté: ' + code;
-        setTimeout(() => {
-          stopCardScan();
-          scannedCardCode = code;
-          showCardNameModal(code);
-        }, 300);
-      });
-    }
   }).catch(err => {
     console.error('Camera error:', err);
-    showToast('📷 Caméra non disponible');
+    showToast('📷 Caméra non disponible — permets accès à la caméra!');
     stopCardScan();
   });
+
+  // Also use Quagga for 1D barcodes
+  if(typeof Quagga !== 'undefined') {
+    setTimeout(() => {
+      if(walletScanDone) return;
+      try {
+        Quagga.init({
+          inputStream: {
+            type: 'LiveStream',
+            target: container,
+            constraints: { facingMode: 'environment', width: {ideal:1280}, height: {ideal:720} }
+          },
+          locator: {patchSize:'large', halfSample:false},
+          numOfWorkers: 2,
+          frequency: 8,
+          decoder: { readers: ['ean_reader','ean_8_reader','upc_reader','upc_e_reader','code_128_reader','code_39_reader','codabar_reader'] },
+          locate: true
+        }, function(err) {
+          if(!err) {
+            Quagga.start();
+            Quagga.onDetected(function(result) {
+              if(walletScanDone) return;
+              const code = result.codeResult.code;
+              if(!code || code.length < 4) return;
+              // Basic validation
+              if(!code || code.length < 4) return;
+              walletScanDone = true;
+              const status = document.getElementById('w-scan-status');
+              if(status) status.textContent = '✅ Code détecté: ' + code;
+              setTimeout(() => { stopCardScan(); scannedCardCode = code; showCardNameModal(code); }, 400);
+            });
+          }
+        });
+      } catch(e) { console.log('Quagga init error:', e); }
+    }, 500);
+  }
 }
 
 function stopCardScan() {
-  // Stop interval
   if(cardScanInterval) { clearInterval(cardScanInterval); cardScanInterval = null; }
-  // Stop camera stream
   if(cardScanStream) { cardScanStream.getTracks().forEach(t => t.stop()); cardScanStream = null; }
-  // Stop Quagga
   try { Quagga.stop(); } catch(e) {}
   document.getElementById('w-scan-idle').style.display = 'block';
   document.getElementById('w-scan-active').style.display = 'none';
-  // Clear container
   const container = document.getElementById('w-quagga-container');
   if(container) container.innerHTML = '';
 }
