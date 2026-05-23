@@ -747,7 +747,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
 <!-- APP -->
 <div id="app" style="display:none;">
-<div class="trial" id="trial-banner" style="display:none!important;" style="margin:0.75rem 1rem 0;" onclick="goExtra('premium')">
+<div class="trial" id="trial-banner" style="display:none!important;margin:0.75rem 1rem 0;" onclick="goExtra('premium')">
   <div style="font-size:18px;">⭐</div>
   <div style="flex:1"><div style="font-size:12px;font-weight:700;color:#fff;">Premium gratuit — 30 jours restants</div><div style="font-size:10px;color:rgba(255,255,255,0.8);">Clique pour gérer ton abonnement</div></div>
   <div style="background:rgba(255,255,255,0.2);color:#fff;font-size:10px;font-weight:700;padding:4px 8px;border-radius:6px;">Gérer</div>
@@ -1373,7 +1373,7 @@ function updatePlanUI(){
   const p=isPremium;
   [['scan-badge','⭐ Illimité','🆓 5/jour'],['rec-badge','⭐ Illimitées','🆓 3/jour'],['list-badge','⭐ Illimitée','🆓 10 articles'],['plan-badge','⭐ Premium','🆓 Gratuit'],['prof-badge','⭐ Premium Trial','🆓 Gratuit'],['pp-plan','⭐ Premium Trial','🆓 Gratuit']].forEach(([id,pv,fv])=>{const el=document.getElementById(id);if(el){el.textContent=p?pv:fv;el.className='badge '+(p?'bdgold':'bdfree');}});
   ['scan-limit-bar','rec-limit-bar','list-limit-bar'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=p?'none':'flex';});
-  const tb=document.getElementById('trial-banner');if(tb)tb.style.display=p?'flex':'none';
+  const tb=document.getElementById('trial-banner');if(tb)tb.style.display='none';
   const hs=document.getElementById('h-scans');if(hs)hs.textContent=p?'∞':(LIMITS.scans-scansToday);
   const ql=document.getElementById('ql-scan');if(ql)ql.textContent=p?'Illimité ⭐':'5 scans/jour';
   const ul=document.getElementById('upload-label');if(ul)ul.textContent=p?'Uploader ta vidéo ou photo':'Uploader ta vidéo (Premium ⭐)';
