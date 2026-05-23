@@ -809,7 +809,7 @@ window.addEventListener('DOMContentLoaded', () => {
       <div class="sp-zone"><div class="sf"><div class="sl3"></div></div><div style="font-size:11px;margin-top:8px;">Prêt à scanner / Ready to scan</div></div>
       <div style="display:flex;gap:8px;margin-bottom:1rem;">
         <button class="btn bb" style="flex:1;" onclick="startRealScan()"><i class="ti ti-camera"></i> Scanner</button>
-        <button class="btn bo" style="flex:1;" onclick="fakeScan()"><i class="ti ti-barcode"></i> Simuler scan</button>
+        
       </div>
     </div>
     <div id="scan-active" style="display:none;">
@@ -825,10 +825,10 @@ window.addEventListener('DOMContentLoaded', () => {
       </div>
       <div style="display:flex;gap:8px;margin-bottom:1rem;">
         <button class="btn bc" style="flex:1;" onclick="stopRealScan()"><i class="ti ti-x"></i> Arrêter</button>
-        <button class="btn bo" style="flex:1;" onclick="fakeScan()"><i class="ti ti-barcode"></i> Simuler</button>
+        
       </div>
     </div>
-    <button class="btn bo bf" onclick="testAPI()" style="margin-bottom:0.75rem;font-size:11px;">🔧 Tester la connexion API</button><div style="display:flex;align-items:center;gap:8px;margin-bottom:0.875rem;"><div style="flex:1;height:1px;background:var(--light);"></div><div style="font-size:10px;color:var(--sub);">ou recherche / or search</div><div style="flex:1;height:1px;background:var(--light);"></div></div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:0.875rem;"><div style="flex:1;height:1px;background:var(--light);"></div><div style="font-size:10px;color:var(--sub);">ou recherche / or search</div><div style="flex:1;height:1px;background:var(--light);"></div></div>
     <div class="sugg">
       <div class="sg" onclick="setProd('beurre d\'arachide Kraft 1kg')">🥜 Kraft</div>
       <div class="sg" onclick="setProd('lait 2% 4L')">🥛 Lait</div>
