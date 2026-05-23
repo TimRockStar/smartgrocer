@@ -747,9 +747,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
 <!-- APP -->
 <div id="app" style="display:none;">
-<div class="trial" id="trial-banner" style="display:none!important;margin:0.75rem 1rem 0;" onclick="goExtra('premium')">
-  <div style="font-size:18px;">⭐</div>
-  <div style="flex:1"><div style="font-size:12px;font-weight:700;color:#fff;">Premium gratuit — 30 jours restants</div><div style="font-size:10px;color:rgba(255,255,255,0.8);">Clique pour gérer ton abonnement</div></div>
+<div style="flex:1"><div style="font-size:12px;font-weight:700;color:#fff;">Premium gratuit — 30 jours restants</div><div style="font-size:10px;color:rgba(255,255,255,0.8);">Clique pour gérer ton abonnement</div></div>
   <div style="background:rgba(255,255,255,0.2);color:#fff;font-size:10px;font-weight:700;padding:4px 8px;border-radius:6px;">Gérer</div>
 </div>
 
@@ -1311,12 +1309,22 @@ function finishOb(){
 
   // Save to localStorage
   const data = {
-    name, email, city: fullCity, budget: '$'+budget,
-    diet: 'Aucun', onboardingDone: true,
-    isPremium: true, points: 0, totalScans: 0,
-    groceries: [], walletCards: []
+    name: name,
+    email: email,
+    city: fullCity,
+    budget: '$400',
+    diet: 'Aucun',
+    onboardingDone: true,
+    isPremium: true,
+    points: 0,
+    totalScans: 0,
+    groceries: [],
+    walletCards: []
   };
-  try { localStorage.setItem('smartgrocer_data', JSON.stringify(data)); } catch(e) {}
+  try { 
+    localStorage.setItem('smartgrocer_data', JSON.stringify(data));
+    console.log('Saved:', data);
+  } catch(e) { console.error('Save error:', e); }
 
   // Show app
   document.getElementById('onboarding').style.display='none';
@@ -1373,7 +1381,7 @@ function updatePlanUI(){
   const p=isPremium;
   [['scan-badge','⭐ Illimité','🆓 5/jour'],['rec-badge','⭐ Illimitées','🆓 3/jour'],['list-badge','⭐ Illimitée','🆓 10 articles'],['plan-badge','⭐ Premium','🆓 Gratuit'],['prof-badge','⭐ Premium Trial','🆓 Gratuit'],['pp-plan','⭐ Premium Trial','🆓 Gratuit']].forEach(([id,pv,fv])=>{const el=document.getElementById(id);if(el){el.textContent=p?pv:fv;el.className='badge '+(p?'bdgold':'bdfree');}});
   ['scan-limit-bar','rec-limit-bar','list-limit-bar'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=p?'none':'flex';});
-  const tb=document.getElementById('trial-banner');if(tb)tb.style.display='none';
+  // trial banner hidden in beta
   const hs=document.getElementById('h-scans');if(hs)hs.textContent=p?'∞':(LIMITS.scans-scansToday);
   const ql=document.getElementById('ql-scan');if(ql)ql.textContent=p?'Illimité ⭐':'5 scans/jour';
   const ul=document.getElementById('upload-label');if(ul)ul.textContent=p?'Uploader ta vidéo ou photo':'Uploader ta vidéo (Premium ⭐)';
@@ -1596,6 +1604,7 @@ async function sendChat(){
   try{const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer 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'},body:JSON.stringify({model:'llama-3.3-70b-versatile',max_completion_tokens:300,messages:[{role:'user',content:'Tu es l\'assistant SmartGrocer, app épicerie bilingue FR/EN. Réponds dans la langue de la question, court et utile (max 2-3 phrases). Question: '+v}]})});const data=await res.json();addChatMsg('bot',data.choices[0].message.content.trim());}catch(e){addChatMsg('bot','Désolé, erreur de connexion!');}
 }
 document.addEventListener('DOMContentLoaded',()=>{
+  initApp();
   [['prod-in',searchProd],['ing-in',addIng],['chat-in',sendChat],['gr-in',addGr]].forEach(([id,fn])=>{const el=document.getElementById(id);if(el)el.addEventListener('keydown',e=>{if(e.key==='Enter')fn();});});
 });
 
@@ -2049,6 +2058,73 @@ function submitFeedback() {
   
   document.getElementById('feedback-form-container').style.display = 'none';
   document.getElementById('feedback-success').style.display = 'block';
+}
+
+
+// ===== BETA LOCALSTORAGE =====
+function saveData() {
+  try {
+    const nameEl = document.getElementById('h-name');
+    const cityEl = document.getElementById('pct');
+    const emailEl = document.getElementById('pp-email-input');
+    const data = {
+      name: nameEl ? nameEl.textContent : 'Tim',
+      email: emailEl ? emailEl.value : '',
+      city: cityEl ? cityEl.textContent : '',
+      budget: '$400',
+      diet: 'Aucun',
+      onboardingDone: true,
+      isPremium: true,
+      points: points,
+      totalScans: totalScans,
+      groceries: groceries,
+      walletCards: walletCards
+    };
+    localStorage.setItem('smartgrocer_data', JSON.stringify(data));
+  } catch(e) { console.error('Save error:', e); }
+}
+
+function loadData() {
+  try {
+    const saved = localStorage.getItem('smartgrocer_data');
+    if (!saved) return false;
+    const data = JSON.parse(saved);
+    if (!data.onboardingDone) return false;
+
+    isPremium = true; // Always premium in beta
+    points = data.points || 0;
+    totalScans = data.totalScans || 0;
+    groceries = data.groceries || [];
+    walletCards = data.walletCards || [];
+
+    // Update UI
+    ['h-name','pnm'].forEach(id=>{const el=document.getElementById(id);if(el&&data.name)el.textContent=data.name;});
+    const pav=document.getElementById('pav');if(pav&&data.name)pav.textContent=data.name.substring(0,2).toUpperCase();
+    ['pct','pp-city'].forEach(id=>{const el=document.getElementById(id);if(el&&data.city)el.textContent=data.city;});
+    const carte=document.getElementById('carte-city');if(carte&&data.city)carte.textContent='Épiceries · '+data.city+' · 5 km';
+    
+    return true;
+  } catch(e) { console.error('Load error:', e); return false; }
+}
+
+function clearData() {
+  if(confirm('Effacer toutes tes données SmartGrocer?')) {
+    localStorage.removeItem('smartgrocer_data');
+    location.reload();
+  }
+}
+
+function initApp() {
+  const hasData = loadData();
+  if (hasData) {
+    document.getElementById('landing').style.display='none';
+    document.getElementById('onboarding').style.display='none';
+    document.getElementById('app').style.display='block';
+    document.getElementById('chat-wrap').style.display='block';
+    isPremium = true;
+    updatePlanUI(); renderRewards(); renderC(); renderBCats(); renderWallet(); renderGr(); updatePointsUI();
+    showToast('👋 Bon retour sur SmartGrocer!');
+  }
 }
 
 </script>
