@@ -372,6 +372,7 @@ n=d.getElementsByTagName(e)[0],n.parentNode.insertBefore(l,n);})
 (window,document,'script','https://assets.mailerlite.com/js/universal.js','ml');
 ml('account', '2355363');
 </script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 </head>
 <body>
 <div class="toast" id="toast"></div>
@@ -1858,50 +1859,116 @@ const KNOWN_CARDS = [
 
 let scannedCardCode = '';
 
+let cardScanStream = null;
+let cardScanInterval = null;
+
 function startCardScan() {
   document.getElementById('w-scan-idle').style.display = 'none';
   document.getElementById('w-scan-active').style.display = 'block';
   document.getElementById('w-name-modal').style.display = 'none';
-  document.getElementById('w-quagga-container').innerHTML = '';
   walletScanDone = false;
 
-  if (typeof Quagga === 'undefined') {
-    showToast('⚠️ Scanner non disponible');
-    stopCardScan();
-    return;
-  }
+  const container = document.getElementById('w-quagga-container');
+  container.innerHTML = '';
 
-  Quagga.init({
-    inputStream: {
-      type: 'LiveStream',
-      target: document.getElementById('w-quagga-container'),
-      constraints: { facingMode: 'environment', width: {ideal:1280}, height: {ideal:720} }
-    },
-    locator: {patchSize:'medium', halfSample:true},
-    numOfWorkers: 2,
-    frequency: 10,
-    decoder: { readers: ['ean_reader','ean_8_reader','upc_reader','upc_e_reader','code_128_reader','code_39_reader','itf_reader'] },
-    locate: true
-  }, function(err) {
-    if (err) { showToast('📷 Caméra non disponible'); stopCardScan(); return; }
-    Quagga.start();
-  });
+  // Create video element
+  const video = document.createElement('video');
+  video.style.cssText = 'width:100%;height:auto;display:block;border-radius:14px;';
+  video.autoplay = true;
+  video.playsInline = true;
+  video.muted = true;
 
-  Quagga.onDetected(function(result) {
-    if (walletScanDone) return;
-    const code = result.codeResult.code;
-    if (!code || code.length < 4) return;
-    walletScanDone = true;
+  // Create canvas for QR scanning
+  const canvas = document.createElement('canvas');
+  canvas.style.display = 'none';
+  container.appendChild(video);
+  container.appendChild(canvas);
+
+  navigator.mediaDevices.getUserMedia({
+    video: { facingMode: 'environment', width: {ideal:1280}, height: {ideal:720} }
+  }).then(stream => {
+    cardScanStream = stream;
+    video.srcObject = stream;
+    video.play();
+
+    const ctx = canvas.getContext('2d');
+
+    // Try jsQR for QR codes every 200ms
+    cardScanInterval = setInterval(() => {
+      if(walletScanDone) return;
+      if(video.readyState !== video.HAVE_ENOUGH_DATA) return;
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      
+      // Try jsQR
+      if(typeof jsQR !== 'undefined') {
+        const qr = jsQR(imageData.data, imageData.width, imageData.height);
+        if(qr && qr.data && qr.data.length > 3) {
+          walletScanDone = true;
+          const status = document.getElementById('w-scan-status');
+          if(status) status.textContent = '✅ Code QR détecté!';
+          setTimeout(() => {
+            stopCardScan();
+            scannedCardCode = qr.data;
+            showCardNameModal(qr.data);
+          }, 300);
+          return;
+        }
+      }
+    }, 200);
+
+    // Also try Quagga for barcodes
+    if(typeof Quagga !== 'undefined') {
+      Quagga.init({
+        inputStream: {
+          type: 'LiveStream',
+          target: container,
+          constraints: { facingMode: 'environment', width: {ideal:1280}, height: {ideal:720} }
+        },
+        locator: {patchSize:'medium', halfSample:true},
+        numOfWorkers: 2,
+        frequency: 10,
+        decoder: { readers: ['ean_reader','ean_8_reader','upc_reader','upc_e_reader','code_128_reader','code_39_reader','itf_reader','codabar_reader'] },
+        locate: true
+      }, function(err) {
+        if(!err) Quagga.start();
+      });
+
+      Quagga.onDetected(function(result) {
+        if(walletScanDone) return;
+        const code = result.codeResult.code;
+        if(!code || code.length < 4) return;
+        walletScanDone = true;
+        const status = document.getElementById('w-scan-status');
+        if(status) status.textContent = '✅ Code détecté: ' + code;
+        setTimeout(() => {
+          stopCardScan();
+          scannedCardCode = code;
+          showCardNameModal(code);
+        }, 300);
+      });
+    }
+  }).catch(err => {
+    console.error('Camera error:', err);
+    showToast('📷 Caméra non disponible');
     stopCardScan();
-    scannedCardCode = code;
-    showCardNameModal(code);
   });
 }
 
 function stopCardScan() {
+  // Stop interval
+  if(cardScanInterval) { clearInterval(cardScanInterval); cardScanInterval = null; }
+  // Stop camera stream
+  if(cardScanStream) { cardScanStream.getTracks().forEach(t => t.stop()); cardScanStream = null; }
+  // Stop Quagga
   try { Quagga.stop(); } catch(e) {}
   document.getElementById('w-scan-idle').style.display = 'block';
   document.getElementById('w-scan-active').style.display = 'none';
+  // Clear container
+  const container = document.getElementById('w-quagga-container');
+  if(container) container.innerHTML = '';
 }
 
 function cancelCardScan() {
