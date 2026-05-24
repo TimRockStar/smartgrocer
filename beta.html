@@ -940,10 +940,24 @@ window.addEventListener('DOMContentLoaded', () => {
   <div class="px">
     <!-- Scanner Section -->
     <div id="w-scan-idle">
-      <div style="background:linear-gradient(135deg,#1D9E75,#0F6E56);border-radius:16px;padding:1.25rem;margin-bottom:1rem;text-align:center;cursor:pointer;" onclick="startCardScan()">
+      <!-- Option 1: Live scanner -->
+      <div style="background:linear-gradient(135deg,#1D9E75,#0F6E56);border-radius:16px;padding:1.25rem;margin-bottom:0.75rem;text-align:center;cursor:pointer;" onclick="startCardScan()">
         <div style="font-size:28px;margin-bottom:6px;">📷</div>
-        <div style="font-size:14px;font-weight:700;color:#fff;">Scanner une carte de fidélité</div>
-        <div style="font-size:11px;color:rgba(255,255,255,0.85);margin-top:4px;">IGA · Maxi · Metro · PC Optimum · Air Miles · CAA · et plus!</div>
+        <div style="font-size:14px;font-weight:700;color:#fff;">Scanner en direct</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.85);margin-top:4px;">Pointe la caméra vers le code barre</div>
+      </div>
+      <!-- Option 2: Take photo with native camera -->
+      <label style="display:block;background:linear-gradient(135deg,#C9A227,#9A7A10);border-radius:16px;padding:1.25rem;margin-bottom:0.75rem;text-align:center;cursor:pointer;">
+        <div style="font-size:28px;margin-bottom:6px;">📸</div>
+        <div style="font-size:14px;font-weight:700;color:#fff;">Prendre une photo</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.85);margin-top:4px;">Utilise l'app caméra de ton téléphone</div>
+        <input type="file" accept="image/*" capture="environment" style="display:none;" onchange="scanCardPhoto(this)"/>
+      </label>
+      <!-- Option 3: Enter manually -->
+      <div style="background:var(--card);border:2px dashed var(--border);border-radius:16px;padding:1.25rem;margin-bottom:1rem;text-align:center;cursor:pointer;" onclick="addCardManually()">
+        <div style="font-size:28px;margin-bottom:6px;">✏️</div>
+        <div style="font-size:14px;font-weight:700;color:var(--text);">Entrer manuellement</div>
+        <div style="font-size:11px;color:var(--sub);margin-top:4px;">Tape le numéro de ta carte</div>
       </div>
     </div>
     <div id="w-scan-active" style="display:none;">
@@ -1950,6 +1964,97 @@ function initApp() {
     updatePlanUI(); renderRewards(); renderC(); renderBCats(); renderWallet(); renderGr(); updatePointsUI();
     showToast('👋 Bon retour sur SmartGrocer!');
   }
+}
+
+
+function scanCardPhoto(input) {
+  if(!input.files || !input.files[0]) return;
+  const file = input.files[0];
+  const img = new Image();
+  const url = URL.createObjectURL(file);
+  img.onload = function() {
+    const canvas = document.createElement('canvas');
+    canvas.width = img.width;
+    canvas.height = img.height;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+    URL.revokeObjectURL(url);
+
+    // Try ZXing on the image
+    if(typeof ZXing !== 'undefined') {
+      try {
+        const reader = new ZXing.BrowserMultiFormatReader();
+        reader.decodeFromImageElement(img).then(function(result) {
+          if(result) {
+            scannedCardCode = result.getText();
+            showCardNameModal(scannedCardCode);
+          }
+        }).catch(function() {
+          // Try jsQR as fallback
+          tryJsQROnCanvas(ctx, canvas);
+        });
+        return;
+      } catch(e) {}
+    }
+    tryJsQROnCanvas(ctx, canvas);
+  };
+  img.src = url;
+  showToast('🔍 Analyse de la photo...');
+}
+
+function tryJsQROnCanvas(ctx, canvas) {
+  if(typeof jsQR !== 'undefined') {
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const qr = jsQR(imageData.data, imageData.width, imageData.height, {inversionAttempts: 'attemptBoth'});
+    if(qr && qr.data) {
+      scannedCardCode = qr.data;
+      showCardNameModal(scannedCardCode);
+      return;
+    }
+  }
+  // No code found - ask user to enter manually
+  showToast('⚠️ Code non détecté — entre le numéro manuellement!');
+  addCardManually();
+}
+
+function addCardManually() {
+  scannedCardCode = 'MANUEL-' + Date.now();
+  const modal = document.getElementById('w-name-modal');
+  let sugHtml = KNOWN_CARDS.slice(0,6).map(function(c) {
+    return '<div onclick="selectCardName(this.dataset.name)" data-name="' + c.name + '" style="background:var(--light);border:1px solid var(--border);border-radius:8px;padding:5px 10px;font-size:11px;cursor:pointer;display:inline-flex;align-items:center;gap:4px;">' + c.icon + ' ' + c.name + '</div>';
+  }).join('');
+  modal.innerHTML = '<div style="font-size:14px;font-weight:700;margin-bottom:10px;">Ajouter une carte</div>' +
+    '<div style="margin-bottom:10px;"><label style="font-size:11px;color:var(--sub);display:block;margin-bottom:4px;">Numéro de la carte</label><input type="text" id="w-manual-number" placeholder="Ex: 1234 5678 9012"/></div>' +
+    '<div style="margin-bottom:10px;"><div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">' + sugHtml + '</div><input type="text" id="w-card-name" placeholder="Nom de la carte..."/></div>' +
+    '<div style="display:flex;gap:8px;"><button class="btn bgold" style="flex:1;" onclick="confirmAddCardManual()">Ajouter</button><button class="btn bo" style="flex:1;" onclick="closeWalletNameModal()">Annuler</button></div>';
+  modal.style.display = 'block';
+}
+
+function confirmAddCardManual() {
+  const name = document.getElementById('w-card-name').value.trim();
+  const numEl = document.getElementById('w-manual-number');
+  const number = numEl ? numEl.value.trim() : scannedCardCode;
+  if(!name) { showToast('Entre le nom de la carte!'); return; }
+  const known = KNOWN_CARDS.find(function(c) { return c.name.toLowerCase() === name.toLowerCase(); });
+  walletCards.push({
+    name: name, type: name,
+    icon: known ? known.icon : '💳',
+    gradient: known ? known.gradient : 'linear-gradient(135deg,#1D9E75,#0F6E56)',
+    number: number || 'XXXX XXXX XXXX XXXX',
+    pts: 0,
+    shadow: known ? known.shadow : 'rgba(29,158,117,0.35)',
+    isReal: true
+  });
+  document.getElementById('w-name-modal').style.display = 'none';
+  activeCard = walletCards.length - 1;
+  renderWallet();
+  saveData();
+  showToast('Carte ' + name + ' ajoutée!');
+}
+
+
+function closeWalletNameModal() {
+  document.getElementById('w-name-modal').style.display = 'none';
 }
 
 </script>
