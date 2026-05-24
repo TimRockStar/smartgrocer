@@ -1623,7 +1623,7 @@ async function lookupBarcode(code) {
       document.getElementById('px-em').textContent = '❓';
       document.getElementById('px-nm').textContent = 'Produit non trouvé';
       document.getElementById('px-bc').textContent = 'Code: ' + code;
-
+      showNotFound(code);
       document.getElementById('px-res').style.display = 'block';
       document.getElementById('px-ld').classList.remove('on');
       document.getElementById('scan-btn').disabled = false;
