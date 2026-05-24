@@ -853,24 +853,55 @@ window.addEventListener('DOMContentLoaded', () => {
     <div id="comm-feed"><input type="text" placeholder="Rechercher / Search..." id="cs" style="margin-bottom:0.875rem;" oninput="filterC()"/><div id="cl"></div></div>
     <div id="comm-upload" style="display:none;">
       <div class="card">
-        <div style="display:flex;flex-direction:column;gap:8px;">
-          <div><div class="sl2">Nom de ta recette</div><input type="text" id="up-nm" placeholder="Ex: Pâtes crémeuses..."/></div>
-          <div><div class="sl2">Ingrédients</div><input type="text" id="up-ig" placeholder="Ex: saumon, pâtes..."/></div>
-          <div id="upload-zone" style="border:2px dashed var(--border);border-radius:12px;padding:1.25rem;text-align:center;color:var(--sub);font-size:12px;cursor:pointer;" onclick="checkUpload()">
-          <i class="ti ti-video-plus" style="font-size:20px;display:block;margin-bottom:4px;"></i>
-          <span id="upload-label">Uploader ta vidéo ou photo</span>
-          <div id="premium-upload-lock" style="display:none;margin-top:6px;">
-            <span style="background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;padding:3px 8px;border-radius:999px;">🔒 Premium requis</span>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+
+          <!-- Titre -->
+          <div>
+            <label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:4px;">Titre de la recette <span style="color:#ef4444;">*</span></label>
+            <input type="text" id="up-nm" placeholder="Ex: Pâtes crémeuses au saumon..."/>
           </div>
-        </div>
-          <button class="btn bc bf" id="share-btn" onclick="submitUp()">📤 Partager / Share</button>
+
+          <!-- Temps + Portions -->
+          <div style="display:flex;gap:8px;">
+            <div style="flex:1;">
+              <label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:4px;">Temps de préparation</label>
+              <input type="text" id="up-temps" placeholder="Ex: 30 min"/>
+            </div>
+            <div style="flex:1;">
+              <label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:4px;">Portions</label>
+              <input type="text" id="up-portions" placeholder="Ex: 4 portions"/>
+            </div>
+          </div>
+
+          <!-- Ingrédients -->
+          <div>
+            <label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:4px;">Ingrédients <span style="color:#ef4444;">*</span></label>
+            <textarea id="up-ig" placeholder="Ex:&#10;- 500g de pâtes&#10;- 200g de saumon&#10;- 1 tasse de crème..." style="min-height:80px;"></textarea>
+          </div>
+
+          <!-- Étapes -->
+          <div>
+            <label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:4px;">Étapes de préparation <span style="color:#ef4444;">*</span></label>
+            <textarea id="up-etapes" placeholder="Ex:&#10;1. Faire cuire les pâtes...&#10;2. Faire revenir le saumon...&#10;3. Mélanger avec la crème..." style="min-height:100px;"></textarea>
+          </div>
+
+          <!-- Upload vidéo/photo (optionnel) -->
+          <div>
+            <label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:4px;">Photo ou vidéo (optionnel)</label>
+            <div id="upload-zone" style="border:2px dashed var(--border);border-radius:12px;padding:1rem;text-align:center;color:var(--sub);font-size:12px;cursor:pointer;" onclick="checkUpload()">
+              <i class="ti ti-photo-plus" style="font-size:20px;display:block;margin-bottom:4px;"></i>
+              <span id="upload-label">Ajouter une photo ou vidéo</span>
+              <div style="font-size:10px;color:var(--sub);margin-top:3px;">Facultatif — ta recette écrite suffit!</div>
+              <div id="premium-upload-lock" style="display:none;margin-top:6px;">
+                <span style="background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;padding:3px 8px;border-radius:999px;">🔒 Premium requis</span>
+              </div>
+            </div>
+          </div>
+
+          <button class="btn bc bf" id="share-btn" onclick="submitUp()">📤 Partager ma recette</button>
           <div id="share-premium-msg" style="display:none;background:#fef3c7;border:1px solid #fcd34d;border-radius:10px;padding:8px;text-align:center;margin-top:6px;">
             <div style="font-size:12px;font-weight:700;color:#92400e;">🔒 Partage réservé aux membres Premium</div>
-            <div style="font-size:11px;color:#78350f;margin:4px 0;">Passe à Premium pour partager tes recettes avec la communauté!</div>
-            <stripe-buy-button
-              buy-button-id="buy_btn_1TZxji8g6DMr5MKkOUY5K31c"
-              publishable-key="pk_live_51TZwZv8g6DMr5MKkRPebAg4U59jlMgIURfwaZcaMTgpSEFTn5jCQ2RQzowgt7RvPwE3sbDalFZADRoTj9N5kLegR00L4Tyau8k"
-            ></stripe-buy-button>
+            <div style="font-size:11px;color:#78350f;margin:4px 0;">Passe à Premium pour partager tes recettes!</div>
           </div>
         </div>
       </div>
@@ -1469,7 +1500,45 @@ function submitUp(){
     document.getElementById('share-btn').style.pointerEvents='none';
     showToast('🔒 Partage réservé aux membres Premium!');
     return;
-  }const n=document.getElementById('up-nm').value.trim();const ig=document.getElementById('up-ig').value.trim();if(!n){showToast('⚠️ Ajoute un nom!');return;}addPoints(25);showToast('🎉 Recette partagée! +'+(isPremium?50:25)+' pts');sendPrompt('Génère une recette complète pour "'+n+'" avec: '+ig);}
+  }
+  const n = document.getElementById('up-nm').value.trim();
+  const ig = document.getElementById('up-ig').value.trim();
+  const etapes = document.getElementById('up-etapes').value.trim();
+  const temps = document.getElementById('up-temps').value.trim();
+  const portions = document.getElementById('up-portions').value.trim();
+  if(!n){ showToast('⚠️ Ajoute un titre!'); return; }
+  if(!ig){ showToast('⚠️ Ajoute les ingrédients!'); return; }
+  if(!etapes){ showToast('⚠️ Ajoute les étapes!'); return; }
+  
+  // Add to community feed
+  const newRec = {
+    id: Date.now(),
+    emoji: '🍳',
+    nom: n,
+    auteur: document.getElementById('h-name').textContent || 'Toi',
+    ini: (document.getElementById('h-name').textContent || 'M').substring(0,2).toUpperCase(),
+    temps: temps || '?',
+    tags: ['maison'],
+    likes: 0,
+    viral: false,
+    liked: false,
+    ingredients: ig,
+    etapes: etapes,
+    portions: portions
+  };
+  commRecs.unshift(newRec);
+  filterC();
+  
+  // Clear form
+  ['up-nm','up-ig','up-etapes','up-temps','up-portions'].forEach(function(id){
+    const el = document.getElementById(id);
+    if(el) el.value = '';
+  });
+  
+  addPoints(25);
+  showToast('🎉 Recette partagée avec la communauté! +' + (isPremium?50:25) + ' pts');
+  switchCT('feed', document.querySelector('#social .tab'));
+}
 function renderRewards(){const el=document.getElementById('rewards-list');if(!el)return;el.innerHTML=rewards.map(r=>`<div style="background:var(--card);border-radius:16px;padding:12px;display:flex;align-items:center;gap:10px;border:1px solid var(--border);margin-bottom:8px;"><div style="font-size:22px;">${r.icon}</div><div style="flex:1"><div style="font-size:12px;font-weight:700;">${r.name}</div><div style="font-size:10px;color:var(--sub);">${r.desc}</div></div><button class="btn bgold" style="padding:5px 10px;font-size:11px;" onclick="claimReward(${r.pts},'${r.name}')">${r.pts} pts</button></div>`).join('');}
 function claimReward(pts,name){
   if(points>=pts){
