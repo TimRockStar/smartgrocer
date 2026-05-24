@@ -1501,7 +1501,11 @@ function renderWallet(){
 
   const c=walletCards[activeCard];const display=document.getElementById('active-card-display');if(!display)return;
   display.style.background=c.gradient;display.style.boxShadow=`0 12px 32px ${c.shadow}`;
-  display.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;"><div><div style="font-size:20px;font-weight:800;color:#fff;">${c.name}</div><div style="font-size:10px;color:rgba(255,255,255,0.8);">${c.type}</div></div><div style="font-size:30px;">${c.icon}</div></div><div style="background:rgba(255,255,255,0.15);border-radius:12px;padding:12px;margin-bottom:10px;text-align:center;"><div style="font-size:12px;font-weight:700;color:#fff;letter-spacing:3px;margin-bottom:8px;">${c.number}</div><div style="display:flex;gap:1.5px;justify-content:center;align-items:center;height:44px;" id="wbc"></div><div style="font-size:10px;color:rgba(255,255,255,0.7);margin-top:6px;">Appuie pour agrandir le code</div></div><div style="display:flex;align-items:center;justify-content:space-between;"><div><div style="font-size:20px;font-weight:700;color:#fff;">${c.pts.toLocaleString()} pts</div><div style="font-size:10px;color:rgba(255,255,255,0.8);">≈ $${(c.pts/100).toFixed(2)} en récompenses</div></div><div style="background:rgba(255,255,255,0.2);color:#fff;font-size:10px;font-weight:700;padding:5px 12px;border-radius:999px;">Niveau Or 🏆</div></div>`;
+  display.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;"><div><div style="font-size:20px;font-weight:800;color:#fff;">${c.name}</div><div style="font-size:10px;color:rgba(255,255,255,0.8);">${c.type}</div></div><div style="font-size:30px;">${c.icon}</div></div><div style="background:rgba(255,255,255,0.15);border-radius:12px;padding:12px;margin-bottom:10px;text-align:center;">
+${c.number && c.number !== '—' ? 
+  '<div style=\"font-size:12px;font-weight:700;color:#fff;letter-spacing:3px;margin-bottom:8px;\">' + c.number + '</div><div style=\"display:flex;gap:1.5px;justify-content:center;align-items:center;height:44px;\" id=\"wbc\"></div><div style=\"font-size:10px;color:rgba(255,255,255,0.7);margin-top:6px;\">Appuie pour agrandir le code</div>' :
+  '<div style=\"font-size:28px;margin-bottom:4px;\">' + c.icon + '</div><div style=\"font-size:12px;color:rgba(255,255,255,0.8)\">Carte ajoutée ✅</div>'
+}</div><div style="display:flex;align-items:center;justify-content:space-between;"><div><div style="font-size:20px;font-weight:700;color:#fff;">${c.pts.toLocaleString()} pts</div><div style="font-size:10px;color:rgba(255,255,255,0.8);">≈ $${(c.pts/100).toFixed(2)} en récompenses</div></div><div style="background:rgba(255,255,255,0.2);color:#fff;font-size:10px;font-weight:700;padding:5px 12px;border-radius:999px;">Niveau Or 🏆</div></div>`;
   setTimeout(()=>{const wbc=document.getElementById('wbc');if(wbc)genBarcode(wbc);},50);
   const wd=document.getElementById('w-dots');if(wd)wd.innerHTML=walletCards.map((x,i)=>`<div onclick="setActiveCard(${i})" style="width:${i===activeCard?20:8}px;height:8px;border-radius:999px;background:${i===activeCard?'var(--g)':'#e5e7eb'};cursor:pointer;transition:all 0.2s;"></div>`).join('');
   const mcl=document.getElementById('mini-cards-list');if(mcl)mcl.innerHTML=walletCards.map((card,i)=>`<div class="mini-card ${i===activeCard?'active-mini':''}" onclick="setActiveCard(${i})"><div style="font-size:24px;">${card.icon}</div><div style="flex:1"><div style="font-size:12px;font-weight:700;">${card.name} — ${card.type}</div><div style="font-size:10px;color:var(--sub);">${card.pts.toLocaleString()} pts · ≈ $${(card.pts/100).toFixed(2)}</div></div><div style="display:flex;align-items:center;gap:8px;"><div style="width:6px;height:6px;border-radius:50%;background:${i===activeCard?'var(--g)':'#e5e7eb'};"></div><button onclick="event.stopPropagation();removeWCard(${i})" style="background:none;border:none;cursor:pointer;color:#9ca3af;font-size:16px;padding:0;">×</button></div></div>`).join('');
@@ -2043,9 +2047,15 @@ function closeWalletNameModal() {
 
 
 function quickAddCard(name, icon, gradient, shadow) {
-  // Check if card already exists
-  if(walletCards.find(function(c) { return c.name === name; })) {
-    showToast('Tu as déjà cette carte!');
+  // If card already exists, just show it
+  const existingIdx = walletCards.findIndex(function(c) { return c.name === name; });
+  if(existingIdx >= 0) {
+    activeCard = existingIdx;
+    renderWallet();
+    // Scroll to active card
+    const activeDisplay = document.getElementById('active-card-display');
+    if(activeDisplay) activeDisplay.scrollIntoView({behavior:'smooth', block:'center'});
+    showToast('Carte ' + name + ' sélectionnée!');
     return;
   }
   walletCards.push({
@@ -2053,7 +2063,7 @@ function quickAddCard(name, icon, gradient, shadow) {
     type: name,
     icon: icon,
     gradient: gradient,
-    number: '',
+    number: '—',  // No barcode for manually added cards
     pts: 0,
     shadow: shadow,
     isReal: false
