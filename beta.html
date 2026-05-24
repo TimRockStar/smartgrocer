@@ -294,7 +294,7 @@ n=d.getElementsByTagName(e)[0],n.parentNode.insertBefore(l,n);})
 (window,document,'script','https://assets.mailerlite.com/js/universal.js','ml');
 ml('account', '2355363');
 </script>
-<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<script src="https://unpkg.com/@zxing/library@0.19.1/umd/index.min.js"></script>
 </head>
 <body>
 <div class="toast" id="toast"></div>
@@ -1662,6 +1662,7 @@ let scannedCardCode = '';
 
 let cardScanStream = null;
 let cardScanInterval = null;
+let zxingReader = null;
 
 function startCardScan() {
   document.getElementById('w-scan-idle').style.display = 'none';
@@ -1674,88 +1675,54 @@ function startCardScan() {
   container.style.position = 'relative';
 
   const video = document.createElement('video');
+  video.id = 'card-scan-video';
   video.style.cssText = 'width:100%;height:auto;display:block;border-radius:14px;';
   video.autoplay = true;
   video.playsInline = true;
   video.muted = true;
-
-  const canvas = document.createElement('canvas');
-  canvas.style.display = 'none';
-
   container.appendChild(video);
-  container.appendChild(canvas);
-  const ctx = canvas.getContext('2d', {willReadFrequently: true});
 
+  if(typeof ZXing !== 'undefined') {
+    try {
+      zxingReader = new ZXing.BrowserMultiFormatReader();
+      zxingReader.decodeFromVideoDevice(null, video, function(result, err) {
+        if(walletScanDone) return;
+        if(result) {
+          walletScanDone = true;
+          const code = result.getText();
+          const statusEl = document.getElementById('w-scan-status');
+          if(statusEl) statusEl.textContent = 'Code scanné!';
+          setTimeout(function() {
+            stopCardScan();
+            scannedCardCode = code;
+            showCardNameModal(code);
+          }, 300);
+        }
+      });
+      return;
+    } catch(e) {
+      console.log('ZXing error:', e);
+    }
+  }
+
+  // Fallback: manual camera
   navigator.mediaDevices.getUserMedia({
     video: { facingMode: 'environment', width: {ideal:1280}, height: {ideal:720} }
-  }).then(stream => {
+  }).then(function(stream) {
     cardScanStream = stream;
     video.srcObject = stream;
     video.play();
-
-    cardScanInterval = setInterval(() => {
-      if(walletScanDone) return;
-      if(video.readyState < 2 || video.videoWidth === 0) return;
-
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      ctx.drawImage(video, 0, 0);
-
-      if(typeof jsQR === 'undefined') return;
-
-      try {
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const qr = jsQR(imageData.data, imageData.width, imageData.height, {
-          inversionAttempts: 'attemptBoth'
-        });
-        if(qr && qr.data && qr.data.length > 1) {
-          walletScanDone = true;
-          clearInterval(cardScanInterval);
-          document.getElementById('w-scan-status').textContent = '✅ Code scanné!';
-          setTimeout(() => {
-            stopCardScan();
-            scannedCardCode = qr.data;
-            showCardNameModal(qr.data);
-          }, 300);
-        }
-      } catch(e) { console.log('jsQR error:', e); }
-
-      // Also try Quagga for 1D barcodes via canvas
-      if(typeof Quagga !== 'undefined' && !walletScanDone) {
-        try {
-          Quagga.decodeSingle({
-            decoder: { readers: ['ean_reader','ean_8_reader','upc_reader','code_128_reader','code_39_reader','codabar_reader'] },
-            locate: true,
-            src: canvas.toDataURL()
-          }, function(result) {
-            if(walletScanDone) return;
-            if(result && result.codeResult && result.codeResult.code) {
-              const code = result.codeResult.code;
-              if(code.length < 4) return;
-              walletScanDone = true;
-              clearInterval(cardScanInterval);
-              document.getElementById('w-scan-status').textContent = '✅ Code détecté: ' + code;
-              setTimeout(() => {
-                stopCardScan();
-                scannedCardCode = code;
-                showCardNameModal(code);
-              }, 300);
-            }
-          });
-        } catch(e) {}
-      }
-
-    }, 300);
-
-  }).catch(err => {
-    showToast('📷 Permets accès à la caméra dans les paramètres!');
+    showToast('📷 Pointe vers le code barre de ta carte...');
+  }).catch(function() {
+    showToast('📷 Permets accès à la caméra!');
     stopCardScan();
   });
 }
 
 function stopCardScan() {
+  if(zxingReader) { try { zxingReader.reset(); } catch(e) {} zxingReader = null; }
   if(cardScanInterval) { clearInterval(cardScanInterval); cardScanInterval = null; }
-  if(cardScanStream) { cardScanStream.getTracks().forEach(t => t.stop()); cardScanStream = null; }
+  if(cardScanStream) { cardScanStream.getTracks().forEach(function(t) { t.stop(); }); cardScanStream = null; }
   document.getElementById('w-scan-idle').style.display = 'block';
   document.getElementById('w-scan-active').style.display = 'none';
   const container = document.getElementById('w-quagga-container');
