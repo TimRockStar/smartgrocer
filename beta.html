@@ -1580,69 +1580,106 @@ async function lookupBarcode(code) {
   document.getElementById('px-res').style.display = 'none';
   document.getElementById('bd').classList.remove('on');
   document.getElementById('sg').innerHTML = '';
+
   try {
     showToast('🔍 Recherche du produit...');
     let productName = '';
+    let productFound = false;
+
     // API 1: Open Food Facts
     try {
-      const r1 = await fetch('https://world.openfoodfacts.org/api/v0/product/'+code+'.json');
+      const r1 = await fetch('https://world.openfoodfacts.org/api/v0/product/' + code + '.json');
       const d1 = await r1.json();
-      if(d1.status===1&&d1.product){
-        const p=d1.product;
-        let n=p.product_name_fr||p.product_name||p.product_name_en||'';
-        let b=p.brands||''; let q=p.quantity||'';
-        if(b&&n&&!n.toLowerCase().includes(b.toLowerCase()))n=b+' '+n;
-        if(q)n+=' '+q;
-        productName=n.trim();
+      if(d1.status === 1 && d1.product) {
+        const p = d1.product;
+        let n = p.product_name_fr || p.product_name || p.product_name_en || '';
+        let b = p.brands || '';
+        let q = p.quantity || '';
+        if(b && n && !n.toLowerCase().includes(b.toLowerCase())) n = b + ' ' + n;
+        if(q) n += ' ' + q;
+        productName = n.trim();
+        if(productName) productFound = true;
       }
-    }catch(e){console.log('OFF:',e);}
+    } catch(e) { console.log('OFF error:', e); }
+
     // API 2: UPC Item DB
-    if(!productName){
-      try{
-        const r2=await fetch('https://api.upcitemdb.com/prod/trial/lookup?upc='+code);
-        const d2=await r2.json();
-        if(d2.code==='OK'&&d2.items&&d2.items.length>0){
-          const item=d2.items[0];
-          productName=(item.brand?item.brand+' ':'')+item.title;
-          productName=productName.trim();
+    if(!productFound) {
+      try {
+        const r2 = await fetch('https://api.upcitemdb.com/prod/trial/lookup?upc=' + code);
+        const d2 = await r2.json();
+        if(d2.code === 'OK' && d2.items && d2.items.length > 0) {
+          const item = d2.items[0];
+          let n = item.title || '';
+          let b = item.brand || '';
+          if(b && n && !n.toLowerCase().includes(b.toLowerCase())) n = b + ' ' + n;
+          productName = n.trim();
+          if(productName) productFound = true;
         }
-      }catch(e){console.log('UPC:',e);}
+      } catch(e) { console.log('UPC error:', e); }
     }
-    showToast('💰 Comparaison des prix...');
-    const prompt=productName
-      ?'Prix réalistes au Québec pour "'+productName+'". JSON seulement:\n{"emoji":"🛒","nom":"'+productName+'","magasins":[{"nom":"IGA","prix":5.99,"prixRegulier":7.49,"enSpecial":true,"format":"1kg"},{"nom":"Metro","prix":7.29,"prixRegulier":7.29,"enSpecial":false,"format":"1kg"},{"nom":"Maxi","prix":6.49,"prixRegulier":6.99,"enSpecial":true,"format":"1kg"},{"nom":"Walmart","prix":6.19,"prixRegulier":6.19,"enSpecial":false,"format":"1kg"},{"nom":"Costco","prix":14.99,"prixRegulier":14.99,"enSpecial":false,"format":"2.5kg"}],"formats":[{"format":"1kg","prix":5.99,"prixAu100g":0.60}]}'
-      :'Code barre épicerie canadien: '+code+'. Identifie ce produit et donne prix réalistes Québec. JSON seulement:\n{"emoji":"🛒","nom":"Nom du produit","magasins":[{"nom":"IGA","prix":5.99,"prixRegulier":7.49,"enSpecial":true,"format":"1kg"},{"nom":"Metro","prix":7.29,"prixRegulier":7.29,"enSpecial":false,"format":"1kg"},{"nom":"Maxi","prix":6.49,"prixRegulier":6.99,"enSpecial":true,"format":"1kg"},{"nom":"Walmart","prix":6.19,"prixRegulier":6.19,"enSpecial":false,"format":"1kg"},{"nom":"Costco","prix":14.99,"prixRegulier":14.99,"enSpecial":false,"format":"2.5kg"}],"formats":[{"format":"1kg","prix":5.99,"prixAu100g":0.60}]}';
-    const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer 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'},
-      body:JSON.stringify({model:'llama-3.3-70b-versatile',max_completion_tokens:1000,messages:[{role:'user',content:prompt}]})
+
+    // NOT FOUND - show message with contribute button, NO Groq invention
+    if(!productFound) {
+      document.getElementById('px-em').textContent = '❓';
+      document.getElementById('px-nm').textContent = 'Produit non trouvé';
+      document.getElementById('px-bc').textContent = 'Code: ' + code;
+
+      document.getElementById('px-res').style.display = 'block';
+      document.getElementById('px-ld').classList.remove('on');
+      document.getElementById('scan-btn').disabled = false;
+      showToast('⚠️ Produit non reconnu — aide la communauté!');
+      return;
+    }
+
+    // FOUND - get prices from Groq
+    showToast('✅ ' + productName + ' trouvé! Comparaison des prix...');
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer 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'},
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        max_completion_tokens: 1000,
+        messages: [{
+          role: 'user',
+          content: 'Prix réalistes au Québec pour "' + productName + '". JSON seulement:\n{"emoji":"🛒","nom":"' + productName + '","magasins":[{"nom":"IGA","prix":5.99,"prixRegulier":7.49,"enSpecial":true,"format":"1kg"},{"nom":"Metro","prix":7.29,"prixRegulier":7.29,"enSpecial":false,"format":"1kg"},{"nom":"Maxi","prix":6.49,"prixRegulier":6.99,"enSpecial":true,"format":"1kg"},{"nom":"Walmart","prix":6.19,"prixRegulier":6.19,"enSpecial":false,"format":"1kg"},{"nom":"Costco","prix":14.99,"prixRegulier":14.99,"enSpecial":false,"format":"2.5kg"}],"formats":[{"format":"1kg","prix":5.99,"prixAu100g":0.60}]}'
+        }]
+      })
     });
-    const data=await res.json();
-    const text=data.choices[0].message.content.replace(/```json|```/g,'').trim();
-    const d=JSON.parse(text);
-    const finalName=productName||d.nom;
-    document.getElementById('px-em').textContent=d.emoji;
-    document.getElementById('px-nm').textContent=finalName;
-    document.getElementById('prod-in').value=finalName;
-    document.getElementById('px-bc').textContent='Code: '+code+(productName?' ✅ Base de données':' 🤖 Estimation IA');
-    const sorted=[...d.magasins].sort((a,b)=>a.prix-b.prix);
-    const best=sorted[0],worst=sorted[sorted.length-1];
-    document.getElementById('bs').textContent=best.nom;
-    document.getElementById('bp').textContent='$'+best.prix.toFixed(2);
-    document.getElementById('bsv').textContent='Économise jusqu\'à $'+(worst.prix-best.prix).toFixed(2);
+    const data = await res.json();
+    const text = data.choices[0].message.content.replace(/```json|```/g, '').trim();
+    const d = JSON.parse(text);
+
+    document.getElementById('px-em').textContent = d.emoji;
+    document.getElementById('px-nm').textContent = productName;
+    document.getElementById('prod-in').value = productName;
+    document.getElementById('px-bc').textContent = 'Code: ' + code + ' ✅ Base de données';
+
+    const sorted = [...d.magasins].sort((a, b) => a.prix - b.prix);
+    const best = sorted[0], worst = sorted[sorted.length - 1];
+    document.getElementById('bs').textContent = best.nom;
+    document.getElementById('bp').textContent = '$' + best.prix.toFixed(2);
+    document.getElementById('bsv').textContent = 'Economise jusqu a $' + (worst.prix - best.prix).toFixed(2);
     document.getElementById('bd').classList.add('on');
-    document.getElementById('sg').innerHTML=d.magasins.map(s=>`<div class="sc ${s.enSpecial?'sale':''}"><div style="font-size:11px;font-weight:700;margin-bottom:2px;">${s.nom}</div><div style="font-size:16px;font-weight:700;">$${s.prix.toFixed(2)}</div>${s.enSpecial?`<div style="font-size:9px;color:var(--sub);text-decoration:line-through;">$${s.prixRegulier.toFixed(2)}</div><div class="badge bdg" style="margin-top:2px;font-size:9px;">Spécial!</div>`:''}<div style="font-size:9px;color:var(--sub);margin-top:2px;">${s.format}</div></div>`).join('');
-    document.getElementById('px-res').style.display='block';
-    scansToday++;totalScans++;
-    const ps=document.getElementById('prof-scans');if(ps)ps.textContent=totalScans;
-    addPoints(10);updateLimitDots();
-    showToast('✅ '+(productName?productName:'Produit identifié')+'! +'+(isPremium?20:10)+' pts');
-  }catch(e){
-    console.error('Barcode error:',e);
-    showToast('❌ Erreur — essaie la recherche manuelle');
+    document.getElementById('sg').innerHTML = d.magasins.map(s =>
+      '<div class="sc ' + (s.enSpecial ? 'sale' : '') + '">' +
+      '<div style="font-size:11px;font-weight:700;margin-bottom:2px;">' + s.nom + '</div>' +
+      '<div style="font-size:16px;font-weight:700;">$' + s.prix.toFixed(2) + '</div>' +
+      (s.enSpecial ? '<div style="font-size:9px;color:var(--sub);text-decoration:line-through;">$' + s.prixRegulier.toFixed(2) + '</div><div class="badge bdg" style="margin-top:2px;font-size:9px;">Spécial!</div>' : '') +
+      '<div style="font-size:9px;color:var(--sub);margin-top:2px;">' + s.format + '</div></div>'
+    ).join('');
+    document.getElementById('px-res').style.display = 'block';
+    scansToday++; totalScans++;
+    const ps = document.getElementById('prof-scans');
+    if(ps) ps.textContent = totalScans;
+    addPoints(10); updateLimitDots(); saveData();
+    showToast('✅ ' + productName + '! +' + (isPremium ? 20 : 10) + ' pts');
+
+  } catch(e) {
+    console.error('Barcode error:', e);
+    showToast('❌ Erreur de connexion — réessaie!');
   }
   document.getElementById('px-ld').classList.remove('on');
-  document.getElementById('scan-btn').disabled=false;
+  document.getElementById('scan-btn').disabled = false;
 }
 
 
@@ -2085,6 +2122,27 @@ function quickAddCustomCard() {
 
 function startCardScan() {}
 function stopCardScan() {}
+
+
+function showNotFound(code) {
+  const url = 'https://world.openfoodfacts.org/cgi/product.pl?type=add&barcode=' + code;
+  const div = document.createElement('div');
+  div.style.cssText = 'grid-column:1/-1;background:#fef3c7;border:1px solid #fcd34d;border-radius:12px;padding:1.25rem;text-align:center;';
+  div.innerHTML = '<div style="font-size:32px;margin-bottom:8px;">🔍</div>' +
+    '<div style="font-size:14px;font-weight:700;color:#92400e;margin-bottom:6px;">Produit non reconnu</div>' +
+    '<div style="font-size:12px;color:#78350f;margin-bottom:12px;line-height:1.5;">Ce produit nest pas dans nos bases de données. Aide la communauté en ajoutant ce produit!</div>';
+  const btn = document.createElement('button');
+  btn.className = 'btn';
+  btn.style.cssText = 'background:#1D9E75;color:#fff;width:100%;justify-content:center;padding:12px;margin-bottom:8px;';
+  btn.textContent = '🌍 Ajouter ce produit à la base de données';
+  btn.onclick = function() { window.open(url, '_blank'); };
+  div.appendChild(btn);
+  const note = document.createElement('div');
+  note.style.cssText = 'font-size:10px;color:#92400e;';
+  note.textContent = 'En ajoutant ce produit, tu aides des milliers de personnes! 🌱';
+  div.appendChild(note);
+  document.getElementById('sg').appendChild(div);
+}
 
 </script>
 </body>
