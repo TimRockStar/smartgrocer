@@ -191,7 +191,9 @@ input:focus,select:focus{outline:none;border-color:var(--g);}
 .ob-step{display:none;padding:1.5rem 1rem;}
 .ob-step.active{display:block;}
 </style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+<script>
+
 // ===== REAL BARCODE SCANNER =====
 let quaggaRunning = false;
 
@@ -264,6 +266,7 @@ function stopRealScan() {
   document.getElementById('scan-idle').style.display = 'block';
   document.getElementById('scan-active').style.display = 'none';
 }
+
 
 
 
