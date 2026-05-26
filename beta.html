@@ -15,7 +15,6 @@ body{font-family:system-ui,-apple-system,sans-serif;font-size:14px;background:va
 .nb{flex:1;min-width:44px;padding:6px 2px 4px;font-size:11px;font-weight:700;cursor:pointer;text-align:center;color:rgba(255,255,255,0.45);background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:3px;border-radius:10px;transition:all 0.2s;}
 .nb i{font-size:22px;}
 .nb.active{color:#fff;background:rgba(255,255,255,0.15);}
-.nb.active i{color:#fff;}
 .page{display:none;padding-bottom:90px;}
 .page.active{display:block;}
 .hero{padding:1.5rem 1.5rem 2.5rem;border-radius:0 0 32px 32px;position:relative;overflow:hidden;margin-bottom:1.5rem;}
@@ -192,9 +191,7 @@ input:focus,select:focus{outline:none;border-color:var(--g);}
 .ob-step{display:none;padding:1.5rem 1rem;}
 .ob-step.active{display:block;}
 </style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
-<script>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js">
 // ===== REAL BARCODE SCANNER =====
 let quaggaRunning = false;
 
@@ -268,19 +265,96 @@ function stopRealScan() {
   document.getElementById('scan-active').style.display = 'none';
 }
 
-
-
+async function lookupBarcode(code) {
+  document.getElementById('scan-btn').disabled = true;
+  document.getElementById('px-ld').classList.add('on');
+  document.getElementById('px-res').style.display = 'none';
+  document.getElementById('bd').classList.remove('on');
+  document.getElementById('sg').innerHTML = '';
+  try {
+    showToast('🔍 Recherche du produit...');
+    let productName = ''; let productFound = false;
+    try {
+      const r1 = await fetch('https://world.openfoodfacts.org/api/v0/product/'+code+'.json');
+      const d1 = await r1.json();
+      if(d1.status===1&&d1.product){
+        const p=d1.product;
+        let n=p.product_name_fr||p.product_name||p.product_name_en||'';
+        let b=p.brands||''; let q=p.quantity||'';
+        if(b&&n&&!n.toLowerCase().includes(b.toLowerCase()))n=b+' '+n;
+        if(q)n+=' '+q; productName=n.trim(); if(productName)productFound=true;
+      }
+    }catch(e){console.log('OFF:',e);}
+    if(!productFound){
+      try{
+        const r2=await fetch('https://api.upcitemdb.com/prod/trial/lookup?upc='+code);
+        const d2=await r2.json();
+        if(d2.code==='OK'&&d2.items&&d2.items.length>0){
+          const item=d2.items[0]; let n=item.title||''; let b=item.brand||'';
+          if(b&&n&&!n.toLowerCase().includes(b.toLowerCase()))n=b+' '+n;
+          productName=n.trim(); if(productName)productFound=true;
+        }
+      }catch(e){console.log('UPC:',e);}
+    }
+    if(!productFound){
+      document.getElementById('px-em').textContent='❓';
+      document.getElementById('px-nm').textContent='Produit non reconnu';
+      document.getElementById('px-bc').textContent='Code: '+code;
+      document.getElementById('sg').innerHTML=`<div style="grid-column:1/-1;background:#fef3c7;border:1px solid #fcd34d;border-radius:12px;padding:1rem;text-align:center;">
+  <div style="font-size:14px;font-weight:700;color:#92400e;margin-bottom:6px;">⚠️ Produit non trouvé</div>
+  <div style="font-size:12px;color:#78350f;margin-bottom:12px;">Ce produit n'est pas encore dans notre base de données. Tu peux l'ajouter pour aider toute la communauté!</div>
+  <div style="display:flex;flex-direction:column;gap:8px;">
+    <button class="btn" style="background:#1D9E75;color:#fff;width:100%;justify-content:center;padding:10px;" onclick="window.open('https://world.openfoodfacts.org/cgi/product.pl?type=add&barcode=${code}','_blank')">
+      🌍 Ajouter ce produit à la base de données mondiale
+    </button>
+    <button class="btn bo" onclick="document.getElementById('prod-in').focus();document.getElementById('px-res').style.display='none';" style="width:100%;justify-content:center;padding:10px;font-size:12px;">
+      🔍 Rechercher manuellement
+    </button>
+  </div>
+  <div style="font-size:10px;color:#92400e;margin-top:8px;">En ajoutant ce produit, tu aides des millions d'utilisateurs dans le monde! 🌱</div>
+</div>`;
+      document.getElementById('px-res').style.display='block';
+      showToast('⚠️ Produit non reconnu — essaie la recherche manuelle');
+      document.getElementById('px-ld').classList.remove('on');
+      document.getElementById('scan-btn').disabled=false;
+      return;
+    }
+    showToast('💰 Comparaison des prix...');
+    const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer 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'},body:JSON.stringify({model:'llama-3.3-70b-versatile',max_completion_tokens:1000,messages:[{role:'user',content:'Prix réalistes au Québec pour "'+productName+'". JSON seulement:\n{"emoji":"🛒","nom":"'+productName+'","magasins":[{"nom":"IGA","prix":5.99,"prixRegulier":7.49,"enSpecial":true,"format":"1kg"},{"nom":"Metro","prix":7.29,"prixRegulier":7.29,"enSpecial":false,"format":"1kg"},{"nom":"Maxi","prix":6.49,"prixRegulier":6.99,"enSpecial":true,"format":"1kg"},{"nom":"Walmart","prix":6.19,"prixRegulier":6.19,"enSpecial":false,"format":"1kg"},{"nom":"Costco","prix":14.99,"prixRegulier":14.99,"enSpecial":false,"format":"2.5kg"}],"formats":[{"format":"1kg","prix":5.99,"prixAu100g":0.60}]}'}]})});
+    const data=await res.json();
+    const text=data.choices[0].message.content.replace(/```json|```/g,'').trim();
+    const d=JSON.parse(text);
+    document.getElementById('px-em').textContent=d.emoji;
+    document.getElementById('px-nm').textContent=productName;
+    document.getElementById('prod-in').value=productName;
+    document.getElementById('px-bc').textContent='Code: '+code+' ✅ Base de données';
+    const sorted=[...d.magasins].sort((a,b)=>a.prix-b.prix);
+    const best=sorted[0],worst=sorted[sorted.length-1];
+    document.getElementById('bs').textContent=best.nom;
+    document.getElementById('bp').textContent='$'+best.prix.toFixed(2);
+    document.getElementById('bsv').textContent='Économise jusqu\'à $'+(worst.prix-best.prix).toFixed(2);
+    document.getElementById('bd').classList.add('on');
+    document.getElementById('sg').innerHTML=d.magasins.map(s=>`<div class="sc ${s.enSpecial?'sale':''}"><div style="font-size:11px;font-weight:700;margin-bottom:2px;">${s.nom}</div><div style="font-size:16px;font-weight:700;">$${s.prix.toFixed(2)}</div>${s.enSpecial?`<div style="font-size:9px;color:var(--sub);text-decoration:line-through;">$${s.prixRegulier.toFixed(2)}</div><div class="badge bdg" style="margin-top:2px;font-size:9px;">Spécial!</div>`:''}<div style="font-size:9px;color:var(--sub);margin-top:2px;">${s.format}</div></div>`).join('');
+    document.getElementById('px-res').style.display='block';
+    scansToday++;totalScans++;
+    const ps=document.getElementById('prof-scans');if(ps)ps.textContent=totalScans;
+    addPoints(10);updateLimitDots();saveData();
+    showToast('✅ '+productName+'! +'+(isPremium?20:10)+' pts');
+  }catch(e){console.error('Barcode error:',e);showToast('❌ Erreur — réessaie!');}
+  document.getElementById('px-ld').classList.remove('on');
+  document.getElementById('scan-btn').disabled=false;
+}
 
 </script>
 
 <style>
-#quagga-container video, #w-quagga-container video {
+#quagga-container video {
   width: 100% !important;
   height: auto !important;
   display: block !important;
   border-radius: 14px;
 }
-#quagga-container canvas, #w-quagga-container canvas {
+#quagga-container canvas {
   position: absolute !important;
   top: 0 !important;
   left: 0 !important;
@@ -391,187 +465,6 @@ ml('account', '2355363');
 </div>
 
 <!-- LANDING -->
-<!-- BETA ACCESS GATE -->
-<div id="beta-gate" style="position:fixed;top:0;left:0;right:0;bottom:0;background:linear-gradient(160deg,#1D9E75,#0F6E56);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1.5rem;">
-  <div style="background:#fff;border-radius:24px;padding:2rem;width:100%;max-width:380px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
-    <svg width="70" height="70" viewBox="0 0 680 500" style="margin-bottom:12px;"><path d="M340,60 L430,95 L430,190 Q430,240 340,270 Q250,240 250,190 L250,95 Z" fill="#1D9E75"/><path d="M340,70 L422,102 L422,188 Q422,234 340,262 Q258,234 258,188 L258,102 Z" fill="#0F6E56"/><path d="M308,215 L312,183 L368,183 L372,215 Z" fill="white"/><path d="M301,183 Q301,170 312,170 L368,170 Q379,170 379,183" fill="none" stroke="white" stroke-width="6" stroke-linecap="round"/><circle cx="320" cy="224" r="9" fill="white"/><circle cx="360" cy="224" r="9" fill="white"/><path d="M305,100 L314,85 L323,98 L340,80 L357,98 L366,85 L375,100 L372,112 L308,112 Z" fill="#C9A227"/><circle cx="292" cy="88" r="20" fill="#D85A30"/><text x="292" y="94" text-anchor="middle" font-family="system-ui" font-size="13" font-weight="700" fill="white">SG</text></svg>
-    <div style="font-size:24px;font-weight:800;margin-bottom:4px;"><span style="color:#1D9E75;">Smart</span><span style="color:#C9A227;">Grocer</span></div>
-    <div style="font-size:13px;color:#6b7280;margin-bottom:6px;">🧪 Version Bêta — Accès restreint</div>
-    <div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:10px;padding:10px;margin-bottom:1.25rem;font-size:12px;color:#92400e;">
-      Tu as reçu un code d'accès bêta de SmartGrocer? Entre-le ci-dessous!
-    </div>
-    <input type="text" id="beta-code-input" placeholder="Ex: SG-BETA-001" 
-      style="width:100%;padding:12px;border:2px solid #e5e7eb;border-radius:12px;font-size:14px;text-align:center;text-transform:uppercase;letter-spacing:2px;margin-bottom:10px;font-family:monospace;"
-      oninput="this.value=this.value.toUpperCase()"
-      onkeydown="if(event.key==='Enter')checkBetaCode()"/>
-    <button onclick="checkBetaCode()" style="width:100%;background:linear-gradient(135deg,#1D9E75,#0F6E56);color:#fff;border:none;border-radius:12px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px;">
-      🚀 Accéder à la version bêta
-    </button>
-    <div id="beta-error" style="display:none;color:#ef4444;font-size:12px;margin-top:6px;">❌ Code invalide — vérifie ton code et réessaie!</div>
-    <div style="font-size:11px;color:#9ca3af;margin-top:10px;">Tu n'as pas de code? Contacte<br><a href="mailto:smartgrocer@yahoo.com" style="color:#1D9E75;">smartgrocer@yahoo.com</a></div>
-  </div>
-</div>
-
-<script>
-const BETA_CODES = ["SG-BETA-001", "SG-BETA-002", "SG-BETA-003", "SG-BETA-004", "SG-BETA-005", "SG-BETA-006", "SG-BETA-007", "SG-BETA-008", "SG-BETA-009", "SG-BETA-010", "SG-BETA-011", "SG-BETA-012", "SG-BETA-013", "SG-BETA-014", "SG-BETA-015", "SG-BETA-016", "SG-BETA-017", "SG-BETA-018", "SG-BETA-019", "SG-BETA-020"];
-
-function checkBetaCode() {
-  const input = document.getElementById('beta-code-input').value.trim().toUpperCase();
-  const errorEl = document.getElementById('beta-error');
-  
-  if(BETA_CODES.includes(input)) {
-    // Valid code - save to localStorage and show app
-    localStorage.setItem('smartgrocer_beta_code', input);
-    document.getElementById('beta-gate').style.display = 'none';
-    document.body.style.overflow = '';
-  } else {
-    errorEl.style.display = 'block';
-    document.getElementById('beta-code-input').style.border = '2px solid #ef4444';
-    setTimeout(() => {
-      errorEl.style.display = 'none';
-      document.getElementById('beta-code-input').style.border = '2px solid #e5e7eb';
-    }, 3000);
-  }
-}
-
-// Check if already has valid code in localStorage
-window.addEventListener('DOMContentLoaded', () => {
-  const savedCode = localStorage.getItem('smartgrocer_beta_code');
-  if(savedCode && BETA_CODES.includes(savedCode)) {
-    document.getElementById('beta-gate').style.display = 'none';
-  } else {
-    document.body.style.overflow = 'hidden';
-  }
-});
-</script>
-
-<!-- BETA BANNER -->
-<div style="background:linear-gradient(135deg,#D85A30,#993C1D);padding:10px 16px;position:sticky;top:0;z-index:200;">
-  <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
-    <div>
-      <div style="font-size:12px;font-weight:700;color:#fff;">🧪 Version Bêta</div>
-      <div style="font-size:10px;color:rgba(255,255,255,0.85);">Toutes les fonctionnalités débloquées!</div>
-    </div>
-    <button onclick="openFeedback()" style="background:#fff;color:#D85A30;border:none;border-radius:10px;padding:8px 12px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;">
-      📝 Donner mon feedback
-    </button>
-  </div>
-</div>
-
-<!-- FEEDBACK MODAL -->
-<div id="feedback-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:3000;overflow-y:auto;">
-  <div style="background:#fff;margin:1rem auto;max-width:480px;border-radius:20px;overflow:hidden;">
-    
-    <!-- Modal Header -->
-    <div style="background:linear-gradient(135deg,#D85A30,#993C1D);padding:1.25rem;display:flex;align-items:center;justify-content:space-between;">
-      <div>
-        <div style="font-size:16px;font-weight:700;color:#fff;">📝 Ton feedback</div>
-        <div style="font-size:11px;color:rgba(255,255,255,0.85);">Aide-nous à améliorer SmartGrocer!</div>
-      </div>
-      <button onclick="closeFeedback()" style="background:rgba(255,255,255,0.2);border:none;color:#fff;border-radius:8px;padding:6px 10px;cursor:pointer;font-size:14px;">✕</button>
-    </div>
-
-    <!-- Modal Body -->
-    <div style="padding:1.25rem;" id="feedback-form-container">
-      
-      <!-- Note globale -->
-      <div style="margin-bottom:1rem;">
-        <div style="font-size:13px;font-weight:700;margin-bottom:8px;">⭐ Note globale</div>
-        <div style="display:flex;gap:8px;" id="fb-stars">
-          <span style="font-size:28px;cursor:pointer;opacity:0.3;" onclick="fbSetStar(1)">⭐</span>
-          <span style="font-size:28px;cursor:pointer;opacity:0.3;" onclick="fbSetStar(2)">⭐</span>
-          <span style="font-size:28px;cursor:pointer;opacity:0.3;" onclick="fbSetStar(3)">⭐</span>
-          <span style="font-size:28px;cursor:pointer;opacity:0.3;" onclick="fbSetStar(4)">⭐</span>
-          <span style="font-size:28px;cursor:pointer;opacity:0.3;" onclick="fbSetStar(5)">⭐</span>
-        </div>
-      </div>
-
-      <!-- Facilité -->
-      <div style="margin-bottom:1rem;">
-        <div style="font-size:13px;font-weight:700;margin-bottom:6px;">🎯 Facilité d'utilisation</div>
-        <select id="fb-facilite" style="width:100%;padding:8px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:13px;">
-          <option value="">-- Sélectionne --</option>
-          <option value="tres-facile">😊 Très facile</option>
-          <option value="facile">🙂 Facile</option>
-          <option value="moyen">😐 Moyen</option>
-          <option value="difficile">😕 Difficile</option>
-        </select>
-      </div>
-
-      <!-- Scanner -->
-      <div style="margin-bottom:1rem;">
-        <div style="font-size:13px;font-weight:700;margin-bottom:6px;">📷 Le scanner a bien fonctionné?</div>
-        <select id="fb-scanner" style="width:100%;padding:8px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:13px;">
-          <option value="">-- Sélectionne --</option>
-          <option value="oui">✅ Oui, très bien</option>
-          <option value="partiel">⚠️ Parfois seulement</option>
-          <option value="non">❌ Pas vraiment</option>
-          <option value="pas-teste">— Pas testé</option>
-        </select>
-      </div>
-
-      <!-- Ce qui manque -->
-      <div style="margin-bottom:1rem;">
-        <div style="font-size:13px;font-weight:700;margin-bottom:6px;">💡 Ce qui manque ou pourrait être amélioré</div>
-        <textarea id="fb-manque" placeholder="Tes suggestions..." style="width:100%;padding:8px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:13px;font-family:inherit;min-height:70px;resize:vertical;"></textarea>
-      </div>
-
-      <!-- Ce qui était bien -->
-      <div style="margin-bottom:1rem;">
-        <div style="font-size:13px;font-weight:700;margin-bottom:6px;">❤️ Ce que tu as aimé</div>
-        <textarea id="fb-aime" placeholder="Tes fonctionnalités préférées..." style="width:100%;padding:8px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:13px;font-family:inherit;min-height:70px;resize:vertical;"></textarea>
-      </div>
-
-      <!-- Prix Premium -->
-      <div style="margin-bottom:1rem;">
-        <div style="font-size:13px;font-weight:700;margin-bottom:6px;">💰 Combien paierais-tu pour Premium?</div>
-        <select id="fb-prix" style="width:100%;padding:8px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:13px;">
-          <option value="">-- Sélectionne --</option>
-          <option value="gratuit">Je n'utiliserais que la version gratuite</option>
-          <option value="2-3">$2-3/mois</option>
-          <option value="4-5">$4-5/mois ← Prix actuel</option>
-          <option value="6-10">$6-10/mois</option>
-          <option value="plus">Plus de $10/mois</option>
-        </select>
-      </div>
-
-      <!-- NPS -->
-      <div style="margin-bottom:1rem;">
-        <div style="font-size:13px;font-weight:700;margin-bottom:6px;">📣 Tu recommanderais SmartGrocer? (0-10)</div>
-        <div style="display:flex;gap:4px;flex-wrap:wrap;" id="fb-nps">
-          <button onclick="fbSetNPS(0)" style="width:32px;height:32px;border:1.5px solid #e5e7eb;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;background:#fff;">0</button>
-          <button onclick="fbSetNPS(1)" style="width:32px;height:32px;border:1.5px solid #e5e7eb;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;background:#fff;">1</button>
-          <button onclick="fbSetNPS(2)" style="width:32px;height:32px;border:1.5px solid #e5e7eb;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;background:#fff;">2</button>
-          <button onclick="fbSetNPS(3)" style="width:32px;height:32px;border:1.5px solid #e5e7eb;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;background:#fff;">3</button>
-          <button onclick="fbSetNPS(4)" style="width:32px;height:32px;border:1.5px solid #e5e7eb;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;background:#fff;">4</button>
-          <button onclick="fbSetNPS(5)" style="width:32px;height:32px;border:1.5px solid #e5e7eb;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;background:#fff;">5</button>
-          <button onclick="fbSetNPS(6)" style="width:32px;height:32px;border:1.5px solid #e5e7eb;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;background:#fff;">6</button>
-          <button onclick="fbSetNPS(7)" style="width:32px;height:32px;border:1.5px solid #e5e7eb;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;background:#fff;">7</button>
-          <button onclick="fbSetNPS(8)" style="width:32px;height:32px;border:1.5px solid #e5e7eb;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;background:#fff;">8</button>
-          <button onclick="fbSetNPS(9)" style="width:32px;height:32px;border:1.5px solid #e5e7eb;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;background:#fff;">9</button>
-          <button onclick="fbSetNPS(10)" style="width:32px;height:32px;border:1.5px solid #e5e7eb;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;background:#fff;">10</button>
-        </div>
-        <div style="display:flex;justify-content:space-between;font-size:10px;color:#9ca3af;margin-top:3px;"><span>Pas du tout</span><span>Absolument!</span></div>
-      </div>
-
-      <!-- Submit -->
-      <button onclick="submitFeedback()" style="width:100%;background:linear-gradient(135deg,#D85A30,#993C1D);color:#fff;border:none;border-radius:12px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;">
-        📤 Envoyer mon feedback à SmartGrocer
-      </button>
-      <div style="font-size:10px;color:#9ca3af;text-align:center;margin-top:6px;">Ton feedback sera envoyé à smartgrocer@yahoo.com</div>
-    </div>
-
-    <!-- Success Message -->
-    <div id="feedback-success" style="display:none;padding:2rem;text-align:center;">
-      <div style="font-size:48px;margin-bottom:12px;">🎉</div>
-      <div style="font-size:18px;font-weight:700;color:#166534;margin-bottom:8px;">Merci pour ton feedback!</div>
-      <div style="font-size:13px;color:#4b5563;line-height:1.6;margin-bottom:1rem;">Tes commentaires nous aident à créer la meilleure app d'épicerie. On va tout lire attentivement!</div>
-      <button onclick="closeFeedback()" style="background:#1D9E75;color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:13px;font-weight:700;cursor:pointer;">Fermer</button>
-    </div>
-
-  </div>
-</div>
-
 <div id="landing">
   <div class="hero-landing">
     <div style="position:absolute;top:-60px;right:-60px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,0.06);"></div>
@@ -611,32 +504,6 @@ window.addEventListener('DOMContentLoaded', () => {
       <button class="btn bf" style="background:#fff;color:var(--p);font-size:13px;" onclick="startApp()">Essai gratuit 30 jours →</button>
     </div>
     <button class="btn bg bf" style="font-size:15px;padding:14px;" onclick="startApp()">Commencer / Get Started →</button>
-
-    <!-- Social Media Section -->
-    <div style="margin-top:2rem;text-align:center;">
-      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px;">📱 Suivez-nous sur nos réseaux sociaux</div>
-      <div style="display:flex;justify-content:center;gap:12px;">
-        <a href="https://facebook.com/smartgrocer" target="_blank" style="text-decoration:none;">
-          <div style="background:#1877F2;border-radius:14px;padding:10px 16px;display:flex;align-items:center;gap:8px;">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-            <span style="font-size:12px;font-weight:700;color:#fff;">Facebook</span>
-          </div>
-        </a>
-        <a href="https://tiktok.com/@smartgrocer" target="_blank" style="text-decoration:none;">
-          <div style="background:#000;border-radius:14px;padding:10px 16px;display:flex;align-items:center;gap:8px;">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.78 1.52V6.76a4.85 4.85 0 01-1.01-.07z"/></svg>
-            <span style="font-size:12px;font-weight:700;color:#fff;">TikTok</span>
-          </div>
-        </a>
-        <a href="https://instagram.com/smartgrocer" target="_blank" style="text-decoration:none;">
-          <div style="background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);border-radius:14px;padding:10px 16px;display:flex;align-items:center;gap:8px;">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
-            <span style="font-size:12px;font-weight:700;color:#fff;">Instagram</span>
-          </div>
-        </a>
-      </div>
-    </div>
-
   </div>
 </div>
 
@@ -699,7 +566,9 @@ window.addEventListener('DOMContentLoaded', () => {
 
 <!-- APP -->
 <div id="app" style="display:none;">
-<div style="flex:1"><div style="font-size:12px;font-weight:700;color:#fff;">Premium gratuit — 30 jours restants</div><div style="font-size:10px;color:rgba(255,255,255,0.8);">Clique pour gérer ton abonnement</div></div>
+<div class="trial" id="trial-banner" style="display:none!important;" style="margin:0.75rem 1rem 0;" onclick="goExtra('premium')">
+  <div style="font-size:18px;">⭐</div>
+  <div style="flex:1"><div style="font-size:12px;font-weight:700;color:#fff;">Premium gratuit — 30 jours restants</div><div style="font-size:10px;color:rgba(255,255,255,0.8);">Clique pour gérer ton abonnement</div></div>
   <div style="background:rgba(255,255,255,0.2);color:#fff;font-size:10px;font-weight:700;padding:4px 8px;border-radius:6px;">Gérer</div>
 </div>
 
@@ -761,7 +630,7 @@ window.addEventListener('DOMContentLoaded', () => {
       <div class="sp-zone"><div class="sf"><div class="sl3"></div></div><div style="font-size:11px;margin-top:8px;">Prêt à scanner / Ready to scan</div></div>
       <div style="display:flex;gap:8px;margin-bottom:1rem;">
         <button class="btn bb" style="flex:1;" onclick="startRealScan()"><i class="ti ti-camera"></i> Scanner</button>
-        
+        <button class="btn bo" style="flex:1;" onclick="fakeScan()"><i class="ti ti-barcode"></i> Simuler scan</button>
       </div>
     </div>
     <div id="scan-active" style="display:none;">
@@ -777,10 +646,10 @@ window.addEventListener('DOMContentLoaded', () => {
       </div>
       <div style="display:flex;gap:8px;margin-bottom:1rem;">
         <button class="btn bc" style="flex:1;" onclick="stopRealScan()"><i class="ti ti-x"></i> Arrêter</button>
-        
+        <button class="btn bo" style="flex:1;" onclick="fakeScan()"><i class="ti ti-barcode"></i> Simuler</button>
       </div>
     </div>
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:0.875rem;"><div style="flex:1;height:1px;background:var(--light);"></div><div style="font-size:10px;color:var(--sub);">ou recherche / or search</div><div style="flex:1;height:1px;background:var(--light);"></div></div>
+    <button class="btn bo bf" onclick="testAPI()" style="margin-bottom:0.75rem;font-size:11px;">🔧 Tester la connexion API</button><div style="display:flex;align-items:center;gap:8px;margin-bottom:0.875rem;"><div style="flex:1;height:1px;background:var(--light);"></div><div style="font-size:10px;color:var(--sub);">ou recherche / or search</div><div style="flex:1;height:1px;background:var(--light);"></div></div>
     <div class="sugg">
       <div class="sg" onclick="setProd('beurre d\'arachide Kraft 1kg')">🥜 Kraft</div>
       <div class="sg" onclick="setProd('lait 2% 4L')">🥛 Lait</div>
@@ -878,55 +747,24 @@ window.addEventListener('DOMContentLoaded', () => {
     <div id="comm-feed"><input type="text" placeholder="Rechercher / Search..." id="cs" style="margin-bottom:0.875rem;" oninput="filterC()"/><div id="cl"></div></div>
     <div id="comm-upload" style="display:none;">
       <div class="card">
-        <div style="display:flex;flex-direction:column;gap:10px;">
-
-          <!-- Titre -->
-          <div>
-            <label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:4px;">Titre de la recette <span style="color:#ef4444;">*</span></label>
-            <input type="text" id="up-nm" placeholder="Ex: Pâtes crémeuses au saumon..."/>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div><div class="sl2">Nom de ta recette</div><input type="text" id="up-nm" placeholder="Ex: Pâtes crémeuses..."/></div>
+          <div><div class="sl2">Ingrédients</div><input type="text" id="up-ig" placeholder="Ex: saumon, pâtes..."/></div>
+          <div id="upload-zone" style="border:2px dashed var(--border);border-radius:12px;padding:1.25rem;text-align:center;color:var(--sub);font-size:12px;cursor:pointer;" onclick="checkUpload()">
+          <i class="ti ti-video-plus" style="font-size:20px;display:block;margin-bottom:4px;"></i>
+          <span id="upload-label">Uploader ta vidéo ou photo</span>
+          <div id="premium-upload-lock" style="display:none;margin-top:6px;">
+            <span style="background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;padding:3px 8px;border-radius:999px;">🔒 Premium requis</span>
           </div>
-
-          <!-- Temps + Portions -->
-          <div style="display:flex;gap:8px;">
-            <div style="flex:1;">
-              <label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:4px;">Temps de préparation</label>
-              <input type="text" id="up-temps" placeholder="Ex: 30 min"/>
-            </div>
-            <div style="flex:1;">
-              <label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:4px;">Portions</label>
-              <input type="text" id="up-portions" placeholder="Ex: 4 portions"/>
-            </div>
-          </div>
-
-          <!-- Ingrédients -->
-          <div>
-            <label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:4px;">Ingrédients <span style="color:#ef4444;">*</span></label>
-            <textarea id="up-ig" placeholder="Ex:&#10;- 500g de pâtes&#10;- 200g de saumon&#10;- 1 tasse de crème..." style="min-height:80px;"></textarea>
-          </div>
-
-          <!-- Étapes -->
-          <div>
-            <label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:4px;">Étapes de préparation <span style="color:#ef4444;">*</span></label>
-            <textarea id="up-etapes" placeholder="Ex:&#10;1. Faire cuire les pâtes...&#10;2. Faire revenir le saumon...&#10;3. Mélanger avec la crème..." style="min-height:100px;"></textarea>
-          </div>
-
-          <!-- Upload vidéo/photo (optionnel) -->
-          <div>
-            <label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:4px;">Photo ou vidéo (optionnel)</label>
-            <div id="upload-zone" style="border:2px dashed var(--border);border-radius:12px;padding:1rem;text-align:center;color:var(--sub);font-size:12px;cursor:pointer;" onclick="checkUpload()">
-              <i class="ti ti-photo-plus" style="font-size:20px;display:block;margin-bottom:4px;"></i>
-              <span id="upload-label">Ajouter une photo ou vidéo</span>
-              <div style="font-size:10px;color:var(--sub);margin-top:3px;">Facultatif — ta recette écrite suffit!</div>
-              <div id="premium-upload-lock" style="display:none;margin-top:6px;">
-                <span style="background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;padding:3px 8px;border-radius:999px;">🔒 Premium requis</span>
-              </div>
-            </div>
-          </div>
-
-          <button class="btn bc bf" id="share-btn" onclick="submitUp()">📤 Partager ma recette</button>
+        </div>
+          <button class="btn bc bf" id="share-btn" onclick="submitUp()">📤 Partager / Share</button>
           <div id="share-premium-msg" style="display:none;background:#fef3c7;border:1px solid #fcd34d;border-radius:10px;padding:8px;text-align:center;margin-top:6px;">
             <div style="font-size:12px;font-weight:700;color:#92400e;">🔒 Partage réservé aux membres Premium</div>
-            <div style="font-size:11px;color:#78350f;margin:4px 0;">Passe à Premium pour partager tes recettes!</div>
+            <div style="font-size:11px;color:#78350f;margin:4px 0;">Passe à Premium pour partager tes recettes avec la communauté!</div>
+            <stripe-buy-button
+              buy-button-id="buy_btn_1TZxji8g6DMr5MKkOUY5K31c"
+              publishable-key="pk_live_51TZwZv8g6DMr5MKkRPebAg4U59jlMgIURfwaZcaMTgpSEFTn5jCQ2RQzowgt7RvPwE3sbDalFZADRoTj9N5kLegR00L4Tyau8k"
+            ></stripe-buy-button>
           </div>
         </div>
       </div>
@@ -1000,33 +838,29 @@ window.addEventListener('DOMContentLoaded', () => {
   <div class="px">
     <!-- Scanner Section -->
     <div id="w-scan-idle">
-      <div style="background:linear-gradient(135deg,#1a1a2e,#2d2d4e);border-radius:16px;padding:1.25rem;margin-bottom:1rem;text-align:center;">
-        <div style="font-size:28px;margin-bottom:8px;">📱</div>
-        <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:6px;">Scanner de cartes fidélité</div>
-        <div style="font-size:12px;color:rgba(255,255,255,0.75);margin-bottom:10px;line-height:1.5;">Cette fonctionnalité sera disponible dans la version native de SmartGrocer sur l'App Store et Google Play!</div>
-        <div style="background:rgba(201,162,39,0.2);border:1px solid rgba(201,162,39,0.4);border-radius:10px;padding:8px 12px;font-size:11px;color:#C9A227;font-weight:700;">🚀 Bientôt disponible sur iOS et Android</div>
+      <div style="background:linear-gradient(135deg,#1D9E75,#0F6E56);border-radius:16px;padding:1.25rem;margin-bottom:1rem;text-align:center;cursor:pointer;" onclick="startCardScan()">
+        <div style="font-size:28px;margin-bottom:6px;">📷</div>
+        <div style="font-size:14px;font-weight:700;color:#fff;">Scanner une carte de fidélité</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.85);margin-top:4px;">IGA · Maxi · Metro · PC Optimum · Air Miles · CAA · et plus!</div>
       </div>
-      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px;">Ajouter une carte manuellement</div>
-      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:1rem;">
-        <div class="store-chip" onclick="quickAddCard('PC Optimum','💙','linear-gradient(135deg,#003087,#0057B8)','rgba(0,48,135,0.35)')"><span class="store-chip-icon">💙</span><div class="store-chip-name">PC Optimum</div></div>
-        <div class="store-chip" onclick="quickAddCard('Air Miles','✈️','linear-gradient(135deg,#C62828,#1565C0)','rgba(198,40,40,0.35)')"><span class="store-chip-icon">✈️</span><div class="store-chip-name">Air Miles</div></div>
-        <div class="store-chip" onclick="quickAddCard('Méritas IGA','🏪','linear-gradient(135deg,#E53935,#B71C1C)','rgba(229,57,53,0.35)')"><span class="store-chip-icon">🏪</span><div class="store-chip-name">Méritas IGA</div></div>
-        <div class="store-chip" onclick="quickAddCard('Metro & Moi','🛒','linear-gradient(135deg,#1565C0,#0D47A1)','rgba(21,101,192,0.35)')"><span class="store-chip-icon">🛒</span><div class="store-chip-name">Metro & Moi</div></div>
-        <div class="store-chip" onclick="quickAddCard('Maxi','🏬','linear-gradient(135deg,#C62828,#880E4F)','rgba(198,40,40,0.35)')"><span class="store-chip-icon">🏬</span><div class="store-chip-name">Maxi</div></div>
-        <div class="store-chip" onclick="quickAddCard('CAA','🚗','linear-gradient(135deg,#1B5E20,#2E7D32)','rgba(27,94,32,0.35)')"><span class="store-chip-icon">🚗</span><div class="store-chip-name">CAA</div></div>
-        <div class="store-chip" onclick="quickAddCard('Petro-Points','⛽','linear-gradient(135deg,#E65100,#F57F17)','rgba(230,81,0,0.35)')"><span class="store-chip-icon">⛽</span><div class="store-chip-name">Petro-Points</div></div>
-        <div class="store-chip" onclick="quickAddCard('Jean Coutu','💊','linear-gradient(135deg,#2E7D32,#1B5E20)','rgba(46,125,50,0.35)')"><span class="store-chip-icon">💊</span><div class="store-chip-name">Jean Coutu</div></div>
-        <div class="store-chip" onclick="quickAddCard('Pharmaprix','💊','linear-gradient(135deg,#1565C0,#283593)','rgba(21,101,192,0.35)')"><span class="store-chip-icon">💊</span><div class="store-chip-name">Pharmaprix</div></div>
-        <div class="store-chip" onclick="quickAddCard('Costco','🏭','linear-gradient(135deg,#C62828,#1565C0)','rgba(0,0,0,0.3)')"><span class="store-chip-icon">🏭</span><div class="store-chip-name">Costco</div></div>
-        <div class="store-chip" onclick="quickAddCard('Tim Hortons','☕','linear-gradient(135deg,#C62828,#B71C1C)','rgba(198,40,40,0.35)')"><span class="store-chip-icon">☕</span><div class="store-chip-name">Tim Hortons</div></div>
-        <div class="store-chip" onclick="quickAddCard('RONA','🔨','linear-gradient(135deg,#E65100,#BF360C)','rgba(230,81,0,0.35)')"><span class="store-chip-icon">🔨</span><div class="store-chip-name">RONA</div></div>
-      </div>
-      <div style="text-align:center;font-size:11px;color:var(--sub);margin-bottom:8px;">Tu n'as pas trouvé ta carte?</div>
-      <button class="btn bo bf" onclick="quickAddCustomCard()">+ Autre carte</button>
     </div>
-    <div id="w-scan-active" style="display:none;"></div>
+    <div id="w-scan-active" style="display:none;">
+      <div style="position:relative;width:100%;border-radius:14px;overflow:hidden;margin-bottom:0.875rem;background:#000;">
+        <div id="w-quagga-container" style="width:100%;"></div>
+        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:75%;height:60px;border:3px solid #C9A227;border-radius:8px;pointer-events:none;z-index:10;">
+          <div style="position:absolute;top:-3px;left:-3px;width:18px;height:18px;border-top:4px solid #C9A227;border-left:4px solid #C9A227;border-radius:3px 0 0 0;"></div>
+          <div style="position:absolute;top:-3px;right:-3px;width:18px;height:18px;border-top:4px solid #C9A227;border-right:4px solid #C9A227;border-radius:0 3px 0 0;"></div>
+          <div style="position:absolute;bottom:-3px;left:-3px;width:18px;height:18px;border-bottom:4px solid #C9A227;border-left:4px solid #C9A227;border-radius:0 0 0 3px;"></div>
+          <div style="position:absolute;bottom:-3px;right:-3px;width:18px;height:18px;border-bottom:4px solid #C9A227;border-right:4px solid #C9A227;border-radius:0 0 3px 0;"></div>
+        </div>
+        <div id="w-scan-status" style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.65);color:#fff;font-size:11px;padding:4px 12px;border-radius:999px;white-space:nowrap;z-index:10;">📷 Scanne le code barre de ta carte...</div>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:1rem;">
+        <button class="btn bc" style="flex:1;" onclick="stopCardScan()"><i class="ti ti-x"></i> Annuler</button>
+      </div>
+    </div>
 
-        <!-- Card Name Modal -->
+    <!-- Card Name Modal -->
     <div id="w-name-modal" style="display:none;background:#fff;border:2px solid var(--gold);border-radius:16px;padding:1.25rem;margin-bottom:1rem;">
       <div style="font-size:14px;font-weight:700;margin-bottom:10px;">✅ Code scanné! Nom de la carte?</div>
       <div style="font-size:11px;color:var(--sub);margin-bottom:10px;" id="w-scanned-code"></div>
@@ -1190,11 +1024,11 @@ window.addEventListener('DOMContentLoaded', () => {
         <div class="prem-feature"><span style="color:var(--g);font-weight:700;">✓</span>Sans publicité / Ad-free</div>
         <div class="prem-feature"><span style="color:var(--g);font-weight:700;">✓</span>Portefeuille numérique illimité</div>
       </div>
-      <div style="background:#dcfce7;border:1px solid #86efac;border-radius:12px;padding:1rem;text-align:center;">
-        <div style="font-size:16px;font-weight:700;color:#166534;margin-bottom:4px;">🧪 Version Bêta</div>
-        <div style="font-size:13px;color:#166534;">Toutes les fonctionnalités Premium sont débloquées gratuitement pour toi!</div>
-        <div style="font-size:11px;color:#166534;margin-top:6px;">Le paiement sera activé lors du lancement officiel.</div>
-      </div>
+      <stripe-buy-button
+  buy-button-id="buy_btn_1TZxji8g6DMr5MKkOUY5K31c"
+  publishable-key="pk_live_51TZwZv8g6DMr5MKkRPebAg4U59jlMgIURfwaZcaMTgpSEFTn5jCQ2RQzowgt7RvPwE3sbDalFZADRoTj9N5kLegR00L4Tyau8k"
+></stripe-buy-button>
+      <div style="text-align:center;font-size:10px;color:var(--sub);">Aucune carte requise / No credit card required</div>
       <div style="text-align:center;margin-top:8px;font-size:10px;color:var(--sub);">
         <a href="https://smartgrocer.health/privacy.html" target="_blank" style="color:var(--sub);">Confidentialité</a> · 
         <a href="https://smartgrocer.health/terms.html" target="_blank" style="color:var(--sub);">Conditions</a>
@@ -1235,7 +1069,7 @@ window.addEventListener('DOMContentLoaded', () => {
 </div>
 
 <script>
-let isPremium=true,points=0,scansToday=0,recsToday=0,groceries=[],ings=[],selR=null,curRecs=[],currentProd='',camStream=null,totalScans=0;
+let isPremium=true,points=0,scansToday=0,recsToday=0,groceries=[],ings=[],selR=null,curRecs=[],currentProd='',camStream=null,totalScans=0; // BETA
 const LIMITS={scans:5,recs:3,list:10};
 const commRecs=[
   {id:1,emoji:"🍝",nom:"Pâtes Alfredo au poulet",auteur:"Marie L.",ini:"ML",temps:"30 min",tags:["pâtes","poulet"],likes:1284,viral:true,liked:false},
@@ -1296,22 +1130,12 @@ function finishOb(){
 
   // Save to localStorage
   const data = {
-    name: name,
-    email: email,
-    city: fullCity,
-    budget: '$400',
-    diet: 'Aucun',
-    onboardingDone: true,
-    isPremium: true,
-    points: 0,
-    totalScans: 0,
-    groceries: [],
-    walletCards: []
+    name, email, city: fullCity, budget: '$'+budget,
+    diet: 'Aucun', onboardingDone: true,
+    isPremium: false, points: 0, totalScans: 0,
+    groceries: [], walletCards: []
   };
-  try { 
-    localStorage.setItem('smartgrocer_data', JSON.stringify(data));
-    console.log('Saved:', data);
-  } catch(e) { console.error('Save error:', e); }
+  try { localStorage.setItem('smartgrocer_data', JSON.stringify(data)); } catch(e) {}
 
   // Show app
   document.getElementById('onboarding').style.display='none';
@@ -1368,7 +1192,7 @@ function updatePlanUI(){
   const p=isPremium;
   [['scan-badge','⭐ Illimité','🆓 5/jour'],['rec-badge','⭐ Illimitées','🆓 3/jour'],['list-badge','⭐ Illimitée','🆓 10 articles'],['plan-badge','⭐ Premium','🆓 Gratuit'],['prof-badge','⭐ Premium Trial','🆓 Gratuit'],['pp-plan','⭐ Premium Trial','🆓 Gratuit']].forEach(([id,pv,fv])=>{const el=document.getElementById(id);if(el){el.textContent=p?pv:fv;el.className='badge '+(p?'bdgold':'bdfree');}});
   ['scan-limit-bar','rec-limit-bar','list-limit-bar'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=p?'none':'flex';});
-  // trial banner hidden in beta
+  const tb=document.getElementById('trial-banner');if(tb)tb.style.display=p?'flex':'none';
   const hs=document.getElementById('h-scans');if(hs)hs.textContent=p?'∞':(LIMITS.scans-scansToday);
   const ql=document.getElementById('ql-scan');if(ql)ql.textContent=p?'Illimité ⭐':'5 scans/jour';
   const ul=document.getElementById('upload-label');if(ul)ul.textContent=p?'Uploader ta vidéo ou photo':'Uploader ta vidéo (Premium ⭐)';
@@ -1525,45 +1349,7 @@ function submitUp(){
     document.getElementById('share-btn').style.pointerEvents='none';
     showToast('🔒 Partage réservé aux membres Premium!');
     return;
-  }
-  const n = document.getElementById('up-nm').value.trim();
-  const ig = document.getElementById('up-ig').value.trim();
-  const etapes = document.getElementById('up-etapes').value.trim();
-  const temps = document.getElementById('up-temps').value.trim();
-  const portions = document.getElementById('up-portions').value.trim();
-  if(!n){ showToast('⚠️ Ajoute un titre!'); return; }
-  if(!ig){ showToast('⚠️ Ajoute les ingrédients!'); return; }
-  if(!etapes){ showToast('⚠️ Ajoute les étapes!'); return; }
-  
-  // Add to community feed
-  const newRec = {
-    id: Date.now(),
-    emoji: '🍳',
-    nom: n,
-    auteur: document.getElementById('h-name').textContent || 'Toi',
-    ini: (document.getElementById('h-name').textContent || 'M').substring(0,2).toUpperCase(),
-    temps: temps || '?',
-    tags: ['maison'],
-    likes: 0,
-    viral: false,
-    liked: false,
-    ingredients: ig,
-    etapes: etapes,
-    portions: portions
-  };
-  commRecs.unshift(newRec);
-  filterC();
-  
-  // Clear form
-  ['up-nm','up-ig','up-etapes','up-temps','up-portions'].forEach(function(id){
-    const el = document.getElementById(id);
-    if(el) el.value = '';
-  });
-  
-  addPoints(25);
-  showToast('🎉 Recette partagée avec la communauté! +' + (isPremium?50:25) + ' pts');
-  switchCT('feed', document.querySelector('#social .tab'));
-}
+  }const n=document.getElementById('up-nm').value.trim();const ig=document.getElementById('up-ig').value.trim();if(!n){showToast('⚠️ Ajoute un nom!');return;}addPoints(25);showToast('🎉 Recette partagée! +'+(isPremium?50:25)+' pts');sendPrompt('Génère une recette complète pour "'+n+'" avec: '+ig);}
 function renderRewards(){const el=document.getElementById('rewards-list');if(!el)return;el.innerHTML=rewards.map(r=>`<div style="background:var(--card);border-radius:16px;padding:12px;display:flex;align-items:center;gap:10px;border:1px solid var(--border);margin-bottom:8px;"><div style="font-size:22px;">${r.icon}</div><div style="flex:1"><div style="font-size:12px;font-weight:700;">${r.name}</div><div style="font-size:10px;color:var(--sub);">${r.desc}</div></div><button class="btn bgold" style="padding:5px 10px;font-size:11px;" onclick="claimReward(${r.pts},'${r.name}')">${r.pts} pts</button></div>`).join('');}
 function claimReward(pts,name){
   if(points>=pts){
@@ -1605,11 +1391,7 @@ function renderWallet(){
 
   const c=walletCards[activeCard];const display=document.getElementById('active-card-display');if(!display)return;
   display.style.background=c.gradient;display.style.boxShadow=`0 12px 32px ${c.shadow}`;
-  display.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;"><div><div style="font-size:20px;font-weight:800;color:#fff;">${c.name}</div><div style="font-size:10px;color:rgba(255,255,255,0.8);">${c.type}</div></div><div style="font-size:30px;">${c.icon}</div></div><div style="background:rgba(255,255,255,0.15);border-radius:12px;padding:12px;margin-bottom:10px;text-align:center;">
-${c.number && c.number !== '—' ? 
-  '<div style=\"font-size:12px;font-weight:700;color:#fff;letter-spacing:3px;margin-bottom:8px;\">' + c.number + '</div><div style=\"display:flex;gap:1.5px;justify-content:center;align-items:center;height:44px;\" id=\"wbc\"></div><div style=\"font-size:10px;color:rgba(255,255,255,0.7);margin-top:6px;\">Appuie pour agrandir le code</div>' :
-  '<div style=\"font-size:28px;margin-bottom:4px;\">' + c.icon + '</div><div style=\"font-size:12px;color:rgba(255,255,255,0.8)\">Carte ajoutée ✅</div>'
-}</div><div style="display:flex;align-items:center;justify-content:space-between;"><div><div style="font-size:20px;font-weight:700;color:#fff;">${c.pts.toLocaleString()} pts</div><div style="font-size:10px;color:rgba(255,255,255,0.8);">≈ $${(c.pts/100).toFixed(2)} en récompenses</div></div><div style="background:rgba(255,255,255,0.2);color:#fff;font-size:10px;font-weight:700;padding:5px 12px;border-radius:999px;">Niveau Or 🏆</div></div>`;
+  display.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;"><div><div style="font-size:20px;font-weight:800;color:#fff;">${c.name}</div><div style="font-size:10px;color:rgba(255,255,255,0.8);">${c.type}</div></div><div style="font-size:30px;">${c.icon}</div></div><div style="background:rgba(255,255,255,0.15);border-radius:12px;padding:12px;margin-bottom:10px;text-align:center;"><div style="font-size:12px;font-weight:700;color:#fff;letter-spacing:3px;margin-bottom:8px;">${c.number}</div><div style="display:flex;gap:1.5px;justify-content:center;align-items:center;height:44px;" id="wbc"></div><div style="font-size:10px;color:rgba(255,255,255,0.7);margin-top:6px;">Appuie pour agrandir le code</div></div><div style="display:flex;align-items:center;justify-content:space-between;"><div><div style="font-size:20px;font-weight:700;color:#fff;">${c.pts.toLocaleString()} pts</div><div style="font-size:10px;color:rgba(255,255,255,0.8);">≈ $${(c.pts/100).toFixed(2)} en récompenses</div></div><div style="background:rgba(255,255,255,0.2);color:#fff;font-size:10px;font-weight:700;padding:5px 12px;border-radius:999px;">Niveau Or 🏆</div></div>`;
   setTimeout(()=>{const wbc=document.getElementById('wbc');if(wbc)genBarcode(wbc);},50);
   const wd=document.getElementById('w-dots');if(wd)wd.innerHTML=walletCards.map((x,i)=>`<div onclick="setActiveCard(${i})" style="width:${i===activeCard?20:8}px;height:8px;border-radius:999px;background:${i===activeCard?'var(--g)':'#e5e7eb'};cursor:pointer;transition:all 0.2s;"></div>`).join('');
   const mcl=document.getElementById('mini-cards-list');if(mcl)mcl.innerHTML=walletCards.map((card,i)=>`<div class="mini-card ${i===activeCard?'active-mini':''}" onclick="setActiveCard(${i})"><div style="font-size:24px;">${card.icon}</div><div style="flex:1"><div style="font-size:12px;font-weight:700;">${card.name} — ${card.type}</div><div style="font-size:10px;color:var(--sub);">${card.pts.toLocaleString()} pts · ≈ $${(card.pts/100).toFixed(2)}</div></div><div style="display:flex;align-items:center;gap:8px;"><div style="width:6px;height:6px;border-radius:50%;background:${i===activeCard?'var(--g)':'#e5e7eb'};"></div><button onclick="event.stopPropagation();removeWCard(${i})" style="background:none;border:none;cursor:pointer;color:#9ca3af;font-size:16px;padding:0;">×</button></div></div>`).join('');
@@ -1633,7 +1415,6 @@ async function sendChat(){
   try{const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer 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'},body:JSON.stringify({model:'llama-3.3-70b-versatile',max_completion_tokens:300,messages:[{role:'user',content:'Tu es l\'assistant SmartGrocer, app épicerie bilingue FR/EN. Réponds dans la langue de la question, court et utile (max 2-3 phrases). Question: '+v}]})});const data=await res.json();addChatMsg('bot',data.choices[0].message.content.trim());}catch(e){addChatMsg('bot','Désolé, erreur de connexion!');}
 }
 document.addEventListener('DOMContentLoaded',()=>{
-  initApp();
   [['prod-in',searchProd],['ing-in',addIng],['chat-in',sendChat],['gr-in',addGr]].forEach(([id,fn])=>{const el=document.getElementById(id);if(el)el.addEventListener('keydown',e=>{if(e.key==='Enter')fn();});});
 });
 
@@ -1668,12 +1449,75 @@ async function testAPI(){
 
 // ===== REAL BARCODE SCANNER =====
 
+function startRealScan() {
+  if (!isPremium && scansToday >= LIMITS.scans) {
+    showPaywall('Limite de scans atteinte!', 'Tu as utilisé tes 5 scans gratuits. Passe à Premium!');
+    return;
+  }
+  document.getElementById('scan-idle').style.display = 'none';
+  document.getElementById('scan-active').style.display = 'block';
+  document.getElementById('quagga-container').innerHTML = '';
 
+  if (typeof Quagga === 'undefined') {
+    showToast('⚠️ Scanner non disponible — utilise Simuler scan');
+    stopRealScan();
+    return;
+  }
 
+  Quagga.init({
+    inputStream: {
+      type: 'LiveStream',
+      target: document.getElementById('quagga-container'),
+      constraints: {
+        facingMode: 'environment',
+        width: { ideal: 1280, max: 1920 },
+        height: { ideal: 720, max: 1080 }
+      }
+    },
+    locator: { patchSize: 'medium', halfSample: true },
+    numOfWorkers: 2,
+    frequency: 10,
+    decoder: {
+      readers: ['ean_reader', 'ean_8_reader', 'upc_reader', 'upc_e_reader', 'code_128_reader']
+    },
+    locate: true
+  }, function(err) {
+    if (err) {
+      console.error('Quagga error:', err);
+      showToast('📷 Caméra non disponible — utilise Simuler scan');
+      stopRealScan();
+      return;
+    }
+    Quagga.start();
+    quaggaRunning = true;
+  });
 
+  let scanDone = false;
 
+  Quagga.onDetected(function(result) {
+    if (scanDone) return;
+    const code = result.codeResult.code;
+    if (!code || code.length < 4) return;
+    scanDone = true;
+    const status = document.getElementById('scan-status');
+    if (status) status.textContent = '✅ Code scanné: ' + code;
+    setTimeout(() => {
+      stopRealScan();
+      document.getElementById('px-bc').textContent = 'Code barre: ' + code;
+      document.getElementById('prod-in').value = code;
+      lookupBarcode(code);
+    }, 300);
+  });
+}
 
-
+function stopRealScan() {
+  if (quaggaRunning) {
+    try { Quagga.stop(); } catch(e) {}
+    quaggaRunning = false;
+  }
+  document.getElementById('scan-idle').style.display = 'block';
+  document.getElementById('scan-active').style.display = 'none';
+}
 
 async function lookupBarcode(code) {
   document.getElementById('scan-btn').disabled = true;
@@ -1683,88 +1527,124 @@ async function lookupBarcode(code) {
   document.getElementById('sg').innerHTML = '';
 
   try {
-    showToast('🔍 Recherche du produit...');
-    let productName = '';
-    let productFound = false;
-
-    // API 1: Open Food Facts mondial
-    try {
-      const r1 = await fetch('https://world.openfoodfacts.org/api/v0/product/' + code + '.json');
-      const d1 = await r1.json();
-      if(d1.status === 1 && d1.product) {
-        const p = d1.product;
-        let n = p.product_name_fr || p.product_name || p.product_name_en || '';
-        let b = p.brands || '';
-        let q = p.quantity || '';
-        if(b && n && !n.toLowerCase().includes(b.toLowerCase())) n = b + ' ' + n;
-        if(q) n += ' ' + q;
-        productName = n.trim();
-        if(productName) productFound = true;
-      }
-    } catch(e) { console.log('OFF:', e); }
-
-    // NOT FOUND
-    if(!productFound) {
-      document.getElementById('px-em').textContent = '❓';
-      document.getElementById('px-nm').textContent = 'Produit non trouvé';
-      document.getElementById('px-bc').textContent = 'Code: ' + code;
-      showNotFound(code);
-      document.getElementById('px-res').style.display = 'block';
-      document.getElementById('px-ld').classList.remove('on');
-      document.getElementById('scan-btn').disabled = false;
-      showToast('⚠️ Produit non reconnu — aide la communauté!');
-      return;
-    }
-
-    // FOUND - get prices from Groq
-    showToast('✅ ' + productName + ' trouvé! Comparaison des prix...');
     const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
-      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer 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'},
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer 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'
+      },
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
         max_completion_tokens: 1000,
         messages: [{
           role: 'user',
-          content: 'Prix réalistes au Québec pour "' + productName + '". JSON seulement:\n{"emoji":"🛒","nom":"' + productName + '","magasins":[{"nom":"IGA","prix":5.99,"prixRegulier":7.49,"enSpecial":true,"format":"1kg"},{"nom":"Metro","prix":7.29,"prixRegulier":7.29,"enSpecial":false,"format":"1kg"},{"nom":"Maxi","prix":6.49,"prixRegulier":6.99,"enSpecial":true,"format":"1kg"},{"nom":"Walmart","prix":6.19,"prixRegulier":6.19,"enSpecial":false,"format":"1kg"},{"nom":"Costco","prix":14.99,"prixRegulier":14.99,"enSpecial":false,"format":"2.5kg"}],"formats":[{"format":"1kg","prix":5.99,"prixAu100g":0.60}]}'
+          content: 'Le code barre ' + code + ' correspond à quel produit épicerie vendu au Québec? Donne des prix réalistes québécois. JSON seulement:\n{"emoji":"🥜","nom":"Nom complet du produit","magasins":[{"nom":"IGA","prix":5.99,"prixRegulier":7.49,"enSpecial":true,"format":"1kg"},{"nom":"Metro","prix":7.29,"prixRegulier":7.29,"enSpecial":false,"format":"1kg"},{"nom":"Maxi","prix":6.49,"prixRegulier":6.99,"enSpecial":true,"format":"1kg"},{"nom":"Walmart","prix":6.19,"prixRegulier":6.19,"enSpecial":false,"format":"1kg"},{"nom":"Costco","prix":14.99,"prixRegulier":14.99,"enSpecial":false,"format":"2.5kg"}],"formats":[{"format":"1kg","prix":5.99,"prixAu100g":0.60}]}'
         }]
       })
     });
     const data = await res.json();
     const text = data.choices[0].message.content.replace(/```json|```/g, '').trim();
     const d = JSON.parse(text);
-
     document.getElementById('px-em').textContent = d.emoji;
-    document.getElementById('px-nm').textContent = productName;
-    document.getElementById('prod-in').value = productName;
-    document.getElementById('px-bc').textContent = 'Code: ' + code + ' ✅ Base de données';
-
+    document.getElementById('px-nm').textContent = d.nom;
+    document.getElementById('prod-in').value = d.nom;
     const sorted = [...d.magasins].sort((a, b) => a.prix - b.prix);
     const best = sorted[0], worst = sorted[sorted.length - 1];
     document.getElementById('bs').textContent = best.nom;
     document.getElementById('bp').textContent = '$' + best.prix.toFixed(2);
-    document.getElementById('bsv').textContent = 'Economise jusqu a $' + (worst.prix - best.prix).toFixed(2);
+    document.getElementById('bsv').textContent = 'Économise jusqu\'à $' + (worst.prix - best.prix).toFixed(2);
     document.getElementById('bd').classList.add('on');
     document.getElementById('sg').innerHTML = d.magasins.map(s =>
-      '<div class="sc ' + (s.enSpecial ? 'sale' : '') + '">' +
-      '<div style="font-size:11px;font-weight:700;margin-bottom:2px;">' + s.nom + '</div>' +
-      '<div style="font-size:16px;font-weight:700;">$' + s.prix.toFixed(2) + '</div>' +
-      (s.enSpecial ? '<div style="font-size:9px;color:var(--sub);text-decoration:line-through;">$' + s.prixRegulier.toFixed(2) + '</div><div class="badge bdg" style="margin-top:2px;font-size:9px;">Special!</div>' : '') +
-      '<div style="font-size:9px;color:var(--sub);margin-top:2px;">' + s.format + '</div></div>'
+      `<div class="sc ${s.enSpecial ? 'sale' : ''}">
+        <div style="font-size:11px;font-weight:700;margin-bottom:2px;">${s.nom}</div>
+        <div style="font-size:16px;font-weight:700;">$${s.prix.toFixed(2)}</div>
+        ${s.enSpecial ? `<div style="font-size:9px;color:var(--sub);text-decoration:line-through;">$${s.prixRegulier.toFixed(2)}</div><div class="badge bdg" style="margin-top:2px;font-size:9px;">Spécial!</div>` : ''}
+        <div style="font-size:9px;color:var(--sub);margin-top:2px;">${s.format}</div>
+      </div>`
     ).join('');
     document.getElementById('px-res').style.display = 'block';
     scansToday++; totalScans++;
-    const ps = document.getElementById('prof-scans');
-    if(ps) ps.textContent = totalScans;
-    addPoints(10); updateLimitDots(); saveData();
-    showToast('✅ ' + productName + '! +' + (isPremium ? 20 : 10) + ' pts');
-
+    const ps = document.getElementById('prof-scans'); if (ps) ps.textContent = totalScans;
+    addPoints(10); updateLimitDots();
+    showToast('✅ Produit identifié! +' + (isPremium ? 20 : 10) + ' pts');
   } catch(e) {
-    console.error('Barcode error:', e);
-    showToast('❌ Erreur de connexion — réessaie!');
+    console.error('Barcode lookup error:', e);
+    showToast('❌ Produit non reconnu — essaie la recherche manuelle');
   }
   document.getElementById('px-ld').classList.remove('on');
   document.getElementById('scan-btn').disabled = false;
+}
+
+
+async function lookupBarcode(code) {
+  document.getElementById('scan-btn').disabled = true;
+  document.getElementById('px-ld').classList.add('on');
+  document.getElementById('px-res').style.display = 'none';
+  document.getElementById('bd').classList.remove('on');
+  document.getElementById('sg').innerHTML = '';
+  try {
+    showToast('🔍 Recherche du produit...');
+    let productName = '';
+    // API 1: Open Food Facts
+    try {
+      const r1 = await fetch('https://world.openfoodfacts.org/api/v0/product/'+code+'.json');
+      const d1 = await r1.json();
+      if(d1.status===1&&d1.product){
+        const p=d1.product;
+        let n=p.product_name_fr||p.product_name||p.product_name_en||'';
+        let b=p.brands||''; let q=p.quantity||'';
+        if(b&&n&&!n.toLowerCase().includes(b.toLowerCase()))n=b+' '+n;
+        if(q)n+=' '+q;
+        productName=n.trim();
+      }
+    }catch(e){console.log('OFF:',e);}
+    // API 2: UPC Item DB
+    if(!productName){
+      try{
+        const r2=await fetch('https://api.upcitemdb.com/prod/trial/lookup?upc='+code);
+        const d2=await r2.json();
+        if(d2.code==='OK'&&d2.items&&d2.items.length>0){
+          const item=d2.items[0];
+          productName=(item.brand?item.brand+' ':'')+item.title;
+          productName=productName.trim();
+        }
+      }catch(e){console.log('UPC:',e);}
+    }
+    showToast('💰 Comparaison des prix...');
+    const prompt=productName
+      ?'Prix réalistes au Québec pour "'+productName+'". JSON seulement:\n{"emoji":"🛒","nom":"'+productName+'","magasins":[{"nom":"IGA","prix":5.99,"prixRegulier":7.49,"enSpecial":true,"format":"1kg"},{"nom":"Metro","prix":7.29,"prixRegulier":7.29,"enSpecial":false,"format":"1kg"},{"nom":"Maxi","prix":6.49,"prixRegulier":6.99,"enSpecial":true,"format":"1kg"},{"nom":"Walmart","prix":6.19,"prixRegulier":6.19,"enSpecial":false,"format":"1kg"},{"nom":"Costco","prix":14.99,"prixRegulier":14.99,"enSpecial":false,"format":"2.5kg"}],"formats":[{"format":"1kg","prix":5.99,"prixAu100g":0.60}]}'
+      :'Code barre épicerie canadien: '+code+'. Identifie ce produit et donne prix réalistes Québec. JSON seulement:\n{"emoji":"🛒","nom":"Nom du produit","magasins":[{"nom":"IGA","prix":5.99,"prixRegulier":7.49,"enSpecial":true,"format":"1kg"},{"nom":"Metro","prix":7.29,"prixRegulier":7.29,"enSpecial":false,"format":"1kg"},{"nom":"Maxi","prix":6.49,"prixRegulier":6.99,"enSpecial":true,"format":"1kg"},{"nom":"Walmart","prix":6.19,"prixRegulier":6.19,"enSpecial":false,"format":"1kg"},{"nom":"Costco","prix":14.99,"prixRegulier":14.99,"enSpecial":false,"format":"2.5kg"}],"formats":[{"format":"1kg","prix":5.99,"prixAu100g":0.60}]}';
+    const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer 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'},
+      body:JSON.stringify({model:'llama-3.3-70b-versatile',max_completion_tokens:1000,messages:[{role:'user',content:prompt}]})
+    });
+    const data=await res.json();
+    const text=data.choices[0].message.content.replace(/```json|```/g,'').trim();
+    const d=JSON.parse(text);
+    const finalName=productName||d.nom;
+    document.getElementById('px-em').textContent=d.emoji;
+    document.getElementById('px-nm').textContent=finalName;
+    document.getElementById('prod-in').value=finalName;
+    document.getElementById('px-bc').textContent='Code: '+code+(productName?' ✅ Base de données':' 🤖 Estimation IA');
+    const sorted=[...d.magasins].sort((a,b)=>a.prix-b.prix);
+    const best=sorted[0],worst=sorted[sorted.length-1];
+    document.getElementById('bs').textContent=best.nom;
+    document.getElementById('bp').textContent='$'+best.prix.toFixed(2);
+    document.getElementById('bsv').textContent='Économise jusqu\'à $'+(worst.prix-best.prix).toFixed(2);
+    document.getElementById('bd').classList.add('on');
+    document.getElementById('sg').innerHTML=d.magasins.map(s=>`<div class="sc ${s.enSpecial?'sale':''}"><div style="font-size:11px;font-weight:700;margin-bottom:2px;">${s.nom}</div><div style="font-size:16px;font-weight:700;">$${s.prix.toFixed(2)}</div>${s.enSpecial?`<div style="font-size:9px;color:var(--sub);text-decoration:line-through;">$${s.prixRegulier.toFixed(2)}</div><div class="badge bdg" style="margin-top:2px;font-size:9px;">Spécial!</div>`:''}<div style="font-size:9px;color:var(--sub);margin-top:2px;">${s.format}</div></div>`).join('');
+    document.getElementById('px-res').style.display='block';
+    scansToday++;totalScans++;
+    const ps=document.getElementById('prof-scans');if(ps)ps.textContent=totalScans;
+    addPoints(10);updateLimitDots();
+    showToast('✅ '+(productName?productName:'Produit identifié')+'! +'+(isPremium?20:10)+' pts');
+  }catch(e){
+    console.error('Barcode error:',e);
+    showToast('❌ Erreur — essaie la recherche manuelle');
+  }
+  document.getElementById('px-ld').classList.remove('on');
+  document.getElementById('scan-btn').disabled=false;
 }
 
 
@@ -1787,73 +1667,50 @@ const KNOWN_CARDS = [
 
 let scannedCardCode = '';
 
-let cardScanStream = null;
-let cardScanInterval = null;
-let zxingReader = null;
-
 function startCardScan() {
   document.getElementById('w-scan-idle').style.display = 'none';
   document.getElementById('w-scan-active').style.display = 'block';
   document.getElementById('w-name-modal').style.display = 'none';
+  document.getElementById('w-quagga-container').innerHTML = '';
   walletScanDone = false;
 
-  const container = document.getElementById('w-quagga-container');
-  container.innerHTML = '';
-  container.style.position = 'relative';
-
-  const video = document.createElement('video');
-  video.id = 'card-scan-video';
-  video.style.cssText = 'width:100%;height:auto;display:block;border-radius:14px;';
-  video.autoplay = true;
-  video.playsInline = true;
-  video.muted = true;
-  container.appendChild(video);
-
-  if(typeof ZXing !== 'undefined') {
-    try {
-      zxingReader = new ZXing.BrowserMultiFormatReader();
-      zxingReader.decodeFromVideoDevice(null, video, function(result, err) {
-        if(walletScanDone) return;
-        if(result) {
-          walletScanDone = true;
-          const code = result.getText();
-          const statusEl = document.getElementById('w-scan-status');
-          if(statusEl) statusEl.textContent = 'Code scanné!';
-          setTimeout(function() {
-            stopCardScan();
-            scannedCardCode = code;
-            showCardNameModal(code);
-          }, 300);
-        }
-      });
-      return;
-    } catch(e) {
-      console.log('ZXing error:', e);
-    }
+  if (typeof Quagga === 'undefined') {
+    showToast('⚠️ Scanner non disponible');
+    stopCardScan();
+    return;
   }
 
-  // Fallback: manual camera
-  navigator.mediaDevices.getUserMedia({
-    video: { facingMode: 'environment', width: {ideal:1280}, height: {ideal:720} }
-  }).then(function(stream) {
-    cardScanStream = stream;
-    video.srcObject = stream;
-    video.play();
-    showToast('📷 Pointe vers le code barre de ta carte...');
-  }).catch(function() {
-    showToast('📷 Permets accès à la caméra!');
+  Quagga.init({
+    inputStream: {
+      type: 'LiveStream',
+      target: document.getElementById('w-quagga-container'),
+      constraints: { facingMode: 'environment', width: {ideal:1280}, height: {ideal:720} }
+    },
+    locator: {patchSize:'medium', halfSample:true},
+    numOfWorkers: 2,
+    frequency: 10,
+    decoder: { readers: ['ean_reader','ean_8_reader','upc_reader','upc_e_reader','code_128_reader','code_39_reader','itf_reader'] },
+    locate: true
+  }, function(err) {
+    if (err) { showToast('📷 Caméra non disponible'); stopCardScan(); return; }
+    Quagga.start();
+  });
+
+  Quagga.onDetected(function(result) {
+    if (walletScanDone) return;
+    const code = result.codeResult.code;
+    if (!code || code.length < 4) return;
+    walletScanDone = true;
     stopCardScan();
+    scannedCardCode = code;
+    showCardNameModal(code);
   });
 }
 
 function stopCardScan() {
-  if(zxingReader) { try { zxingReader.reset(); } catch(e) {} zxingReader = null; }
-  if(cardScanInterval) { clearInterval(cardScanInterval); cardScanInterval = null; }
-  if(cardScanStream) { cardScanStream.getTracks().forEach(function(t) { t.stop(); }); cardScanStream = null; }
+  try { Quagga.stop(); } catch(e) {}
   document.getElementById('w-scan-idle').style.display = 'block';
   document.getElementById('w-scan-active').style.display = 'none';
-  const container = document.getElementById('w-quagga-container');
-  if(container) container.innerHTML = '';
 }
 
 function cancelCardScan() {
@@ -1953,282 +1810,125 @@ function loadProfileInputs() {
   } catch(e) {}
 }
 
-
-// ===== FEEDBACK FUNCTIONS =====
-let fbStar = 0;
-let fbNPS = -1;
-
-function openFeedback() {
-  document.getElementById('feedback-modal').style.display = 'block';
-  document.body.style.overflow = 'hidden';
-}
-
-function closeFeedback() {
-  document.getElementById('feedback-modal').style.display = 'none';
-  document.body.style.overflow = '';
-}
-
-function fbSetStar(n) {
-  fbStar = n;
-  document.querySelectorAll('#fb-stars span').forEach((s, i) => {
-    s.style.opacity = i < n ? '1' : '0.3';
-  });
-}
-
-function fbSetNPS(n) {
-  fbNPS = n;
-  document.querySelectorAll('#fb-nps button').forEach((b, i) => {
-    b.style.background = i === n ? '#D85A30' : '#fff';
-    b.style.color = i === n ? '#fff' : '#374151';
-    b.style.borderColor = i === n ? '#D85A30' : '#e5e7eb';
-  });
-}
-
-function submitFeedback() {
-  const facilite = document.getElementById('fb-facilite').value;
-  const scanner = document.getElementById('fb-scanner').value;
-  const manque = document.getElementById('fb-manque').value;
-  const aime = document.getElementById('fb-aime').value;
-  const prix = document.getElementById('fb-prix').value;
-  const betaCode = localStorage.getItem('smartgrocer_beta_code') || 'Non spécifié';
-
-  const subject = encodeURIComponent('Feedback Bêta SmartGrocer — Code: ' + betaCode);
-  const body = encodeURIComponent(
-    '=== FEEDBACK BÊTA SMARTGROCER ===\n\n' +
-    'Code bêta: ' + betaCode + '\n\n' +
-    '⭐ NOTE GLOBALE: ' + fbStar + '/5\n\n' +
-    '🎯 FACILITÉ: ' + facilite + '\n\n' +
-    '📷 SCANNER: ' + scanner + '\n\n' +
-    '💡 CE QUI MANQUE:\n' + manque + '\n\n' +
-    '❤️ CE QUI ÉTAIT BIEN:\n' + aime + '\n\n' +
-    '💰 PRIX ACCEPTABLE: ' + prix + '\n\n' +
-    '📣 NPS: ' + fbNPS + '/10\n\n' +
-    '================================'
-  );
-
-  window.open('mailto:smartgrocer@yahoo.com?subject=' + subject + '&body=' + body);
-  
-  document.getElementById('feedback-form-container').style.display = 'none';
-  document.getElementById('feedback-success').style.display = 'block';
-}
-
-
-// ===== BETA LOCALSTORAGE =====
-function saveData() {
-  try {
-    const nameEl = document.getElementById('h-name');
-    const cityEl = document.getElementById('pct');
-    const emailEl = document.getElementById('pp-email-input');
-    const data = {
-      name: nameEl ? nameEl.textContent : 'Tim',
-      email: emailEl ? emailEl.value : '',
-      city: cityEl ? cityEl.textContent : '',
-      budget: '$400',
-      diet: 'Aucun',
-      onboardingDone: true,
-      isPremium: true,
-      points: points,
-      totalScans: totalScans,
-      groceries: groceries,
-      walletCards: walletCards
-    };
-    localStorage.setItem('smartgrocer_data', JSON.stringify(data));
-  } catch(e) { console.error('Save error:', e); }
-}
-
-function loadData() {
-  try {
-    const saved = localStorage.getItem('smartgrocer_data');
-    if (!saved) return false;
-    const data = JSON.parse(saved);
-    if (!data.onboardingDone) return false;
-
-    isPremium = true; // Always premium in beta
-    points = data.points || 0;
-    totalScans = data.totalScans || 0;
-    groceries = data.groceries || [];
-    walletCards = data.walletCards || [];
-
-    // Update UI
-    ['h-name','pnm'].forEach(id=>{const el=document.getElementById(id);if(el&&data.name)el.textContent=data.name;});
-    const pav=document.getElementById('pav');if(pav&&data.name)pav.textContent=data.name.substring(0,2).toUpperCase();
-    ['pct','pp-city'].forEach(id=>{const el=document.getElementById(id);if(el&&data.city)el.textContent=data.city;});
-    const carte=document.getElementById('carte-city');if(carte&&data.city)carte.textContent='Épiceries · '+data.city+' · 5 km';
-    
-    return true;
-  } catch(e) { console.error('Load error:', e); return false; }
-}
-
-function clearData() {
-  if(confirm('Effacer toutes tes données SmartGrocer?')) {
-    localStorage.removeItem('smartgrocer_data');
-    location.reload();
-  }
-}
-
-function initApp() {
-  const hasData = loadData();
-  if (hasData) {
-    document.getElementById('landing').style.display='none';
-    document.getElementById('onboarding').style.display='none';
-    document.getElementById('app').style.display='block';
-    document.getElementById('chat-wrap').style.display='block';
-    isPremium = true;
-    updatePlanUI(); renderRewards(); renderC(); renderBCats(); renderWallet(); renderGr(); updatePointsUI();
-    showToast('👋 Bon retour sur SmartGrocer!');
-  }
-}
-
-
-function scanCardPhoto(input) {
-  if(!input.files || !input.files[0]) return;
-  const file = input.files[0];
-  const img = new Image();
-  const url = URL.createObjectURL(file);
-  img.onload = function() {
-    const canvas = document.createElement('canvas');
-    canvas.width = img.width;
-    canvas.height = img.height;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(img, 0, 0);
-    URL.revokeObjectURL(url);
-
-    // Try ZXing on the image
-    if(typeof ZXing !== 'undefined') {
-      try {
-        const reader = new ZXing.BrowserMultiFormatReader();
-        reader.decodeFromImageElement(img).then(function(result) {
-          if(result) {
-            scannedCardCode = result.getText();
-            showCardNameModal(scannedCardCode);
-          }
-        }).catch(function() {
-          // Try jsQR as fallback
-          tryJsQROnCanvas(ctx, canvas);
-        });
-        return;
-      } catch(e) {}
-    }
-    tryJsQROnCanvas(ctx, canvas);
-  };
-  img.src = url;
-  showToast('🔍 Analyse de la photo...');
-}
-
-function tryJsQROnCanvas(ctx, canvas) {
-  if(typeof jsQR !== 'undefined') {
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const qr = jsQR(imageData.data, imageData.width, imageData.height, {inversionAttempts: 'attemptBoth'});
-    if(qr && qr.data) {
-      scannedCardCode = qr.data;
-      showCardNameModal(scannedCardCode);
-      return;
-    }
-  }
-  // No code found - ask user to enter manually
-  showToast('⚠️ Code non détecté — entre le numéro manuellement!');
-  addCardManually();
-}
-
-function addCardManually() {
-  scannedCardCode = 'MANUEL-' + Date.now();
-  const modal = document.getElementById('w-name-modal');
-  let sugHtml = KNOWN_CARDS.slice(0,6).map(function(c) {
-    return '<div onclick="selectCardName(this.dataset.name)" data-name="' + c.name + '" style="background:var(--light);border:1px solid var(--border);border-radius:8px;padding:5px 10px;font-size:11px;cursor:pointer;display:inline-flex;align-items:center;gap:4px;">' + c.icon + ' ' + c.name + '</div>';
-  }).join('');
-  modal.innerHTML = '<div style="font-size:14px;font-weight:700;margin-bottom:10px;">Ajouter une carte</div>' +
-    '<div style="margin-bottom:10px;"><label style="font-size:11px;color:var(--sub);display:block;margin-bottom:4px;">Numéro de la carte</label><input type="text" id="w-manual-number" placeholder="Ex: 1234 5678 9012"/></div>' +
-    '<div style="margin-bottom:10px;"><div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">' + sugHtml + '</div><input type="text" id="w-card-name" placeholder="Nom de la carte..."/></div>' +
-    '<div style="display:flex;gap:8px;"><button class="btn bgold" style="flex:1;" onclick="confirmAddCardManual()">Ajouter</button><button class="btn bo" style="flex:1;" onclick="closeWalletNameModal()">Annuler</button></div>';
-  modal.style.display = 'block';
-}
-
-function confirmAddCardManual() {
-  const name = document.getElementById('w-card-name').value.trim();
-  const numEl = document.getElementById('w-manual-number');
-  const number = numEl ? numEl.value.trim() : scannedCardCode;
-  if(!name) { showToast('Entre le nom de la carte!'); return; }
-  const known = KNOWN_CARDS.find(function(c) { return c.name.toLowerCase() === name.toLowerCase(); });
-  walletCards.push({
-    name: name, type: name,
-    icon: known ? known.icon : '💳',
-    gradient: known ? known.gradient : 'linear-gradient(135deg,#1D9E75,#0F6E56)',
-    number: number || 'XXXX XXXX XXXX XXXX',
-    pts: 0,
-    shadow: known ? known.shadow : 'rgba(29,158,117,0.35)',
-    isReal: true
-  });
-  document.getElementById('w-name-modal').style.display = 'none';
-  activeCard = walletCards.length - 1;
-  renderWallet();
-  saveData();
-  showToast('Carte ' + name + ' ajoutée!');
-}
-
-
-function closeWalletNameModal() {
-  document.getElementById('w-name-modal').style.display = 'none';
-}
-
-
-function quickAddCard(name, icon, gradient, shadow) {
-  // If card already exists, just show it
-  const existingIdx = walletCards.findIndex(function(c) { return c.name === name; });
-  if(existingIdx >= 0) {
-    activeCard = existingIdx;
-    renderWallet();
-    // Scroll to active card
-    const activeDisplay = document.getElementById('active-card-display');
-    if(activeDisplay) activeDisplay.scrollIntoView({behavior:'smooth', block:'center'});
-    showToast('Carte ' + name + ' sélectionnée!');
-    return;
-  }
-  walletCards.push({
-    name: name,
-    type: name,
-    icon: icon,
-    gradient: gradient,
-    number: '—',  // No barcode for manually added cards
-    pts: 0,
-    shadow: shadow,
-    isReal: false
-  });
-  activeCard = walletCards.length - 1;
-  renderWallet();
-  saveData();
-  showToast('✅ Carte ' + name + ' ajoutée!');
-}
-
-function quickAddCustomCard() {
-  const name = prompt('Nom de ta carte:');
-  if(!name || !name.trim()) return;
-  quickAddCard(name.trim(), '💳', 'linear-gradient(135deg,#1D9E75,#0F6E56)', 'rgba(29,158,117,0.35)');
-}
-
-function startCardScan() {}
-function stopCardScan() {}
-
-
-function showNotFound(code) {
-  const url = 'https://world.openfoodfacts.org/cgi/product.pl?type=add&barcode=' + code;
-  const div = document.createElement('div');
-  div.style.cssText = 'grid-column:1/-1;background:#fef3c7;border:1px solid #fcd34d;border-radius:12px;padding:1.25rem;text-align:center;';
-  div.innerHTML = '<div style="font-size:32px;margin-bottom:8px;">🔍</div>' +
-    '<div style="font-size:14px;font-weight:700;color:#92400e;margin-bottom:6px;">Produit non reconnu</div>' +
-    '<div style="font-size:12px;color:#78350f;margin-bottom:12px;line-height:1.5;">Ce produit nest pas dans nos bases de données. Aide la communauté en ajoutant ce produit!</div>';
-  const btn = document.createElement('button');
-  btn.className = 'btn';
-  btn.style.cssText = 'background:#1D9E75;color:#fff;width:100%;justify-content:center;padding:12px;margin-bottom:8px;';
-  btn.textContent = '🌍 Ajouter ce produit à la base de données';
-  btn.onclick = function() { window.open(url, '_blank'); };
-  div.appendChild(btn);
-  const note = document.createElement('div');
-  note.style.cssText = 'font-size:10px;color:#92400e;';
-  note.textContent = 'En ajoutant ce produit, tu aides des milliers de personnes! 🌱';
-  div.appendChild(note);
-  document.getElementById('sg').appendChild(div);
-}
-
 </script>
+
+<!-- BETA ACCESS GATE -->
+<div id="beta-gate" style="position:fixed;top:0;left:0;right:0;bottom:0;background:linear-gradient(160deg,#1D9E75,#0F6E56);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1.5rem;">
+  <div style="background:#fff;border-radius:24px;padding:2rem;width:100%;max-width:380px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+    <div style="font-size:24px;font-weight:800;margin-bottom:4px;"><span style="color:#1D9E75;">Smart</span><span style="color:#C9A227;">Grocer</span></div>
+    <div style="font-size:13px;color:#6b7280;margin-bottom:12px;">Version Bêta — Accès restreint</div>
+    <div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:10px;padding:10px;margin-bottom:1.25rem;font-size:12px;color:#92400e;">Entre ton code d'accès bêta</div>
+    <input type="text" id="beta-code-input" placeholder="Ex: SG-BETA-001" 
+      style="width:100%;padding:12px;border:2px solid #e5e7eb;border-radius:12px;font-size:14px;text-align:center;text-transform:uppercase;letter-spacing:2px;margin-bottom:10px;font-family:monospace;"
+      oninput="this.value=this.value.toUpperCase()"
+      onkeydown="if(event.key==='Enter')checkBetaCode()"/>
+    <button onclick="checkBetaCode()" style="width:100%;background:linear-gradient(135deg,#1D9E75,#0F6E56);color:#fff;border:none;border-radius:12px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px;">Accéder à la version bêta</button>
+    <div id="beta-error" style="display:none;color:#ef4444;font-size:12px;margin-top:6px;">Code invalide — réessaie!</div>
+    <div style="font-size:11px;color:#9ca3af;margin-top:10px;">Pas de code? Contacte <a href="mailto:smartgrocer@yahoo.com" style="color:#1D9E75;">smartgrocer@yahoo.com</a></div>
+  </div>
+</div>
+
+<!-- BETA BANNER -->
+<div id="beta-banner" style="display:none;background:linear-gradient(135deg,#7B0000,#5C0000);padding:10px 16px;position:sticky;top:0;z-index:200;">
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+    <div>
+      <div style="font-size:12px;font-weight:700;color:#fff;">🧪 Version Bêta</div>
+      <div style="font-size:10px;color:rgba(255,255,255,0.85);">Toutes les fonctionnalités débloquées!</div>
+    </div>
+    <button onclick="openFeedback()" style="background:#fff;color:#7B0000;border:none;border-radius:10px;padding:8px 12px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;">📝 Donner mon feedback</button>
+  </div>
+</div>
+
+<script>
+const BETA_CODES = ["SG-BETA-001","SG-BETA-002","SG-BETA-003","SG-BETA-004","SG-BETA-005","SG-BETA-006","SG-BETA-007","SG-BETA-008","SG-BETA-009","SG-BETA-010","SG-BETA-011","SG-BETA-012","SG-BETA-013","SG-BETA-014","SG-BETA-015","SG-BETA-016","SG-BETA-017","SG-BETA-018","SG-BETA-019","SG-BETA-020"];
+
+function checkBetaCode() {
+  const input = document.getElementById('beta-code-input').value.trim().toUpperCase();
+  if(BETA_CODES.includes(input)) {
+    localStorage.setItem('sg_beta_code', input);
+    document.getElementById('beta-gate').style.display = 'none';
+    document.getElementById('beta-banner').style.display = 'block';
+    document.body.style.overflow = '';
+  } else {
+    document.getElementById('beta-error').style.display = 'block';
+    setTimeout(function(){ document.getElementById('beta-error').style.display = 'none'; }, 3000);
+  }
+}
+
+window.addEventListener('DOMContentLoaded', function() {
+  const saved = localStorage.getItem('sg_beta_code');
+  if(saved && BETA_CODES.includes(saved)) {
+    document.getElementById('beta-gate').style.display = 'none';
+    document.getElementById('beta-banner').style.display = 'block';
+  } else {
+    document.body.style.overflow = 'hidden';
+  }
+});
+</script>
+
+<!-- FEEDBACK MODAL -->
+<div id="feedback-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:3000;overflow-y:auto;">
+  <div style="background:#fff;margin:1rem auto;max-width:480px;border-radius:20px;overflow:hidden;">
+    <div style="background:linear-gradient(135deg,#7B0000,#5C0000);padding:1.25rem;display:flex;align-items:center;justify-content:space-between;">
+      <div><div style="font-size:16px;font-weight:700;color:#fff;">📝 Ton feedback</div><div style="font-size:11px;color:rgba(255,255,255,0.85);">Aide-nous à améliorer SmartGrocer!</div></div>
+      <button onclick="closeFeedback()" style="background:rgba(255,255,255,0.2);border:none;color:#fff;border-radius:8px;padding:6px 10px;cursor:pointer;font-size:14px;">✕</button>
+    </div>
+    <div style="padding:1.25rem;" id="feedback-form-container">
+      <div style="margin-bottom:1rem;">
+        <div style="font-size:13px;font-weight:700;margin-bottom:8px;">⭐ Note globale</div>
+        <div style="display:flex;gap:8px;" id="fb-stars">
+          <span style="font-size:28px;cursor:pointer;opacity:0.3;" onclick="fbSetStar(1)">⭐</span>
+          <span style="font-size:28px;cursor:pointer;opacity:0.3;" onclick="fbSetStar(2)">⭐</span>
+          <span style="font-size:28px;cursor:pointer;opacity:0.3;" onclick="fbSetStar(3)">⭐</span>
+          <span style="font-size:28px;cursor:pointer;opacity:0.3;" onclick="fbSetStar(4)">⭐</span>
+          <span style="font-size:28px;cursor:pointer;opacity:0.3;" onclick="fbSetStar(5)">⭐</span>
+        </div>
+      </div>
+      <div style="margin-bottom:1rem;">
+        <div style="font-size:13px;font-weight:700;margin-bottom:6px;">💡 Ce qui manque ou pourrait être amélioré</div>
+        <textarea id="fb-manque" placeholder="Tes suggestions..." style="width:100%;padding:8px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:13px;font-family:inherit;min-height:70px;resize:vertical;"></textarea>
+      </div>
+      <div style="margin-bottom:1rem;">
+        <div style="font-size:13px;font-weight:700;margin-bottom:6px;">❤️ Ce que tu as aimé</div>
+        <textarea id="fb-aime" placeholder="Tes fonctionnalités préférées..." style="width:100%;padding:8px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:13px;font-family:inherit;min-height:70px;resize:vertical;"></textarea>
+      </div>
+      <div style="margin-bottom:1rem;">
+        <div style="font-size:13px;font-weight:700;margin-bottom:6px;">💰 Combien paierais-tu pour Premium?</div>
+        <select id="fb-prix" style="width:100%;padding:8px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:13px;">
+          <option value="">-- Sélectionne --</option>
+          <option value="gratuit">Version gratuite seulement</option>
+          <option value="2-3">$2-3/mois</option>
+          <option value="4-5">$4-5/mois</option>
+          <option value="6-10">$6-10/mois</option>
+        </select>
+      </div>
+      <button onclick="submitFeedback()" style="width:100%;background:linear-gradient(135deg,#7B0000,#5C0000);color:#fff;border:none;border-radius:12px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;">📤 Envoyer mon feedback</button>
+    </div>
+    <div id="feedback-success" style="display:none;padding:2rem;text-align:center;">
+      <div style="font-size:48px;margin-bottom:12px;">🎉</div>
+      <div style="font-size:18px;font-weight:700;color:#166534;margin-bottom:8px;">Merci pour ton feedback!</div>
+      <button onclick="closeFeedback()" style="background:#1D9E75;color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:13px;font-weight:700;cursor:pointer;">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let fbStar = 0;
+function openFeedback(){ document.getElementById('feedback-modal').style.display='block'; document.body.style.overflow='hidden'; }
+function closeFeedback(){ document.getElementById('feedback-modal').style.display='none'; document.body.style.overflow=''; }
+function fbSetStar(n){ fbStar=n; document.querySelectorAll('#fb-stars span').forEach(function(s,i){ s.style.opacity=i<n?'1':'0.3'; }); }
+function submitFeedback(){
+  var manque=document.getElementById('fb-manque').value;
+  var aime=document.getElementById('fb-aime').value;
+  var prix=document.getElementById('fb-prix').value;
+  var code=localStorage.getItem('sg_beta_code')||'?';
+  var subject=encodeURIComponent('Feedback Beta SmartGrocer - Code: '+code);
+  var body=encodeURIComponent('Note: '+fbStar+'/5 | Manque: '+manque+' | Aime: '+aime+' | Prix: '+prix);
+  window.open('mailto:smartgrocer@yahoo.com?subject='+subject+'&body='+body);
+  document.getElementById('feedback-form-container').style.display='none';
+  document.getElementById('feedback-success').style.display='block';
+}
+</script>
+
 </body>
 </html>
