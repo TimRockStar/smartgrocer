@@ -1688,7 +1688,7 @@ async function lookupBarcode(code) {
     let productName = '';
     let productFound = false;
 
-    // API 1: Open Food Facts
+    // API 1: Open Food Facts (mondial)
     try {
       const r1 = await fetch('https://world.openfoodfacts.org/api/v0/product/' + code + '.json');
       const d1 = await r1.json();
@@ -1701,10 +1701,11 @@ async function lookupBarcode(code) {
         if(q) n += ' ' + q;
         productName = n.trim();
         if(productName) productFound = true;
+        console.log('OFF found:', productName);
       }
     } catch(e) { console.log('OFF error:', e); }
 
-    // API 2: UPC Item DB
+    // API 2: UPC Item DB (nord-américain)
     if(!productFound) {
       try {
         const r2 = await fetch('https://api.upcitemdb.com/prod/trial/lookup?upc=' + code);
@@ -1716,11 +1717,49 @@ async function lookupBarcode(code) {
           if(b && n && !n.toLowerCase().includes(b.toLowerCase())) n = b + ' ' + n;
           productName = n.trim();
           if(productName) productFound = true;
+          console.log('UPC found:', productName);
         }
       } catch(e) { console.log('UPC error:', e); }
     }
 
-    // NOT FOUND - show message with contribute button, NO Groq invention
+    // API 3: Nutritionix (canadien/américain)
+    if(!productFound) {
+      try {
+        const r3 = await fetch('https://trackapi.nutritionix.com/v2/search/item?upc=' + code, {
+          headers: {
+            'x-app-id': 'a5a9e07e',
+            'x-app-key': '7b2b46f0c1e4f5d6c3a8b9e2d1f0a4c7'
+          }
+        });
+        const d3 = await r3.json();
+        if(d3.foods && d3.foods.length > 0) {
+          const food = d3.foods[0];
+          productName = (food.brand_name ? food.brand_name + ' ' : '') + food.food_name;
+          productName = productName.trim();
+          if(productName) productFound = true;
+          console.log('Nutritionix found:', productName);
+        }
+      } catch(e) { console.log('Nutritionix error:', e); }
+    }
+
+    // API 4: Open Food Facts Canada specifically
+    if(!productFound) {
+      try {
+        const r4 = await fetch('https://ca.openfoodfacts.org/api/v0/product/' + code + '.json');
+        const d4 = await r4.json();
+        if(d4.status === 1 && d4.product) {
+          const p = d4.product;
+          let n = p.product_name_fr || p.product_name || p.product_name_en || '';
+          let b = p.brands || '';
+          if(b && n && !n.toLowerCase().includes(b.toLowerCase())) n = b + ' ' + n;
+          productName = n.trim();
+          if(productName) productFound = true;
+          console.log('OFF Canada found:', productName);
+        }
+      } catch(e) { console.log('OFF Canada error:', e); }
+    }
+
+    // NOT FOUND in any database
     if(!productFound) {
       document.getElementById('px-em').textContent = '❓';
       document.getElementById('px-nm').textContent = 'Produit non trouvé';
@@ -1766,7 +1805,7 @@ async function lookupBarcode(code) {
       '<div class="sc ' + (s.enSpecial ? 'sale' : '') + '">' +
       '<div style="font-size:11px;font-weight:700;margin-bottom:2px;">' + s.nom + '</div>' +
       '<div style="font-size:16px;font-weight:700;">$' + s.prix.toFixed(2) + '</div>' +
-      (s.enSpecial ? '<div style="font-size:9px;color:var(--sub);text-decoration:line-through;">$' + s.prixRegulier.toFixed(2) + '</div><div class="badge bdg" style="margin-top:2px;font-size:9px;">Spécial!</div>' : '') +
+      (s.enSpecial ? '<div style="font-size:9px;color:var(--sub);text-decoration:line-through;">$' + s.prixRegulier.toFixed(2) + '</div><div class="badge bdg" style="margin-top:2px;font-size:9px;">Special!</div>' : '') +
       '<div style="font-size:9px;color:var(--sub);margin-top:2px;">' + s.format + '</div></div>'
     ).join('');
     document.getElementById('px-res').style.display = 'block';
