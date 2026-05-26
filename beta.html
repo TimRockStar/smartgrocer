@@ -1704,25 +1704,7 @@ async function lookupBarcode(code) {
       }
     } catch(e) { console.log('OFF:', e); }
 
-    // API 2: Open Food Facts Canada
-    if(!productFound) {
-      try {
-        const r2 = await fetch('https://ca.openfoodfacts.org/api/v0/product/' + code + '.json');
-        const d2 = await r2.json();
-        if(d2.status === 1 && d2.product) {
-          const p = d2.product;
-          let n = p.product_name_fr || p.product_name || p.product_name_en || '';
-          let b = p.brands || '';
-          let q = p.quantity || '';
-          if(b && n && !n.toLowerCase().includes(b.toLowerCase())) n = b + ' ' + n;
-          if(q) n += ' ' + q;
-          productName = n.trim();
-          if(productName) productFound = true;
-        }
-      } catch(e) { console.log('OFF CA:', e); }
-    }
-
-    // API 3: UPC Item DB
+    // API 2: UPC Item DB
     if(!productFound) {
       try {
         const r3 = await fetch('https://api.upcitemdb.com/prod/trial/lookup?upc=' + code);
