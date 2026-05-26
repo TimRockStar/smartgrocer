@@ -504,6 +504,14 @@ ml('account', '2355363');
       <button class="btn bf" style="background:#fff;color:var(--p);font-size:13px;" onclick="startApp()">Essai gratuit 30 jours →</button>
     </div>
     <button class="btn bg bf" style="font-size:15px;padding:14px;" onclick="startApp()">Commencer / Get Started →</button>
+    <div style="margin-top:2rem;text-align:center;">
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px;">📱 Suivez-nous sur nos réseaux sociaux</div>
+      <div style="display:flex;justify-content:center;gap:12px;">
+        <a href="https://facebook.com/smartgrocer" target="_blank" style="text-decoration:none;"><div style="background:#1877F2;border-radius:14px;padding:10px 16px;display:flex;align-items:center;gap:8px;"><span style="font-size:16px;">📘</span><span style="font-size:12px;font-weight:700;color:#fff;">Facebook</span></div></a>
+        <a href="https://tiktok.com/@smartgrocer" target="_blank" style="text-decoration:none;"><div style="background:#000;border-radius:14px;padding:10px 16px;display:flex;align-items:center;gap:8px;"><span style="font-size:16px;">🎵</span><span style="font-size:12px;font-weight:700;color:#fff;">TikTok</span></div></a>
+        <a href="https://instagram.com/smartgrocer" target="_blank" style="text-decoration:none;"><div style="background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);border-radius:14px;padding:10px 16px;display:flex;align-items:center;gap:8px;"><span style="font-size:16px;">📸</span><span style="font-size:12px;font-weight:700;color:#fff;">Instagram</span></div></a>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -838,12 +846,30 @@ ml('account', '2355363');
   <div class="px">
     <!-- Scanner Section -->
     <div id="w-scan-idle">
-      <div style="background:linear-gradient(135deg,#1D9E75,#0F6E56);border-radius:16px;padding:1.25rem;margin-bottom:1rem;text-align:center;cursor:pointer;" onclick="startCardScan()">
-        <div style="font-size:28px;margin-bottom:6px;">📷</div>
-        <div style="font-size:14px;font-weight:700;color:#fff;">Scanner une carte de fidélité</div>
-        <div style="font-size:11px;color:rgba(255,255,255,0.85);margin-top:4px;">IGA · Maxi · Metro · PC Optimum · Air Miles · CAA · et plus!</div>
+      <div style="background:linear-gradient(135deg,#1a1a2e,#2d2d4e);border-radius:16px;padding:1.25rem;margin-bottom:1rem;text-align:center;">
+        <div style="font-size:28px;margin-bottom:8px;">📱</div>
+        <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:6px;">Scanner de cartes fidélité</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.75);margin-bottom:10px;line-height:1.5;">Disponible dans la version native sur App Store et Google Play!</div>
+        <div style="background:rgba(201,162,39,0.2);border:1px solid rgba(201,162,39,0.4);border-radius:10px;padding:8px 12px;font-size:11px;color:#C9A227;font-weight:700;">🚀 Bientôt disponible sur iOS et Android</div>
       </div>
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px;">Ajouter une carte manuellement</div>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:1rem;">
+        <div class="store-chip" onclick="quickAddCard('PC Optimum','💙','linear-gradient(135deg,#003087,#0057B8)','rgba(0,48,135,0.35)')"><span class="store-chip-icon">💙</span><div class="store-chip-name">PC Optimum</div></div>
+        <div class="store-chip" onclick="quickAddCard('Air Miles','✈️','linear-gradient(135deg,#C62828,#1565C0)','rgba(198,40,40,0.35)')"><span class="store-chip-icon">✈️</span><div class="store-chip-name">Air Miles</div></div>
+        <div class="store-chip" onclick="quickAddCard('Méritas IGA','🏪','linear-gradient(135deg,#E53935,#B71C1C)','rgba(229,57,53,0.35)')"><span class="store-chip-icon">🏪</span><div class="store-chip-name">Méritas IGA</div></div>
+        <div class="store-chip" onclick="quickAddCard('Metro & Moi','🛒','linear-gradient(135deg,#1565C0,#0D47A1)','rgba(21,101,192,0.35)')"><span class="store-chip-icon">🛒</span><div class="store-chip-name">Metro & Moi</div></div>
+        <div class="store-chip" onclick="quickAddCard('Maxi','🏬','linear-gradient(135deg,#C62828,#880E4F)','rgba(198,40,40,0.35)')"><span class="store-chip-icon">🏬</span><div class="store-chip-name">Maxi</div></div>
+        <div class="store-chip" onclick="quickAddCard('CAA','🚗','linear-gradient(135deg,#1B5E20,#2E7D32)','rgba(27,94,32,0.35)')"><span class="store-chip-icon">🚗</span><div class="store-chip-name">CAA</div></div>
+        <div class="store-chip" onclick="quickAddCard('Petro-Points','⛽','linear-gradient(135deg,#E65100,#F57F17)','rgba(230,81,0,0.35)')"><span class="store-chip-icon">⛽</span><div class="store-chip-name">Petro-Points</div></div>
+        <div class="store-chip" onclick="quickAddCard('Jean Coutu','💊','linear-gradient(135deg,#2E7D32,#1B5E20)','rgba(46,125,50,0.35)')"><span class="store-chip-icon">💊</span><div class="store-chip-name">Jean Coutu</div></div>
+        <div class="store-chip" onclick="quickAddCard('Pharmaprix','💙','linear-gradient(135deg,#1565C0,#283593)','rgba(21,101,192,0.35)')"><span class="store-chip-icon">💙</span><div class="store-chip-name">Pharmaprix</div></div>
+        <div class="store-chip" onclick="quickAddCard('Costco','🏭','linear-gradient(135deg,#C62828,#1565C0)','rgba(0,0,0,0.3)')"><span class="store-chip-icon">🏭</span><div class="store-chip-name">Costco</div></div>
+        <div class="store-chip" onclick="quickAddCard('Tim Hortons','☕','linear-gradient(135deg,#C62828,#B71C1C)','rgba(198,40,40,0.35)')"><span class="store-chip-icon">☕</span><div class="store-chip-name">Tim Hortons</div></div>
+        <div class="store-chip" onclick="quickAddCard('RONA','🔨','linear-gradient(135deg,#E65100,#BF360C)','rgba(230,81,0,0.35)')"><span class="store-chip-icon">🔨</span><div class="store-chip-name">RONA</div></div>
+      </div>
+      <button class="btn bo bf" onclick="quickAddCustomCard()">+ Autre carte</button>
     </div>
+    <div id="w-scan-active" style="display:none;"></div>
     <div id="w-scan-active" style="display:none;">
       <div style="position:relative;width:100%;border-radius:14px;overflow:hidden;margin-bottom:0.875rem;background:#000;">
         <div id="w-quagga-container" style="width:100%;"></div>
@@ -1024,11 +1050,7 @@ ml('account', '2355363');
         <div class="prem-feature"><span style="color:var(--g);font-weight:700;">✓</span>Sans publicité / Ad-free</div>
         <div class="prem-feature"><span style="color:var(--g);font-weight:700;">✓</span>Portefeuille numérique illimité</div>
       </div>
-      <stripe-buy-button
-  buy-button-id="buy_btn_1TZxji8g6DMr5MKkOUY5K31c"
-  publishable-key="pk_live_51TZwZv8g6DMr5MKkRPebAg4U59jlMgIURfwaZcaMTgpSEFTn5jCQ2RQzowgt7RvPwE3sbDalFZADRoTj9N5kLegR00L4Tyau8k"
-></stripe-buy-button>
-      <div style="text-align:center;font-size:10px;color:var(--sub);">Aucune carte requise / No credit card required</div>
+      <div style="background:#dcfce7;border:1px solid #86efac;border-radius:12px;padding:1rem;text-align:center;"><div style="font-size:14px;font-weight:700;color:#166534;">🧪 Version Bêta</div><div style="font-size:12px;color:#166534;margin-top:4px;">Toutes les fonctionnalités sont débloquées gratuitement!</div></div>
       <div style="text-align:center;margin-top:8px;font-size:10px;color:var(--sub);">
         <a href="https://smartgrocer.health/privacy.html" target="_blank" style="color:var(--sub);">Confidentialité</a> · 
         <a href="https://smartgrocer.health/terms.html" target="_blank" style="color:var(--sub);">Conditions</a>
@@ -1930,5 +1952,83 @@ function submitFeedback(){
 }
 </script>
 
+
+<script>
+function saveData() {
+  try {
+    const nameEl = document.getElementById('h-name');
+    const emailEl = document.getElementById('pp-email-input');
+    const cityEl = document.getElementById('pct');
+    const data = {
+      name: nameEl ? nameEl.textContent : '',
+      email: emailEl ? emailEl.value : '',
+      city: cityEl ? cityEl.textContent : '',
+      onboardingDone: true, isPremium: true,
+      points: points, totalScans: totalScans,
+      groceries: groceries, walletCards: walletCards
+    };
+    localStorage.setItem('smartgrocer_data', JSON.stringify(data));
+  } catch(e) {}
+}
+
+function loadData() {
+  try {
+    const saved = localStorage.getItem('smartgrocer_data');
+    if(!saved) return false;
+    const data = JSON.parse(saved);
+    if(!data.onboardingDone) return false;
+    isPremium = true;
+    points = data.points || 0;
+    totalScans = data.totalScans || 0;
+    groceries = data.groceries || [];
+    walletCards = data.walletCards || [];
+    if(data.name) {
+      ['h-name','pnm'].forEach(function(id){const el=document.getElementById(id);if(el)el.textContent=data.name;});
+      const pav=document.getElementById('pav');if(pav)pav.textContent=data.name.substring(0,2).toUpperCase();
+    }
+    if(data.city) {
+      ['pct','pp-city'].forEach(function(id){const el=document.getElementById(id);if(el)el.textContent=data.city;});
+      const carte=document.getElementById('carte-city');if(carte)carte.textContent='Epiceries · '+data.city+' · 5 km';
+    }
+    return true;
+  } catch(e) { return false; }
+}
+
+function quickAddCard(name, icon, gradient, shadow) {
+  const existingIdx = walletCards.findIndex(function(c){ return c.name===name; });
+  if(existingIdx >= 0) {
+    activeCard = existingIdx;
+    renderWallet();
+    showToast('Carte ' + name + ' selectionnee!');
+    return;
+  }
+  walletCards.push({name:name,type:name,icon:icon,gradient:gradient,number:'',pts:0,shadow:shadow,isReal:false});
+  activeCard = walletCards.length - 1;
+  renderWallet(); saveData();
+  showToast('Carte ' + name + ' ajoutee!');
+}
+
+function quickAddCustomCard() {
+  const name = prompt('Nom de ta carte:');
+  if(!name || !name.trim()) return;
+  quickAddCard(name.trim(), '💳', 'linear-gradient(135deg,#1D9E75,#0F6E56)', 'rgba(29,158,117,0.35)');
+}
+
+function startCardScan() {}
+function stopCardScan() {}
+
+document.addEventListener('DOMContentLoaded', function() {
+  const hasData = loadData();
+  if(hasData) {
+    document.getElementById('landing').style.display='none';
+    document.getElementById('onboarding').style.display='none';
+    document.getElementById('app').style.display='block';
+    document.getElementById('chat-wrap').style.display='block';
+    isPremium=true;
+    updatePlanUI(); renderRewards(); renderC(); renderBCats(); renderWallet(); renderGr(); updatePointsUI();
+    showToast('Bon retour sur SmartGrocer!');
+  }
+});
+</script>
 </body>
 </html>
