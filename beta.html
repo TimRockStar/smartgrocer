@@ -1000,12 +1000,12 @@ function finishOb(){
 
   // Save to localStorage
   const data = {
-    name, email, city: fullCity, budget: '$'+budget,
+    name: name, email: email, city: fullCity,
     diet: 'Aucun', onboardingDone: true,
-    isPremium: false, points: 0, totalScans: 0,
+    isPremium: true, points: 0, totalScans: 0,
     groceries: [], walletCards: []
   };
-  try { localStorage.setItem('smartgrocer_data', JSON.stringify(data)); } catch(e) {}
+  try { localStorage.setItem('smartgrocer_data', JSON.stringify(data)); console.log('Saved OK:', name, email, fullCity); } catch(e) { console.error('Save error:', e); }
 
   // Show app
   document.getElementById('onboarding').style.display='none';
@@ -1062,7 +1062,7 @@ function updatePlanUI(){
   const p=isPremium;
   [['scan-badge','⭐ Illimité','🆓 5/jour'],['rec-badge','⭐ Illimitées','🆓 3/jour'],['list-badge','⭐ Illimitée','🆓 10 articles'],['plan-badge','⭐ Premium','🆓 Gratuit'],['prof-badge','⭐ Premium Trial','🆓 Gratuit'],['pp-plan','⭐ Premium Trial','🆓 Gratuit']].forEach(([id,pv,fv])=>{const el=document.getElementById(id);if(el){el.textContent=p?pv:fv;el.className='badge '+(p?'bdgold':'bdfree');}});
   ['scan-limit-bar','rec-limit-bar','list-limit-bar'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=p?'none':'flex';});
-  const tb=document.getElementById('trial-banner');if(tb)tb.style.display=p?'flex':'none';
+  const tb=document.getElementById('trial-banner');if(tb)tb.style.display='none'; // hidden in beta
   const hs=document.getElementById('h-scans');if(hs)hs.textContent=p?'∞':(LIMITS.scans-scansToday);
   const ql=document.getElementById('ql-scan');if(ql)ql.textContent=p?'Illimité ⭐':'5 scans/jour';
   const ul=document.getElementById('upload-label');if(ul)ul.textContent=p?'Uploader ta vidéo ou photo':'Uploader ta vidéo (Premium ⭐)';
