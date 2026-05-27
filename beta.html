@@ -453,12 +453,14 @@ ml('account', '2355363');
       <div style="flex:1"><div style="font-size:20px;font-weight:700;color:#fff;" id="pts-home">0 pts</div><div style="font-size:10px;color:rgba(255,255,255,0.85);">Clique pour voir tes récompenses</div></div>
       <div style="background:rgba(255,255,255,0.2);color:#fff;font-size:10px;font-weight:700;padding:4px 10px;border-radius:999px;" id="h-level">Bronze</div>
     </div>
-    <div class="sl">🔥 Spéciaux près de toi</div>
-    <div class="dscroll">
-      <div class="dc"><div style="font-size:24px;margin-bottom:6px;">🥜</div><div style="font-size:12px;font-weight:700;">Kraft 1kg</div><div style="font-size:10px;color:var(--sub);">IGA · Expire dim.</div><div style="display:flex;align-items:baseline;gap:6px;margin-top:6px;"><div style="font-size:16px;font-weight:700;color:var(--g);">$5.99</div><div style="font-size:11px;color:#9ca3af;text-decoration:line-through;">$7.49</div></div><div class="badge bdg" style="margin-top:4px;">-20%</div></div>
-      <div class="dc"><div style="font-size:24px;margin-bottom:6px;">🥛</div><div style="font-size:12px;font-weight:700;">Lait 2% 4L</div><div style="font-size:10px;color:var(--sub);">Maxi · Expire sam.</div><div style="display:flex;align-items:baseline;gap:6px;margin-top:6px;"><div style="font-size:16px;font-weight:700;color:var(--g);">$5.49</div><div style="font-size:11px;color:#9ca3af;text-decoration:line-through;">$6.29</div></div><div class="badge bdg" style="margin-top:4px;">-13%</div></div>
-      <div class="dc"><div style="font-size:24px;margin-bottom:6px;">🍗</div><div style="font-size:12px;font-weight:700;">Poulet entier</div><div style="font-size:10px;color:var(--sub);">Metro · Expire ven.</div><div style="display:flex;align-items:baseline;gap:6px;margin-top:6px;"><div style="font-size:16px;font-weight:700;color:var(--g);">$7.99</div><div style="font-size:11px;color:#9ca3af;text-decoration:line-through;">$10.49</div></div><div class="badge bdg" style="margin-top:4px;">-24%</div></div>
-      <div class="dc"><div style="font-size:24px;margin-bottom:6px;">🥚</div><div style="font-size:12px;font-weight:700;">Œufs 12</div><div style="font-size:10px;color:var(--sub);">Walmart · Expire jeu.</div><div style="display:flex;align-items:baseline;gap:6px;margin-top:6px;"><div style="font-size:16px;font-weight:700;color:var(--g);">$3.97</div><div style="font-size:11px;color:#9ca3af;text-decoration:line-through;">$5.49</div></div><div class="badge bdg" style="margin-top:4px;">-28%</div></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <div class="sl" style="margin-bottom:0;">🔥 Spéciaux cette semaine</div>
+      <div style="font-size:10px;color:var(--sub);">Générés par IA</div>
+    </div>
+    <div class="dscroll" id="specials-scroll">
+      <div class="dc" style="display:flex;align-items:center;justify-content:center;min-width:150px;">
+        <div style="text-align:center;color:var(--sub);font-size:12px;"><i class="ti ti-refresh" style="font-size:20px;display:block;margin-bottom:4px;"></i>Chargement...</div>
+      </div>
     </div>
     <div class="sl">🍳 Recettes tendances</div>
     <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:1rem;">
@@ -547,7 +549,7 @@ ml('account', '2355363');
     <div class="sl2">Tes ingrédients</div>
     <div class="sr"><input type="text" id="ing-in" placeholder="Ex: poulet, riz, tomates..."/><button class="btn bg" onclick="addIng()"><i class="ti ti-plus"></i></button></div>
     <div id="ing-tags" style="margin-bottom:1rem;min-height:28px;"><span style="font-size:11px;color:var(--sub);">Ajoute des ingrédients / Add ingredients...</span></div>
-    <button class="btn bg bf" id="gen-btn" onclick="genAll()" disabled><i class="ti ti-wand"></i> Générer recettes + vidéos virales</button>
+    <button class="btn bg bf" id="gen-btn" onclick="genAll()"><i class="ti ti-wand"></i> Générer recettes + vidéos virales</button>
     <div class="ld" id="rec-ld" style="margin-top:1rem;"><i class="ti ti-refresh"></i> Génération en cours...</div>
     <div id="rec-res" style="display:none;margin-top:1.25rem;">
       <div class="tabs">
@@ -1015,7 +1017,7 @@ function finishOb(){
     if(typeof ml !== 'undefined') ml('webforms', 'show', 'mypcHz', {email: email, name: name});
   } catch(e) {}
 
-  updatePlanUI(); renderRewards(); renderC(); renderBCats(); renderWallet(); renderGr(); updatePointsUI();
+  updatePlanUI(); renderRewards(); renderC(); renderBCats(); renderWallet(); renderGr(); updatePointsUI(); loadSpecials();
   addChatMsg('bot', 'Bonjour ' + name + '! 👋 Bienvenue sur SmartGrocer! Pour activer ton essai Premium de 30 jours, clique sur le bouton ci-dessous pour entrer ta carte de crédit. Annulable à tout moment!');
   
   showToast('🎉 Bienvenue ' + name + '! Explore SmartGrocer gratuitement!', 4000);
@@ -1120,7 +1122,7 @@ function removeIng(i){ings.splice(i,1);renderTags();if(ings.length===0)document.
 function renderTags(){const el=document.getElementById('ing-tags');el.innerHTML=ings.length?ings.map((ing,i)=>`<div class="tag">${ing}<button onclick="removeIng(${i})">×</button></div>`).join(''):'<span style="font-size:11px;color:var(--sub);">Ajoute des ingrédients / Add ingredients...</span>';}
 async function genAll(){
   if(!isPremium&&recsToday>=LIMITS.recs){showPaywall('Limite de recettes atteinte!','Tu as utilisé tes 3 recettes gratuites. Passe à Premium pour des recettes illimitées!');return;}
-  if(ings.length===0)return;
+  // allow generation
   document.getElementById('gen-btn').disabled=true;document.getElementById('rec-ld').classList.add('on');document.getElementById('rec-res').style.display='none';
   try{
     const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer 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'},body:JSON.stringify({model:'llama-3.3-70b-versatile',max_completion_tokens:1400,messages:[{role:'user',content:`Chef cuisinier. Ingrédients: ${ings.join(', ')}. 3 recettes + 4 vidéos YouTube. JSON seulement:\n{"recettes":[{"emoji":"🍳","nom":"Nom","temps":"20 min","portions":"2 portions","match":"Utilise 4/5 ingrédients","etapes":["Étape 1","Étape 2","Étape 3","Étape 4"]}],"youtubeVideos":[{"query":"recette facile","titre":"Titre viral","channel":"Channel","views":"2.3M vues","duration":"8:42","viral":true}]}`}]})});
@@ -1133,7 +1135,67 @@ async function genAll(){
   document.getElementById('rec-ld').classList.remove('on');document.getElementById('gen-btn').disabled=false;
 }
 function renderRecs(recs){document.getElementById('rg').innerHTML=recs.map((r,i)=>`<div class="rc" id="rc-${i}" onclick="selRec(${i})"><div style="font-size:22px;margin-bottom:4px;">${r.emoji}</div><div style="font-size:12px;font-weight:700;margin-bottom:2px;">${r.nom}</div><div style="font-size:10px;color:var(--sub);">${r.temps} · ${r.portions}</div><div style="font-size:10px;color:var(--g);margin-top:3px;">${r.match}</div></div>`).join('');}
-function selRec(i){document.querySelectorAll('.rc').forEach(c=>c.classList.remove('sel'));document.getElementById('rc-'+i).classList.add('sel');selR=curRecs[i];document.getElementById('de').textContent=selR.emoji;document.getElementById('dn').textContent=selR.nom;document.getElementById('dm').textContent=selR.temps+' · '+selR.portions;document.getElementById('ds').innerHTML=selR.etapes.map((e,j)=>`<li><div class="snum">${j+1}</div><span>${e}</span></li>`).join('');document.getElementById('full-rec-btn').onclick=()=>sendPrompt('Recette complète avec quantités pour '+selR.nom+' avec: '+ings.join(', '));document.getElementById('db').style.display='block';}
+function selRec(i){
+  document.querySelectorAll('.rc').forEach(c=>c.classList.remove('sel'));
+  document.getElementById('rc-'+i).classList.add('sel');
+  selR=curRecs[i];
+  document.getElementById('de').textContent=selR.emoji;
+  document.getElementById('dn').textContent=selR.nom;
+  document.getElementById('dm').textContent=selR.temps+' · '+selR.portions;
+  document.getElementById('ds').innerHTML=selR.etapes.map((e,j)=>`<li><div class="snum">${j+1}</div><span>${e}</span></li>`).join('');
+  document.getElementById('full-rec-btn').onclick=()=>sendPrompt('Recette complète avec quantités pour '+selR.nom+' avec: '+ings.join(', '));
+  
+  // Add share button
+  var shareBtn = document.getElementById('share-to-community-btn');
+  if(!shareBtn) {
+    shareBtn = document.createElement('button');
+    shareBtn.id = 'share-to-community-btn';
+    shareBtn.className = 'btn bg';
+    shareBtn.style.cssText = 'flex:1;';
+    shareBtn.innerHTML = '<i class="ti ti-users"></i> Partager dans la communauté';
+    document.getElementById('db').querySelector('div:last-child').appendChild(shareBtn);
+  }
+  shareBtn.onclick = function() { shareRecipeToCommunity(selR); };
+  document.getElementById('db').style.display='block';
+}
+
+function shareRecipeToCommunity(rec) {
+  // Check if already shared
+  if(commRecs.find(function(r){ return r.nom === rec.nom && r.auteur !== 'Marie L.' && r.auteur !== 'Jean-F. B.'; })) {
+    showToast('Tu as déjà partagé cette recette!');
+    return;
+  }
+  
+  var userName = document.getElementById('h-name').textContent || 'Moi';
+  var initials = userName.substring(0,2).toUpperCase();
+  
+  commRecs.unshift({
+    id: Date.now(),
+    emoji: rec.emoji,
+    nom: rec.nom,
+    auteur: userName,
+    ini: initials,
+    temps: rec.temps,
+    tags: ings.slice(0,3),
+    likes: 0,
+    viral: false,
+    liked: false,
+    etapes: rec.etapes,
+    portions: rec.portions
+  });
+  
+  filterC();
+  addPoints(25);
+  showToast('🎉 Recette partagée dans la communauté! +' + (isPremium?50:25) + ' pts');
+  
+  // Show confirmation with link to social
+  var btn = document.getElementById('share-to-community-btn');
+  if(btn) {
+    btn.innerHTML = '<i class="ti ti-check"></i> Partagée!';
+    btn.style.background = '#1D9E75';
+    btn.disabled = true;
+  }
+}
 function renderYT(vids){document.getElementById('vg').innerHTML=vids.map(v=>`<div class="vc" onclick="window.open('https://www.youtube.com/results?search_query='+encodeURIComponent('${(v.query||'').replace(/'/g,"\\'")} recette'),'_blank')"><div class="vt"><i class="ti ti-brand-youtube" style="font-size:26px;color:var(--c);"></i><div class="pb"><i class="ti ti-player-play"></i></div>${v.viral?'<div class="vb">🔥 Viral</div>':''}</div><div class="vi"><div class="vtitle">${v.titre}</div><div class="vmeta">${v.channel} · ${v.views} · ${v.duration}</div></div></div>`).join('');}
 function renderCommVids(){const sh=[...commRecs].sort(()=>Math.random()-0.5).slice(0,4);document.getElementById('cg').innerHTML=sh.map(v=>`<div class="cv" onclick="sendPrompt('Recette complète de ${v.nom.replace(/'/g,"\\'")}')"><div class="ct"><span>${v.emoji}</span><div class="cpb"><i class="ti ti-player-play"></i></div>${v.viral?'<div style="position:absolute;top:5px;left:5px;background:rgba(29,158,117,0.9);color:#fff;font-size:9px;padding:2px 6px;border-radius:999px;font-weight:700;">🔥 Viral</div>':''}</div><div class="ci"><div class="ctitle">${v.nom}</div><div class="cmeta"><div class="av">${v.ini}</div> ${v.auteur} · ❤️ ${v.likes}</div></div></div>`).join('');}
 function switchRT(t,btn,cls){document.querySelectorAll('#recettes .tab').forEach(x=>x.classList.remove('on','onc'));btn.classList.add(cls);['recettes','youtube','community'].forEach(p=>document.getElementById('p-'+p).style.display='none');document.getElementById('p-'+t).style.display='block';}
@@ -1640,7 +1702,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('app').style.display='block';
     document.getElementById('chat-wrap').style.display='block';
     isPremium=true;
-    updatePlanUI(); renderRewards(); renderC(); renderBCats(); renderWallet(); renderGr(); updatePointsUI();
+    updatePlanUI(); renderRewards(); renderC(); renderBCats(); renderWallet(); renderGr(); updatePointsUI(); loadSpecials();
     showToast('Bon retour sur SmartGrocer!');
   }
 });
@@ -1743,6 +1805,39 @@ async function lookupBarcode(code) {
   }catch(e){console.error('Barcode error:',e);showToast('Erreur — reessaie!');}
   document.getElementById('px-ld').classList.remove('on');
   document.getElementById('scan-btn').disabled=false;
+}
+
+
+async function loadSpecials() {
+  try {
+    var jours = ['dim','lun','mar','mer','jeu','ven','sam'];
+    var aujourd = new Date();
+    var expiry = jours[(aujourd.getDay()+3)%7] + '.';
+    var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer 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'},
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        max_completion_tokens: 800,
+        messages: [{
+          role: 'user',
+          content: 'Genere 6 specials epiceirie realistes cette semaine au Quebec. JSON seulement:\n[{"emoji":"🥜","nom":"Beurre arachide Kraft 1kg","magasin":"IGA","prix":5.99,"prixReg":7.49,"expire":"dim."},{"emoji":"🥛","nom":"Lait 2% 4L","magasin":"Maxi","prix":5.49,"prixReg":6.29,"expire":"sam."},{"emoji":"🍗","nom":"Poulet entier","magasin":"Metro","prix":7.99,"prixReg":10.49,"expire":"ven."},{"emoji":"🥚","nom":"Oeufs 12","magasin":"Walmart","prix":3.97,"prixReg":5.49,"expire":"jeu."},{"emoji":"🧀","nom":"Cheddar fort 400g","magasin":"IGA","prix":4.99,"prixReg":6.99,"expire":"dim."},{"emoji":"🍞","nom":"Pain baguette","magasin":"Maxi","prix":1.99,"prixReg":2.99,"expire":"sam."}]'
+        }]
+      })
+    });
+    var data = await res.json();
+    var text = data.choices[0].message.content.replace(/```json|```/g,'').trim();
+    var specials = JSON.parse(text);
+    var html = specials.map(function(s) {
+      var pct = Math.round((1 - s.prix/s.prixReg)*100);
+      return '<div class="dc"><div style="font-size:24px;margin-bottom:6px;">'+s.emoji+'</div><div style="font-size:12px;font-weight:700;">'+s.nom+'</div><div style="font-size:10px;color:var(--sub);">'+s.magasin+' · Expire '+s.expire+'</div><div style="display:flex;align-items:baseline;gap:6px;margin-top:6px;"><div style="font-size:16px;font-weight:700;color:var(--g);">$'+s.prix.toFixed(2)+'</div><div style="font-size:11px;color:#9ca3af;text-decoration:line-through;">$'+s.prixReg.toFixed(2)+'</div></div><div class="badge bdg" style="margin-top:4px;">-'+pct+'%</div></div>';
+    }).join('');
+    document.getElementById('specials-scroll').innerHTML = html;
+  } catch(e) {
+    console.log('Specials error:', e);
+    // Fallback to static specials
+    document.getElementById('specials-scroll').innerHTML = '<div class="dc"><div style="font-size:24px;margin-bottom:6px;">🥜</div><div style="font-size:12px;font-weight:700;">Kraft 1kg</div><div style="font-size:10px;color:var(--sub);">IGA</div><div style="font-size:16px;font-weight:700;color:var(--g);margin-top:6px;">$5.99</div><div class="badge bdg" style="margin-top:4px;">-20%</div></div><div class="dc"><div style="font-size:24px;margin-bottom:6px;">🥛</div><div style="font-size:12px;font-weight:700;">Lait 2% 4L</div><div style="font-size:10px;color:var(--sub);">Maxi</div><div style="font-size:16px;font-weight:700;color:var(--g);margin-top:6px;">$5.49</div><div class="badge bdg" style="margin-top:4px;">-13%</div></div>';
+  }
 }
 
 </script>
