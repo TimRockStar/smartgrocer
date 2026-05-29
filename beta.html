@@ -1569,27 +1569,84 @@ async function lookupBarcode(code) {
   document.getElementById('px-res').style.display = 'none';
   document.getElementById('bd').classList.remove('on');
   document.getElementById('sg').innerHTML = '';
+  
+  var productName = '';
+  
   try {
-    showToast('Identification du produit...');
+    showToast('Recherche du produit...');
+    
+    // Try Open Food Facts - multiple URL formats
+    var urls = [
+      'https://world.openfoodfacts.org/api/v2/product/' + code + '.json',
+      'https://world.openfoodfacts.org/api/v0/product/' + code + '.json',
+      'https://ca.openfoodfacts.org/api/v0/product/' + code + '.json'
+    ];
+    
+    for (var i = 0; i < urls.length; i++) {
+      try {
+        var r = await fetch(urls[i], {
+          headers: {'User-Agent': 'SmartGrocer/1.0 (smartgrocer@yahoo.com)'}
+        });
+        var d = await r.json();
+        if (d.status === 1 && d.product) {
+          var p = d.product;
+          var n = p.product_name_fr || p.product_name || p.product_name_en || '';
+          var b = p.brands || '';
+          var q = p.quantity || '';
+          if (b && n && !n.toLowerCase().includes(b.toLowerCase())) n = b + ' ' + n;
+          if (q) n += ' ' + q;
+          if (n.trim()) { productName = n.trim(); break; }
+        }
+      } catch(e) { console.log('URL ' + i + ' failed:', e); }
+    }
+    
+    // If still not found, use Groq as last resort
+    if (!productName) {
+      showToast('Identification par IA...');
+      try {
+        var gr = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json','Authorization':'Bearer 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'},
+          body: JSON.stringify({
+            model: 'llama-3.3-70b-versatile',
+            max_completion_tokens: 50,
+            messages: [{role:'user',content:'UPC barcode ' + code + ' from Canada. What product is this? Reply ONLY with the product name, nothing else. Example: Kraft Peanut Butter 1kg'}]
+          })
+        });
+        var grData = await gr.json();
+        var guess = grData.choices[0].message.content.trim();
+        if (guess && guess.length > 2 && !guess.toLowerCase().includes('unknown') && !guess.toLowerCase().includes('cannot')) {
+          productName = guess;
+        }
+      } catch(e) { console.log('Groq failed:', e); }
+    }
+    
+    if (!productName) {
+      showToast('Produit non reconnu');
+      document.getElementById('px-ld').classList.remove('on');
+      document.getElementById('scan-btn').disabled = false;
+      return;
+    }
+    
+    // Now get prices from Groq
+    showToast('Comparaison des prix...');
     var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {'Content-Type':'application/json','Authorization':'Bearer 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'},
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
-        max_completion_tokens: 1200,
-        messages: [{
-          role: 'user',
-          content: 'Code barre produit canadien: ' + code + '. Identifie ce produit et donne les prix realistes Quebec. JSON seulement: {"emoji":"🛒","nom":"Beurre arachide Kraft 1kg","magasins":[{"nom":"IGA","prix":5.99,"prixRegulier":7.49,"enSpecial":true,"format":"1kg"},{"nom":"Metro","prix":7.29,"prixRegulier":7.29,"enSpecial":false,"format":"1kg"},{"nom":"Maxi","prix":6.49,"prixRegulier":6.99,"enSpecial":true,"format":"1kg"},{"nom":"Walmart","prix":6.19,"prixRegulier":6.19,"enSpecial":false,"format":"1kg"},{"nom":"Costco","prix":14.99,"prixRegulier":14.99,"enSpecial":false,"format":"2.5kg"}],"formats":[{"format":"1kg","prix":5.99,"prixAu100g":0.60}]}'
-        }]
+        max_completion_tokens: 1000,
+        messages: [{role:'user',content:'Prix realistes au Quebec pour "' + productName + '". JSON seulement: {"emoji":"🛒","nom":"' + productName + '","magasins":[{"nom":"IGA","prix":5.99,"prixRegulier":7.49,"enSpecial":true,"format":"1kg"},{"nom":"Metro","prix":7.29,"prixRegulier":7.29,"enSpecial":false,"format":"1kg"},{"nom":"Maxi","prix":6.49,"prixRegulier":6.99,"enSpecial":true,"format":"1kg"},{"nom":"Walmart","prix":6.19,"prixRegulier":6.19,"enSpecial":false,"format":"1kg"},{"nom":"Costco","prix":14.99,"prixRegulier":14.99,"enSpecial":false,"format":"2.5kg"}],"formats":[{"format":"1kg","prix":5.99,"prixAu100g":0.60}]}'}]
       })
     });
     var data = await res.json();
     var text = data.choices[0].message.content.replace(/```json|```/g, '').trim();
     var d = JSON.parse(text);
+    
     document.getElementById('px-em').textContent = d.emoji;
     document.getElementById('px-nm').textContent = d.nom;
     document.getElementById('prod-in').value = d.nom;
-    document.getElementById('px-bc').textContent = 'Code: ' + code + ' · IA';
+    document.getElementById('px-bc').textContent = 'Code: ' + code;
     var sorted = [...d.magasins].sort(function(a,b){return a.prix-b.prix;});
     var best = sorted[0], worst = sorted[sorted.length-1];
     document.getElementById('bs').textContent = best.nom;
@@ -1603,7 +1660,8 @@ async function lookupBarcode(code) {
     scansToday++; totalScans++;
     var ps = document.getElementById('prof-scans'); if(ps) ps.textContent = totalScans;
     addPoints(10); updateLimitDots(); saveData();
-    showToast(d.nom + '! +' + (isPremium?20:10) + ' pts');
+    showToast(d.nom + '! +'+(isPremium?20:10)+' pts');
+    
   } catch(e) {
     console.error('Barcode error:', e);
     showToast('Erreur — reessaie!');
