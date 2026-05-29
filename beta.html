@@ -504,8 +504,7 @@ ml('account', '2355363');
     <div id="scan-idle">
       <div class="sp-zone"><div class="sf"><div class="sl3"></div></div><div style="font-size:11px;margin-top:8px;">Prêt à scanner / Ready to scan</div></div>
       <div style="display:flex;gap:8px;margin-bottom:1rem;">
-        <button class="btn bb" style="flex:1;" onclick="startRealScan()"><i class="ti ti-camera"></i> Scanner</button>
-        <button class="btn bo" style="flex:1;" onclick="fakeScan()"><i class="ti ti-barcode"></i> Simuler scan</button>
+        <button class="btn bb" style="flex:1;" onclick="startRealScan()"><i class="ti ti-camera"></i> Scanner un produit</button>
       </div>
     </div>
     <div id="scan-active" style="display:none;">
@@ -520,8 +519,7 @@ ml('account', '2355363');
         <div id="scan-status" style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.65);color:#fff;font-size:11px;padding:4px 12px;border-radius:999px;white-space:nowrap;z-index:10;">📷 Pointe vers un code barre...</div>
       </div>
       <div style="display:flex;gap:8px;margin-bottom:1rem;">
-        <button class="btn bc" style="flex:1;" onclick="stopRealScan()"><i class="ti ti-x"></i> Arrêter</button>
-        <button class="btn bo" style="flex:1;" onclick="fakeScan()"><i class="ti ti-barcode"></i> Simuler</button>
+        <button class="btn bc" style="flex:1;" onclick="stopRealScan()"><i class="ti ti-x"></i> Arrêter le scanner</button>
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:0.875rem;"><div style="flex:1;height:1px;background:var(--light);"></div><div style="font-size:10px;color:var(--sub);">ou recherche / or search</div><div style="flex:1;height:1px;background:var(--light);"></div></div>
@@ -1112,7 +1110,7 @@ function updatePointsUI(){
   const lt=document.getElementById('pts-level-text');if(lt)lt.textContent=(next.max===Infinity?'Niveau max!':next.max-points+' pts pour '+next.name);
   ['h-level','level-hero'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='Niveau '+level.name;});
 }
-async function startCam(){try{camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});document.getElementById('scan-video').srcObject=camStream;document.getElementById('scan-idle').style.display='none';document.getElementById('scan-active').style.display='block';}catch(e){showToast('📷 Caméra non disponible — utilise "Simuler scan"');}}
+async function startCam(){try{camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});document.getElementById('scan-video').srcObject=camStream;document.getElementById('scan-idle').style.display='none';document.getElementById('scan-active').style.display='block';}catch(e){showToast('📷 Caméra non disponible — utilise la recherche manuelle');}}
 function stopCam(){if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}document.getElementById('scan-idle').style.display='block';document.getElementById('scan-active').style.display='none';}
 const fakeBC=[{bc:'0068100896344',prod:'beurre d\'arachide Kraft 1kg'},{bc:'0055742000013',prod:'lait 2% 4L Natrel'},{bc:'0620786000152',prod:'pain tranché Wonder'},{bc:'0025500087168',prod:'café Folgers 920g'},{bc:'0037000119661',prod:'détergent Tide 1.47L'}];
 function fakeScan(){const f=fakeBC[Math.floor(Math.random()*fakeBC.length)];document.getElementById('prod-in').value=f.prod;document.getElementById('px-bc').textContent='Code barre: '+f.bc;searchProd();}
