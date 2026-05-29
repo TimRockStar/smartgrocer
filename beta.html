@@ -933,6 +933,11 @@ ml('account', '2355363');
 </div>
 
 <!-- NAV BOTTOM -->
+
+
+
+</div><!-- end app -->
+
 <div class="nav">
   <button class="nb active" onclick="goTo('home',this)"><i class="ti ti-home"></i>Accueil</button>
   <button class="nb" onclick="goTo('prix',this)"><i class="ti ti-barcode"></i>Prix</button>
@@ -942,8 +947,6 @@ ml('account', '2355363');
   <button class="nb" onclick="goTo('points',this)"><i class="ti ti-trophy"></i>Points</button>
   <button class="nb" onclick="openPlus()"><i class="ti ti-dots"></i>Plus</button>
 </div>
-
-</div><!-- end app -->
 
 <!-- CHATBOT -->
 <div class="chat-wrap" id="chat-wrap" style="display:none;">
@@ -1553,6 +1556,7 @@ window.addEventListener('DOMContentLoaded', function() {
   if(saved && BETA_CODES.includes(saved)) {
     document.getElementById('beta-gate').style.display = 'none';
     document.getElementById('beta-banner').style.display = 'block';
+    // App initialization handled by main DOMContentLoaded below
   } else {
     document.body.style.overflow = 'hidden';
   }
@@ -1694,16 +1698,21 @@ document.addEventListener('DOMContentLoaded', function() {
     var el=document.getElementById(pair[0]);
     if(el)el.addEventListener('keydown',function(e){if(e.key==='Enter')pair[1]();});
   });
-  // Load saved data
-  const hasData = loadData();
-  if(hasData) {
-    document.getElementById('landing').style.display='none';
-    document.getElementById('onboarding').style.display='none';
-    document.getElementById('app').style.display='block';
-    document.getElementById('chat-wrap').style.display='block';
-    isPremium=true;
-    updatePlanUI(); renderRewards(); renderC(); renderBCats(); renderWallet(); renderGr(); updatePointsUI(); loadSpecials();
-    showToast('Bon retour sur SmartGrocer!');
+  // Init app if beta code exists
+  var betaSaved = localStorage.getItem('sg_beta_code');
+  if(betaSaved && BETA_CODES.includes(betaSaved)) {
+    var hasData = loadData();
+    if(hasData) {
+      document.getElementById('landing').style.display='none';
+      document.getElementById('onboarding').style.display='none';
+      document.getElementById('app').style.display='block';
+      document.getElementById('chat-wrap').style.display='block';
+      isPremium=true;
+      updatePlanUI(); renderRewards(); renderC(); renderBCats(); renderWallet(); renderGr(); updatePointsUI(); loadSpecials();
+      showToast('Bon retour sur SmartGrocer!');
+    } else {
+      document.getElementById('landing').style.display='block';
+    }
   }
 });
 
