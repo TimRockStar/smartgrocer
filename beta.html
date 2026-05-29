@@ -475,8 +475,16 @@ ml('account', '2355363');
     </div>
     <div class="sl">🍳 Recettes tendances</div>
     <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:1rem;">
-      <div style="background:var(--card);border-radius:16px;padding:12px;display:flex;align-items:center;gap:12px;border:1px solid var(--border);cursor:pointer;"><div style="width:50px;height:50px;background:linear-gradient(135deg,#D85A30,#B84520);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">🍝</div><div style="flex:1"><div style="font-size:13px;font-weight:700;">Pâtes Alfredo au poulet</div><div style="font-size:10px;color:var(--sub);margin-top:2px;">Marie L. · 30 min · ❤️ 1 284</div></div><div class="badge bdc">🔥 Viral</div></div>
-      <div style="background:var(--card);border-radius:16px;padding:12px;display:flex;align-items:center;gap:12px;border:1px solid var(--border);cursor:pointer;"><div style="width:50px;height:50px;background:linear-gradient(135deg,#1D9E75,#0F6E56);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">🥘</div><div style="flex:1"><div style="font-size:13px;font-weight:700;">Soupe crémeuse légumes</div><div style="font-size:10px;color:var(--sub);margin-top:2px;">Jean-F. B. · 45 min · ❤️ 893</div></div><div class="badge bdc">🔥 Viral</div></div>
+      <div style="background:var(--card);border-radius:16px;padding:12px;display:flex;align-items:center;gap:12px;border:1px solid var(--border);cursor:pointer;" onclick="openRecipe('Pâtes Alfredo au poulet','poulet,pâtes,crème,parmesan')">
+        <div style="width:50px;height:50px;background:linear-gradient(135deg,#D85A30,#B84520);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">🍝</div>
+        <div style="flex:1"><div style="font-size:13px;font-weight:700;">Pâtes Alfredo au poulet</div><div style="font-size:10px;color:var(--sub);margin-top:2px;">Marie L. · 30 min · ❤️ 1 284</div></div>
+        <div class="badge bdc">🔥 Viral</div>
+      </div>
+      <div style="background:var(--card);border-radius:16px;padding:12px;display:flex;align-items:center;gap:12px;border:1px solid var(--border);cursor:pointer;" onclick="openRecipe('Soupe crémeuse aux légumes','carottes,pommes de terre,oignons,crème')">
+        <div style="width:50px;height:50px;background:linear-gradient(135deg,#1D9E75,#0F6E56);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">🥘</div>
+        <div style="flex:1"><div style="font-size:13px;font-weight:700;">Soupe crémeuse légumes</div><div style="font-size:10px;color:var(--sub);margin-top:2px;">Jean-F. B. · 45 min · ❤️ 893</div></div>
+        <div class="badge bdc">🔥 Viral</div>
+      </div>
     </div>
   </div>
 </div>
@@ -1053,7 +1061,13 @@ function showToast(msg,dur=3000){const t=document.getElementById('toast');t.text
 function showPaywall(title,msg){document.getElementById('paywall-title').textContent=title;document.getElementById('paywall-msg').textContent=msg;document.getElementById('paywall').classList.add('open');}
 function closePaywall(){document.getElementById('paywall').classList.remove('open');}
 function setLang(lang){document.getElementById('lang-fr').className='lang-btn'+(lang==='fr'?' active':'');document.getElementById('lang-en').className='lang-btn'+(lang==='en'?' active':'');showToast(lang==='fr'?'🇫🇷 Français activé':'🇬🇧 English activated');}
-function sendPrompt(text){console.log('sendPrompt:',text);}
+function sendPrompt(text){
+  // Open chatbot and send the prompt
+  chatOpen = true;
+  document.getElementById('chat-box').className = 'chat-box open';
+  document.getElementById('chat-in').value = text;
+  sendChat();
+}
 function activatePremium(){/* Disabled - use Stripe */document.getElementById('paywall').classList.remove('open');goExtra('premium');}
 function downgradeFree(){isPremium=false;updatePlanUI();showToast('ℹ️ Plan gratuit activé');goTo('home',null);}
 function updatePlanUI(){
@@ -1840,6 +1854,18 @@ async function loadSpecials() {
     // Fallback to static specials
     document.getElementById('specials-scroll').innerHTML = '<div class="dc"><div style="font-size:24px;margin-bottom:6px;">🥜</div><div style="font-size:12px;font-weight:700;">Kraft 1kg</div><div style="font-size:10px;color:var(--sub);">IGA</div><div style="font-size:16px;font-weight:700;color:var(--g);margin-top:6px;">$5.99</div><div class="badge bdg" style="margin-top:4px;">-20%</div></div><div class="dc"><div style="font-size:24px;margin-bottom:6px;">🥛</div><div style="font-size:12px;font-weight:700;">Lait 2% 4L</div><div style="font-size:10px;color:var(--sub);">Maxi</div><div style="font-size:16px;font-weight:700;color:var(--g);margin-top:6px;">$5.49</div><div class="badge bdg" style="margin-top:4px;">-13%</div></div>';
   }
+}
+
+
+function openRecipe(nom, ingredients) {
+  // Go to recipes tab
+  goTo('recettes', null);
+  // Clear and add ingredients
+  ings = ingredients.split(',').map(i => i.trim());
+  renderTags();
+  document.getElementById('gen-btn').disabled = false;
+  // Auto generate
+  setTimeout(function() { genAll(); }, 300);
 }
 
 </script>
