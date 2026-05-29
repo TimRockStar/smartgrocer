@@ -1552,11 +1552,24 @@ function checkBetaCode() {
 }
 
 window.addEventListener('DOMContentLoaded', function() {
-  const saved = localStorage.getItem('sg_beta_code');
+  var saved = localStorage.getItem('sg_beta_code');
   if(saved && BETA_CODES.includes(saved)) {
     document.getElementById('beta-gate').style.display = 'none';
     document.getElementById('beta-banner').style.display = 'block';
-    // App initialization handled by main DOMContentLoaded below
+    document.body.style.overflow = '';
+    // Init app
+    var hasData = loadData();
+    if(hasData) {
+      document.getElementById('landing').style.display = 'none';
+      document.getElementById('onboarding').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+      document.getElementById('chat-wrap').style.display = 'block';
+      isPremium = true;
+      updatePlanUI(); renderRewards(); renderC(); renderBCats(); renderWallet(); renderGr(); updatePointsUI(); loadSpecials();
+      showToast('Bon retour sur SmartGrocer!');
+    } else {
+      document.getElementById('landing').style.display = 'block';
+    }
   } else {
     document.body.style.overflow = 'hidden';
   }
@@ -1693,27 +1706,11 @@ function startCardScan() {}
 function stopCardScan() {}
 
 document.addEventListener('DOMContentLoaded', function() {
-  // Keyboard listeners
+  // Keyboard listeners only
   [['prod-in',searchProd],['ing-in',addIng],['chat-in',sendChat],['gr-in',addGr]].forEach(function(pair){
     var el=document.getElementById(pair[0]);
     if(el)el.addEventListener('keydown',function(e){if(e.key==='Enter')pair[1]();});
   });
-  // Init app if beta code exists
-  var betaSaved = localStorage.getItem('sg_beta_code');
-  if(betaSaved && BETA_CODES.includes(betaSaved)) {
-    var hasData = loadData();
-    if(hasData) {
-      document.getElementById('landing').style.display='none';
-      document.getElementById('onboarding').style.display='none';
-      document.getElementById('app').style.display='block';
-      document.getElementById('chat-wrap').style.display='block';
-      isPremium=true;
-      updatePlanUI(); renderRewards(); renderC(); renderBCats(); renderWallet(); renderGr(); updatePointsUI(); loadSpecials();
-      showToast('Bon retour sur SmartGrocer!');
-    } else {
-      document.getElementById('landing').style.display='block';
-    }
-  }
 });
 
 let quaggaRunning = false;
