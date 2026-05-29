@@ -15,7 +15,7 @@ body{font-family:system-ui,-apple-system,sans-serif;font-size:14px;background:va
 .nb{flex:1;min-width:44px;padding:6px 2px 4px;font-size:11px;font-weight:700;cursor:pointer;text-align:center;color:rgba(255,255,255,0.45);background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:3px;border-radius:10px;transition:all 0.2s;}
 .nb i{font-size:22px;}
 .nb.active{color:#fff;background:rgba(255,255,255,0.15);}
-.page{display:none;padding-bottom:90px;}
+.page{display:none;padding-bottom:90px;padding-top:52px;}
 .page.active{display:block;}
 .hero{padding:1.5rem 1.5rem 2.5rem;border-radius:0 0 32px 32px;position:relative;overflow:hidden;margin-bottom:1.5rem;}
 .hc1{position:absolute;top:-40px;right:-40px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,0.08);}
@@ -419,7 +419,18 @@ ml('account', '2355363');
 
 
 <!-- APP -->
+<!-- BETA BANNER -->
+<div id="beta-banner" style="display:none;background:linear-gradient(135deg,#7B0000,#5C0000);padding:10px 16px;position:fixed;top:0;left:0;right:0;z-index:500;max-width:480px;margin:0 auto;">
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+    <div>
+      <div style="font-size:12px;font-weight:700;color:#fff;">🧪 Version Bêta</div>
+      <div style="font-size:10px;color:rgba(255,255,255,0.85);">Toutes les fonctionnalités débloquées!</div>
+    </div>
+    <button onclick="openFeedback()" style="background:#fff;color:#7B0000;border:none;border-radius:10px;padding:8px 12px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;">📝 Donner mon feedback</button>
+  </div>
+</div>
 <div id="app" style="display:none;">
+
 <div class="trial" id="trial-banner" style="display:none!important;" style="margin:0.75rem 1rem 0;" onclick="goExtra('premium')">
   <div style="font-size:18px;">⭐</div>
   <div style="flex:1"><div style="font-size:12px;font-weight:700;color:#fff;">Premium gratuit — 30 jours restants</div><div style="font-size:10px;color:rgba(255,255,255,0.8);">Clique pour gérer ton abonnement</div></div>
@@ -1527,16 +1538,7 @@ function loadProfileInputs() {
   </div>
 </div>
 
-<!-- BETA BANNER -->
-<div id="beta-banner" style="display:none;background:linear-gradient(135deg,#7B0000,#5C0000);padding:10px 16px;position:sticky;top:0;z-index:200;">
-  <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
-    <div>
-      <div style="font-size:12px;font-weight:700;color:#fff;">🧪 Version Bêta</div>
-      <div style="font-size:10px;color:rgba(255,255,255,0.85);">Toutes les fonctionnalités débloquées!</div>
-    </div>
-    <button onclick="openFeedback()" style="background:#fff;color:#7B0000;border:none;border-radius:10px;padding:8px 12px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;">📝 Donner mon feedback</button>
-  </div>
-</div>
+
 
 <script>
 const BETA_CODES = ["SG-BETA-001","SG-BETA-002","SG-BETA-003","SG-BETA-004","SG-BETA-005","SG-BETA-006","SG-BETA-007","SG-BETA-008","SG-BETA-009","SG-BETA-010","SG-BETA-011","SG-BETA-012","SG-BETA-013","SG-BETA-014","SG-BETA-015","SG-BETA-016","SG-BETA-017","SG-BETA-018","SG-BETA-019","SG-BETA-020"];
