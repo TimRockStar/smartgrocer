@@ -524,7 +524,7 @@ ml('account', '2355363');
         <button class="btn bo" style="flex:1;" onclick="fakeScan()"><i class="ti ti-barcode"></i> Simuler</button>
       </div>
     </div>
-    <button class="btn bo bf" onclick="testAPI()" style="margin-bottom:0.75rem;font-size:11px;">🔧 Tester la connexion API</button><div style="display:flex;align-items:center;gap:8px;margin-bottom:0.875rem;"><div style="flex:1;height:1px;background:var(--light);"></div><div style="font-size:10px;color:var(--sub);">ou recherche / or search</div><div style="flex:1;height:1px;background:var(--light);"></div></div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:0.875rem;"><div style="flex:1;height:1px;background:var(--light);"></div><div style="font-size:10px;color:var(--sub);">ou recherche / or search</div><div style="flex:1;height:1px;background:var(--light);"></div></div>
     <div class="sugg">
       <div class="sg" onclick="setProd('beurre d\'arachide Kraft 1kg')">🥜 Kraft</div>
       <div class="sg" onclick="setProd('lait 2% 4L')">🥛 Lait</div>
@@ -1222,7 +1222,15 @@ function shareRecipeToCommunity(rec) {
   }
 }
 function renderYT(vids){document.getElementById('vg').innerHTML=vids.map(v=>`<div class="vc" onclick="window.open('https://www.youtube.com/results?search_query='+encodeURIComponent('${(v.query||'').replace(/'/g,"\\'")} recette'),'_blank')"><div class="vt"><i class="ti ti-brand-youtube" style="font-size:26px;color:var(--c);"></i><div class="pb"><i class="ti ti-player-play"></i></div>${v.viral?'<div class="vb">🔥 Viral</div>':''}</div><div class="vi"><div class="vtitle">${v.titre}</div><div class="vmeta">${v.channel} · ${v.views} · ${v.duration}</div></div></div>`).join('');}
-function renderCommVids(){const sh=[...commRecs].sort(()=>Math.random()-0.5).slice(0,4);document.getElementById('cg').innerHTML=sh.map(v=>`<div class="cv" onclick="sendPrompt('Recette complète de ${v.nom.replace(/'/g,"\\'")}')"><div class="ct"><span>${v.emoji}</span><div class="cpb"><i class="ti ti-player-play"></i></div>${v.viral?'<div style="position:absolute;top:5px;left:5px;background:rgba(29,158,117,0.9);color:#fff;font-size:9px;padding:2px 6px;border-radius:999px;font-weight:700;">🔥 Viral</div>':''}</div><div class="ci"><div class="ctitle">${v.nom}</div><div class="cmeta"><div class="av">${v.ini}</div> ${v.auteur} · ❤️ ${v.likes}</div></div></div>`).join('');}
+function renderCommVids(){
+  const sh=[...commRecs].sort(()=>Math.random()-0.5).slice(0,4);
+  document.getElementById('cg').innerHTML=sh.map(v=>`<div class="cv" onclick="openRecipe('${v.nom.replace(/'/g,"\'")}','${v.tags.join(',')}')">
+    <div class="ct"><span>${v.emoji}</span><div class="cpb"><i class="ti ti-player-play"></i></div>
+    ${v.viral?'<div style="position:absolute;top:5px;left:5px;background:rgba(29,158,117,0.9);color:#fff;font-size:9px;padding:2px 6px;border-radius:999px;font-weight:700;">🔥 Viral</div>':''}
+    </div><div class="ci"><div class="ctitle">${v.nom}</div>
+    <div class="cmeta"><div class="av">${v.ini}</div> ${v.auteur} · ❤️ ${v.likes}</div>
+    </div></div>`).join('');
+}
 function switchRT(t,btn,cls){document.querySelectorAll('#recettes .tab').forEach(x=>x.classList.remove('on','onc'));btn.classList.add(cls);['recettes','youtube','community'].forEach(p=>document.getElementById('p-'+p).style.display='none');document.getElementById('p-'+t).style.display='block';}
 function addGr(){
   const v=document.getElementById('gr-in').value.trim();if(!v)return;
