@@ -11,7 +11,7 @@
 *{box-sizing:border-box;margin:0;padding:0;}
 :root{--g:#1D9E75;--g2:#0F6E56;--c:#D85A30;--p:#534AB7;--b:#378ADD;--gold:#C9A227;--bg:#FFF8F0;--card:#fff;--border:#e5e7eb;--text:#1a1a2e;--sub:#6b7280;--light:#f3f4f6;}
 body{font-family:system-ui,-apple-system,sans-serif;font-size:14px;background:var(--bg);max-width:480px;margin:0 auto;min-height:100vh;}
-.nav{display:flex;background:#7B0000;padding:6px 8px 10px;border-top:none;position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;z-index:100;box-shadow:0 -4px 20px rgba(0,0,0,0.3);}
+.nav{display:flex;background:#7B0000;padding:6px 8px 10px;border-top:none;position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;z-index:200;box-shadow:0 -4px 20px rgba(0,0,0,0.3);}
 .nb{flex:1;min-width:44px;padding:6px 2px 4px;font-size:11px;font-weight:700;cursor:pointer;text-align:center;color:rgba(255,255,255,0.45);background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:3px;border-radius:10px;transition:all 0.2s;}
 .nb i{font-size:22px;}
 .nb.active{color:#fff;background:rgba(255,255,255,0.15);}
@@ -1375,47 +1375,7 @@ async function sendChat(){
   addChatMsg('user',v);document.getElementById('chat-in').value='';
   try{const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer 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'},body:JSON.stringify({model:'llama-3.3-70b-versatile',max_completion_tokens:300,messages:[{role:'user',content:'Tu es l\'assistant SmartGrocer, app épicerie bilingue FR/EN. Réponds dans la langue de la question, court et utile (max 2-3 phrases). Question: '+v}]})});const data=await res.json();addChatMsg('bot',data.choices[0].message.content.trim());}catch(e){addChatMsg('bot','Désolé, erreur de connexion!');}
 }
-document.addEventListener('DOMContentLoaded',()=>{
-  [['prod-in',searchProd],['ing-in',addIng],['chat-in',sendChat],['gr-in',addGr]].forEach(([id,fn])=>{const el=document.getElementById(id);if(el)el.addEventListener('keydown',e=>{if(e.key==='Enter')fn();});});
-});
-
-async function testAPI(){
-  showToast('⏳ Test API en cours...');
-  try{
-    const res = await fetch('https://api.groq.com/openai/v1/chat/completions',{
-      method:'POST',
-      headers:{
-        'Content-Type':'application/json',
-        'Authorization':'Bearer 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'
-      },
-      body:JSON.stringify({
-        model:'llama-3.3-70b-versatile',
-        max_completion_tokens:50,
-        messages:[{role:'user',content:'Dis juste OK'}]
-      })
-    });
-    const data = await res.json();
-    console.log('API Response:', data);
-    if(data.choices){
-      showToast('✅ API fonctionne: '+data.choices[0].message.content, 5000);
-    } else {
-      showToast('❌ Erreur API: '+JSON.stringify(data).substring(0,100), 5000);
-    }
-  }catch(e){
-    showToast('❌ Erreur réseau: '+e.message, 5000);
-    console.error(e);
-  }
-}
-
-
-// ===== REAL BARCODE SCANNER =====
-
-
-
-
-
-
-
+// keyboard listeners moved to main init
 
 
 
@@ -1570,6 +1530,18 @@ function checkBetaCode() {
     document.getElementById('beta-gate').style.display = 'none';
     document.getElementById('beta-banner').style.display = 'block';
     document.body.style.overflow = '';
+    // Show app or landing
+    const hasData = loadData();
+    if(hasData) {
+      document.getElementById('landing').style.display='none';
+      document.getElementById('onboarding').style.display='none';
+      document.getElementById('app').style.display='block';
+      document.getElementById('chat-wrap').style.display='block';
+      isPremium=true;
+      updatePlanUI(); renderRewards(); renderC(); renderBCats(); renderWallet(); renderGr(); updatePointsUI(); loadSpecials();
+    } else {
+      document.getElementById('landing').style.display='block';
+    }
   } else {
     document.getElementById('beta-error').style.display = 'block';
     setTimeout(function(){ document.getElementById('beta-error').style.display = 'none'; }, 3000);
@@ -1717,6 +1689,12 @@ function startCardScan() {}
 function stopCardScan() {}
 
 document.addEventListener('DOMContentLoaded', function() {
+  // Keyboard listeners
+  [['prod-in',searchProd],['ing-in',addIng],['chat-in',sendChat],['gr-in',addGr]].forEach(function(pair){
+    var el=document.getElementById(pair[0]);
+    if(el)el.addEventListener('keydown',function(e){if(e.key==='Enter')pair[1]();});
+  });
+  // Load saved data
   const hasData = loadData();
   if(hasData) {
     document.getElementById('landing').style.display='none';
