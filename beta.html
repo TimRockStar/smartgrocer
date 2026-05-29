@@ -1505,142 +1505,6 @@ function loadProfileInputs() {
 
 </script>
 
-<!-- BETA ACCESS GATE -->
-<div id="beta-gate" style="position:fixed;top:0;left:0;right:0;bottom:0;background:linear-gradient(160deg,#1D9E75,#0F6E56);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1.5rem;">
-  <div style="background:#fff;border-radius:24px;padding:2rem;width:100%;max-width:380px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
-    <div style="font-size:24px;font-weight:800;margin-bottom:4px;"><span style="color:#1D9E75;">Smart</span><span style="color:#C9A227;">Grocer</span></div>
-    <div style="font-size:13px;color:#6b7280;margin-bottom:12px;">Version Bêta — Accès restreint</div>
-    <div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:10px;padding:10px;margin-bottom:1.25rem;font-size:12px;color:#92400e;">Entre ton code d'accès bêta</div>
-    <input type="text" id="beta-code-input" placeholder="Ex: SG-BETA-001" 
-      style="width:100%;padding:12px;border:2px solid #e5e7eb;border-radius:12px;font-size:14px;text-align:center;text-transform:uppercase;letter-spacing:2px;margin-bottom:10px;font-family:monospace;"
-      oninput="this.value=this.value.toUpperCase()"
-      onkeydown="if(event.key==='Enter')checkBetaCode()"/>
-    <button onclick="checkBetaCode()" style="width:100%;background:linear-gradient(135deg,#1D9E75,#0F6E56);color:#fff;border:none;border-radius:12px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px;">Accéder à la version bêta</button>
-    <div id="beta-error" style="display:none;color:#ef4444;font-size:12px;margin-top:6px;">Code invalide — réessaie!</div>
-    <div style="font-size:11px;color:#9ca3af;margin-top:10px;">Pas de code? Contacte <a href="mailto:smartgrocer@yahoo.com" style="color:#1D9E75;">smartgrocer@yahoo.com</a></div>
-  </div>
-</div>
-
-
-
-<script>
-const BETA_CODES = ["SG-BETA-001","SG-BETA-002","SG-BETA-003","SG-BETA-004","SG-BETA-005","SG-BETA-006","SG-BETA-007","SG-BETA-008","SG-BETA-009","SG-BETA-010","SG-BETA-011","SG-BETA-012","SG-BETA-013","SG-BETA-014","SG-BETA-015","SG-BETA-016","SG-BETA-017","SG-BETA-018","SG-BETA-019","SG-BETA-020"];
-
-function checkBetaCode() {
-  const input = document.getElementById('beta-code-input').value.trim().toUpperCase();
-  if(BETA_CODES.includes(input)) {
-    localStorage.setItem('sg_beta_code', input);
-    document.getElementById('beta-gate').style.display = 'none';
-    document.getElementById('beta-banner').style.display = 'block';
-    document.body.style.overflow = '';
-    // Show app or landing
-    const hasData = loadData();
-    if(hasData) {
-      document.getElementById('landing').style.display='none';
-      document.getElementById('onboarding').style.display='none';
-      document.getElementById('app').style.display='block';
-      document.getElementById('chat-wrap').style.display='block';
-      isPremium=true;
-      updatePlanUI(); renderRewards(); renderC(); renderBCats(); renderWallet(); renderGr(); updatePointsUI(); loadSpecials();
-    } else {
-      document.getElementById('landing').style.display='block';
-    }
-  } else {
-    document.getElementById('beta-error').style.display = 'block';
-    setTimeout(function(){ document.getElementById('beta-error').style.display = 'none'; }, 3000);
-  }
-}
-
-window.addEventListener('DOMContentLoaded', function() {
-  var saved = localStorage.getItem('sg_beta_code');
-  if(saved && BETA_CODES.includes(saved)) {
-    document.getElementById('beta-gate').style.display = 'none';
-    document.getElementById('beta-banner').style.display = 'block';
-    document.body.style.overflow = '';
-    // Init app
-    var hasData = loadData();
-    if(hasData) {
-      document.getElementById('landing').style.display = 'none';
-      document.getElementById('onboarding').style.display = 'none';
-      document.getElementById('app').style.display = 'block';
-      document.getElementById('chat-wrap').style.display = 'block';
-      isPremium = true;
-      updatePlanUI(); renderRewards(); renderC(); renderBCats(); renderWallet(); renderGr(); updatePointsUI(); loadSpecials();
-      showToast('Bon retour sur SmartGrocer!');
-    } else {
-      document.getElementById('landing').style.display = 'block';
-    }
-  } else {
-    document.body.style.overflow = 'hidden';
-  }
-});
-</script>
-
-<!-- FEEDBACK MODAL -->
-<div id="feedback-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:3000;overflow-y:auto;">
-  <div style="background:#fff;margin:1rem auto;max-width:480px;border-radius:20px;overflow:hidden;">
-    <div style="background:linear-gradient(135deg,#7B0000,#5C0000);padding:1.25rem;display:flex;align-items:center;justify-content:space-between;">
-      <div><div style="font-size:16px;font-weight:700;color:#fff;">📝 Ton feedback</div><div style="font-size:11px;color:rgba(255,255,255,0.85);">Aide-nous à améliorer SmartGrocer!</div></div>
-      <button onclick="closeFeedback()" style="background:rgba(255,255,255,0.2);border:none;color:#fff;border-radius:8px;padding:6px 10px;cursor:pointer;font-size:14px;">✕</button>
-    </div>
-    <div style="padding:1.25rem;" id="feedback-form-container">
-      <div style="margin-bottom:1rem;">
-        <div style="font-size:13px;font-weight:700;margin-bottom:8px;">⭐ Note globale</div>
-        <div style="display:flex;gap:8px;" id="fb-stars">
-          <span style="font-size:28px;cursor:pointer;opacity:0.3;" onclick="fbSetStar(1)">⭐</span>
-          <span style="font-size:28px;cursor:pointer;opacity:0.3;" onclick="fbSetStar(2)">⭐</span>
-          <span style="font-size:28px;cursor:pointer;opacity:0.3;" onclick="fbSetStar(3)">⭐</span>
-          <span style="font-size:28px;cursor:pointer;opacity:0.3;" onclick="fbSetStar(4)">⭐</span>
-          <span style="font-size:28px;cursor:pointer;opacity:0.3;" onclick="fbSetStar(5)">⭐</span>
-        </div>
-      </div>
-      <div style="margin-bottom:1rem;">
-        <div style="font-size:13px;font-weight:700;margin-bottom:6px;">💡 Ce qui manque ou pourrait être amélioré</div>
-        <textarea id="fb-manque" placeholder="Tes suggestions..." style="width:100%;padding:8px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:13px;font-family:inherit;min-height:70px;resize:vertical;"></textarea>
-      </div>
-      <div style="margin-bottom:1rem;">
-        <div style="font-size:13px;font-weight:700;margin-bottom:6px;">❤️ Ce que tu as aimé</div>
-        <textarea id="fb-aime" placeholder="Tes fonctionnalités préférées..." style="width:100%;padding:8px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:13px;font-family:inherit;min-height:70px;resize:vertical;"></textarea>
-      </div>
-      <div style="margin-bottom:1rem;">
-        <div style="font-size:13px;font-weight:700;margin-bottom:6px;">💰 Combien paierais-tu pour Premium?</div>
-        <select id="fb-prix" style="width:100%;padding:8px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:13px;">
-          <option value="">-- Sélectionne --</option>
-          <option value="gratuit">Version gratuite seulement</option>
-          <option value="2-3">$2-3/mois</option>
-          <option value="4-5">$4-5/mois</option>
-          <option value="6-10">$6-10/mois</option>
-        </select>
-      </div>
-      <button onclick="submitFeedback()" style="width:100%;background:linear-gradient(135deg,#7B0000,#5C0000);color:#fff;border:none;border-radius:12px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;">📤 Envoyer mon feedback</button>
-    </div>
-    <div id="feedback-success" style="display:none;padding:2rem;text-align:center;">
-      <div style="font-size:48px;margin-bottom:12px;">🎉</div>
-      <div style="font-size:18px;font-weight:700;color:#166534;margin-bottom:8px;">Merci pour ton feedback!</div>
-      <button onclick="closeFeedback()" style="background:#1D9E75;color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:13px;font-weight:700;cursor:pointer;">Fermer</button>
-    </div>
-  </div>
-</div>
-
-<script>
-let fbStar = 0;
-function openFeedback(){ document.getElementById('feedback-modal').style.display='block'; document.body.style.overflow='hidden'; }
-function closeFeedback(){ document.getElementById('feedback-modal').style.display='none'; document.body.style.overflow=''; }
-function fbSetStar(n){ fbStar=n; document.querySelectorAll('#fb-stars span').forEach(function(s,i){ s.style.opacity=i<n?'1':'0.3'; }); }
-function submitFeedback(){
-  var manque=document.getElementById('fb-manque').value;
-  var aime=document.getElementById('fb-aime').value;
-  var prix=document.getElementById('fb-prix').value;
-  var code=localStorage.getItem('sg_beta_code')||'?';
-  var subject=encodeURIComponent('Feedback Beta SmartGrocer - Code: '+code);
-  var body=encodeURIComponent('Note: '+fbStar+'/5 | Manque: '+manque+' | Aime: '+aime+' | Prix: '+prix);
-  window.open('mailto:smartgrocer@yahoo.com?subject='+subject+'&body='+body);
-  document.getElementById('feedback-form-container').style.display='none';
-  document.getElementById('feedback-success').style.display='block';
-}
-</script>
-
-
 <script>
 function saveData() {
   try {
@@ -1859,5 +1723,147 @@ function openRecipe(nom, ingredients) {
 }
 
 </script>
+
+<script>
+let fbStar = 0;
+function openFeedback(){ document.getElementById('feedback-modal').style.display='block'; document.body.style.overflow='hidden'; }
+function closeFeedback(){ document.getElementById('feedback-modal').style.display='none'; document.body.style.overflow=''; }
+function fbSetStar(n){ fbStar=n; document.querySelectorAll('#fb-stars span').forEach(function(s,i){ s.style.opacity=i<n?'1':'0.3'; }); }
+function submitFeedback(){
+  var manque=document.getElementById('fb-manque').value;
+  var aime=document.getElementById('fb-aime').value;
+  var prix=document.getElementById('fb-prix').value;
+  var code=localStorage.getItem('sg_beta_code')||'?';
+  var subject=encodeURIComponent('Feedback Beta SmartGrocer - Code: '+code);
+  var body=encodeURIComponent('Note: '+fbStar+'/5 | Manque: '+manque+' | Aime: '+aime+' | Prix: '+prix);
+  window.open('mailto:smartgrocer@yahoo.com?subject='+subject+'&body='+body);
+  document.getElementById('feedback-form-container').style.display='none';
+  document.getElementById('feedback-success').style.display='block';
+}
+</script>
+
+<script>
+const BETA_CODES = ["SG-BETA-001","SG-BETA-002","SG-BETA-003","SG-BETA-004","SG-BETA-005","SG-BETA-006","SG-BETA-007","SG-BETA-008","SG-BETA-009","SG-BETA-010","SG-BETA-011","SG-BETA-012","SG-BETA-013","SG-BETA-014","SG-BETA-015","SG-BETA-016","SG-BETA-017","SG-BETA-018","SG-BETA-019","SG-BETA-020"];
+
+function checkBetaCode() {
+  const input = document.getElementById('beta-code-input').value.trim().toUpperCase();
+  if(BETA_CODES.includes(input)) {
+    localStorage.setItem('sg_beta_code', input);
+    document.getElementById('beta-gate').style.display = 'none';
+    document.getElementById('beta-banner').style.display = 'block';
+    document.body.style.overflow = '';
+    // Show app or landing
+    const hasData = loadData();
+    if(hasData) {
+      document.getElementById('landing').style.display='none';
+      document.getElementById('onboarding').style.display='none';
+      document.getElementById('app').style.display='block';
+      document.getElementById('chat-wrap').style.display='block';
+      isPremium=true;
+      updatePlanUI(); renderRewards(); renderC(); renderBCats(); renderWallet(); renderGr(); updatePointsUI(); loadSpecials();
+    } else {
+      document.getElementById('landing').style.display='block';
+    }
+  } else {
+    document.getElementById('beta-error').style.display = 'block';
+    setTimeout(function(){ document.getElementById('beta-error').style.display = 'none'; }, 3000);
+  }
+}
+
+window.addEventListener('DOMContentLoaded', function() {
+  var saved = localStorage.getItem('sg_beta_code');
+  if(saved && BETA_CODES.includes(saved)) {
+    document.getElementById('beta-gate').style.display = 'none';
+    document.getElementById('beta-banner').style.display = 'block';
+    document.body.style.overflow = '';
+    // Init app
+    var hasData = loadData();
+    if(hasData) {
+      document.getElementById('landing').style.display = 'none';
+      document.getElementById('onboarding').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+      document.getElementById('chat-wrap').style.display = 'block';
+      isPremium = true;
+      updatePlanUI(); renderRewards(); renderC(); renderBCats(); renderWallet(); renderGr(); updatePointsUI(); loadSpecials();
+      showToast('Bon retour sur SmartGrocer!');
+    } else {
+      document.getElementById('landing').style.display = 'block';
+    }
+  } else {
+    document.body.style.overflow = 'hidden';
+  }
+});
+</script>
+
+<!-- BETA ACCESS GATE -->
+<div id="beta-gate" style="position:fixed;top:0;left:0;right:0;bottom:0;background:linear-gradient(160deg,#1D9E75,#0F6E56);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1.5rem;">
+  <div style="background:#fff;border-radius:24px;padding:2rem;width:100%;max-width:380px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+    <div style="font-size:24px;font-weight:800;margin-bottom:4px;"><span style="color:#1D9E75;">Smart</span><span style="color:#C9A227;">Grocer</span></div>
+    <div style="font-size:13px;color:#6b7280;margin-bottom:12px;">Version Bêta — Accès restreint</div>
+    <div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:10px;padding:10px;margin-bottom:1.25rem;font-size:12px;color:#92400e;">Entre ton code d'accès bêta</div>
+    <input type="text" id="beta-code-input" placeholder="Ex: SG-BETA-001" 
+      style="width:100%;padding:12px;border:2px solid #e5e7eb;border-radius:12px;font-size:14px;text-align:center;text-transform:uppercase;letter-spacing:2px;margin-bottom:10px;font-family:monospace;"
+      oninput="this.value=this.value.toUpperCase()"
+      onkeydown="if(event.key==='Enter')checkBetaCode()"/>
+    <button onclick="checkBetaCode()" style="width:100%;background:linear-gradient(135deg,#1D9E75,#0F6E56);color:#fff;border:none;border-radius:12px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px;">Accéder à la version bêta</button>
+    <div id="beta-error" style="display:none;color:#ef4444;font-size:12px;margin-top:6px;">Code invalide — réessaie!</div>
+    <div style="font-size:11px;color:#9ca3af;margin-top:10px;">Pas de code? Contacte <a href="mailto:smartgrocer@yahoo.com" style="color:#1D9E75;">smartgrocer@yahoo.com</a></div>
+  </div>
+</div>
+
+
+
+
+
+<!-- FEEDBACK MODAL -->
+<div id="feedback-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:3000;overflow-y:auto;">
+  <div style="background:#fff;margin:1rem auto;max-width:480px;border-radius:20px;overflow:hidden;">
+    <div style="background:linear-gradient(135deg,#7B0000,#5C0000);padding:1.25rem;display:flex;align-items:center;justify-content:space-between;">
+      <div><div style="font-size:16px;font-weight:700;color:#fff;">📝 Ton feedback</div><div style="font-size:11px;color:rgba(255,255,255,0.85);">Aide-nous à améliorer SmartGrocer!</div></div>
+      <button onclick="closeFeedback()" style="background:rgba(255,255,255,0.2);border:none;color:#fff;border-radius:8px;padding:6px 10px;cursor:pointer;font-size:14px;">✕</button>
+    </div>
+    <div style="padding:1.25rem;" id="feedback-form-container">
+      <div style="margin-bottom:1rem;">
+        <div style="font-size:13px;font-weight:700;margin-bottom:8px;">⭐ Note globale</div>
+        <div style="display:flex;gap:8px;" id="fb-stars">
+          <span style="font-size:28px;cursor:pointer;opacity:0.3;" onclick="fbSetStar(1)">⭐</span>
+          <span style="font-size:28px;cursor:pointer;opacity:0.3;" onclick="fbSetStar(2)">⭐</span>
+          <span style="font-size:28px;cursor:pointer;opacity:0.3;" onclick="fbSetStar(3)">⭐</span>
+          <span style="font-size:28px;cursor:pointer;opacity:0.3;" onclick="fbSetStar(4)">⭐</span>
+          <span style="font-size:28px;cursor:pointer;opacity:0.3;" onclick="fbSetStar(5)">⭐</span>
+        </div>
+      </div>
+      <div style="margin-bottom:1rem;">
+        <div style="font-size:13px;font-weight:700;margin-bottom:6px;">💡 Ce qui manque ou pourrait être amélioré</div>
+        <textarea id="fb-manque" placeholder="Tes suggestions..." style="width:100%;padding:8px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:13px;font-family:inherit;min-height:70px;resize:vertical;"></textarea>
+      </div>
+      <div style="margin-bottom:1rem;">
+        <div style="font-size:13px;font-weight:700;margin-bottom:6px;">❤️ Ce que tu as aimé</div>
+        <textarea id="fb-aime" placeholder="Tes fonctionnalités préférées..." style="width:100%;padding:8px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:13px;font-family:inherit;min-height:70px;resize:vertical;"></textarea>
+      </div>
+      <div style="margin-bottom:1rem;">
+        <div style="font-size:13px;font-weight:700;margin-bottom:6px;">💰 Combien paierais-tu pour Premium?</div>
+        <select id="fb-prix" style="width:100%;padding:8px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:13px;">
+          <option value="">-- Sélectionne --</option>
+          <option value="gratuit">Version gratuite seulement</option>
+          <option value="2-3">$2-3/mois</option>
+          <option value="4-5">$4-5/mois</option>
+          <option value="6-10">$6-10/mois</option>
+        </select>
+      </div>
+      <button onclick="submitFeedback()" style="width:100%;background:linear-gradient(135deg,#7B0000,#5C0000);color:#fff;border:none;border-radius:12px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;">📤 Envoyer mon feedback</button>
+    </div>
+    <div id="feedback-success" style="display:none;padding:2rem;text-align:center;">
+      <div style="font-size:48px;margin-bottom:12px;">🎉</div>
+      <div style="font-size:18px;font-weight:700;color:#166534;margin-bottom:8px;">Merci pour ton feedback!</div>
+      <button onclick="closeFeedback()" style="background:#1D9E75;color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:13px;font-weight:700;cursor:pointer;">Fermer</button>
+    </div>
+  </div>
+</div>
+
+
+
+
+
 </body>
 </html>
