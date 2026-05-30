@@ -191,6 +191,7 @@ input:focus,select:focus{outline:none;border-color:var(--g);}
 .ob-step{display:none;padding:1.5rem 1rem;}
 .ob-step.active{display:block;}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
 
 <style>
@@ -368,6 +369,31 @@ ml('account', '2355363');
 </div>
 
 
+
+
+<!-- EMAIL VERIFICATION -->
+<div id="verification" style="display:none;padding:1.5rem 1rem;text-align:center;">
+  <div style="margin:2rem auto 1.5rem;width:70px;">
+    <svg width="70" height="70" viewBox="0 0 680 500"><path d="M340,60 L430,95 L430,190 Q430,240 340,270 Q250,240 250,190 L250,95 Z" fill="#1D9E75"/><path d="M340,70 L422,102 L422,188 Q422,234 340,262 Q258,234 258,188 L258,102 Z" fill="#0F6E56"/><path d="M308,215 L312,183 L368,183 L372,215 Z" fill="white"/><path d="M301,183 Q301,170 312,170 L368,170 Q379,170 379,183" fill="none" stroke="white" stroke-width="6" stroke-linecap="round"/><circle cx="320" cy="224" r="9" fill="white"/><circle cx="360" cy="224" r="9" fill="white"/><path d="M305,100 L314,85 L323,98 L340,80 L357,98 L366,85 L375,100 L372,112 L308,112 Z" fill="#C9A227"/></svg>
+  </div>
+  <div style="font-size:22px;font-weight:800;margin-bottom:6px;"><span style="color:#1D9E75;">Smart</span><span style="color:#C9A227;">Grocer</span></div>
+  <div style="font-size:16px;font-weight:700;margin-bottom:8px;">📧 Vérifie ton email</div>
+  <div style="font-size:13px;color:#6b7280;margin-bottom:4px;">On a envoyé un code à</div>
+  <div style="font-size:14px;font-weight:700;color:#1D9E75;margin-bottom:1.5rem;" id="verify-email-display"></div>
+  
+  <div style="background:#f3f4f6;border-radius:16px;padding:1.5rem;margin-bottom:1.5rem;">
+    <div style="font-size:12px;color:#6b7280;margin-bottom:12px;">Entre le code à 6 chiffres / Enter the 6-digit code</div>
+    <input type="text" id="verify-code-input" placeholder="000000" 
+      style="width:100%;padding:16px;border:2px solid #e5e7eb;border-radius:12px;font-size:24px;text-align:center;letter-spacing:8px;font-family:monospace;margin-bottom:10px;"
+      maxlength="6"
+      oninput="this.value=this.value.replace(/[^0-9]/g,'').substring(0,6)"
+      onkeydown="if(event.key==='Enter')verifyCode()"/>
+    <div id="verify-error" style="display:none;color:#ef4444;font-size:12px;margin-bottom:8px;">❌ Code incorrect — réessaie!</div>
+    <button onclick="verifyCode()" style="width:100%;background:linear-gradient(135deg,#1D9E75,#0F6E56);color:#fff;border:none;border-radius:12px;padding:14px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px;">✅ Vérifier / Verify</button>
+    <button onclick="resendCode()" style="width:100%;background:none;border:1px solid #e5e7eb;border-radius:12px;padding:10px;font-size:12px;font-weight:700;cursor:pointer;color:#6b7280;" id="resend-btn">📤 Renvoyer le code / Resend code</button>
+  </div>
+  <div style="font-size:11px;color:#9ca3af;">Vérifie ton dossier spam si tu ne vois pas l'email</div>
+</div>
 
 <!-- APP -->
 <!-- BETA BANNER -->
@@ -978,8 +1004,38 @@ function finishOb(){
   };
   try { localStorage.setItem('smartgrocer_data', JSON.stringify(data)); console.log('Saved OK:', name, email, fullCity); } catch(e) { console.error('Save error:', e); }
 
-  // Show app
+  // Save data for after verification
+  sgVerifyData = {name: name, email: email, city: fullCity, budget: budget};
+  
+  // Show verification screen
   document.getElementById('onboarding').style.display='none';
+  document.getElementById('verify-email-display').textContent = email;
+  document.getElementById('verification').style.display='block';
+  
+  // Send verification email
+  showToast('📧 Envoi du code de vérification...', 3000);
+  sendVerificationEmail(name, email).then(function(ok) {
+    if (!ok) {
+      // If email fails, skip verification and go to app
+      showToast('⚠️ Email non envoyé — accès direct accordé');
+      document.getElementById('verification').style.display='none';
+      finishOb_complete();
+    }
+  });
+}
+
+function finishOb_complete() {
+  var data = sgVerifyData;
+  if (!data) return;
+  var name = data.name, email = data.email, fullCity = data.city;
+  
+  // Update UI
+  ['h-name','pnm'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=name;});
+  var pav=document.getElementById('pav');if(pav)pav.textContent=name.substring(0,2).toUpperCase();
+  ['pct','pp-city'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=fullCity;});
+  var carte=document.getElementById('carte-city');if(carte)carte.textContent='Epiceries · '+fullCity+' · 5 km';
+  
+  // Show app
   document.getElementById('app').style.display='block';
   document.getElementById('chat-wrap').style.display='block';
   
@@ -989,9 +1045,8 @@ function finishOb(){
   } catch(e) {}
 
   updatePlanUI(); renderRewards(); renderC(); renderBCats(); renderWallet(); renderGr(); updatePointsUI(); loadSpecials();
-  addChatMsg('bot', 'Bonjour ' + name + '! 👋 Bienvenue sur SmartGrocer! Pour activer ton essai Premium de 30 jours, clique sur le bouton ci-dessous pour entrer ta carte de crédit. Annulable à tout moment!');
-  
-  showToast('🎉 Bienvenue ' + name + '! Explore SmartGrocer gratuitement!', 4000);
+  addChatMsg('bot', 'Bonjour ' + name + '! 👋 Bienvenue sur SmartGrocer!');
+  showToast('🎉 Email vérifié! Bienvenue ' + name + '!', 4000);
 }
 function goTo(p,btn){
   document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
@@ -1329,6 +1384,70 @@ async function sendChat(){
   addChatMsg('user',v);document.getElementById('chat-in').value='';
   try{const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer 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'},body:JSON.stringify({model:'llama-3.3-70b-versatile',max_completion_tokens:300,messages:[{role:'user',content:'Tu es l\'assistant SmartGrocer, app épicerie bilingue FR/EN. Réponds dans la langue de la question, court et utile (max 2-3 phrases). Question: '+v}]})});const data=await res.json();addChatMsg('bot',data.choices[0].message.content.trim());}catch(e){addChatMsg('bot','Désolé, erreur de connexion!');}
 }
+
+// EmailJS
+(function() {
+  emailjs.init('mFtipR8DIX93iMHC1');
+})();
+
+var sgVerifyCode = '';
+var sgVerifyEmail = '';
+var sgVerifyName = '';
+var sgVerifyData = null;
+
+function generateCode() {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+async function sendVerificationEmail(name, email) {
+  sgVerifyCode = generateCode();
+  sgVerifyEmail = email;
+  sgVerifyName = name;
+  
+  try {
+    await emailjs.send('smartgrocer', 'template_n12mgme', {
+      to_name: name,
+      to_email: email,
+      passcode: sgVerifyCode
+    });
+    return true;
+  } catch(e) {
+    console.error('EmailJS error:', e);
+    return false;
+  }
+}
+
+function verifyCode() {
+  var input = document.getElementById('verify-code-input').value.trim();
+  if (input === sgVerifyCode) {
+    // Code correct - proceed to app
+    document.getElementById('verification').style.display = 'none';
+    finishOb_complete();
+  } else {
+    document.getElementById('verify-error').style.display = 'block';
+    setTimeout(function(){ document.getElementById('verify-error').style.display = 'none'; }, 3000);
+  }
+}
+
+async function resendCode() {
+  var btn = document.getElementById('resend-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Envoi...';
+  var ok = await sendVerificationEmail(sgVerifyName, sgVerifyEmail);
+  if (ok) {
+    showToast('📧 Nouveau code envoyé!');
+    btn.textContent = '✅ Code envoyé!';
+  } else {
+    showToast('❌ Erreur — réessaie');
+    btn.disabled = false;
+    btn.textContent = '📤 Renvoyer le code';
+  }
+  setTimeout(function(){
+    btn.disabled = false;
+    btn.textContent = '📤 Renvoyer le code / Resend code';
+  }, 30000);
+}
+
 // keyboard listeners moved to main init
 
 
