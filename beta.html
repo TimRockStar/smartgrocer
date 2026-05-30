@@ -1035,6 +1035,11 @@ function finishOb_complete() {
   ['pct','pp-city'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=fullCity;});
   var carte=document.getElementById('carte-city');if(carte)carte.textContent='Epiceries · '+fullCity+' · 5 km';
   
+  // Hide everything first
+  document.getElementById('landing').style.display='none';
+  document.getElementById('onboarding').style.display='none';
+  document.getElementById('verification').style.display='none';
+  
   // Show app
   document.getElementById('app').style.display='block';
   document.getElementById('chat-wrap').style.display='block';
@@ -1405,7 +1410,7 @@ async function sendVerificationEmail(name, email) {
   sgVerifyName = name;
   
   try {
-    await emailjs.send('smartgrocer', 'template_n12mgme', {
+    await emailjs.send('service_tq9dk37', 'template_n12mgme', {
       to_name: name,
       to_email: email,
       passcode: sgVerifyCode
@@ -1419,8 +1424,11 @@ async function sendVerificationEmail(name, email) {
 
 function verifyCode() {
   var input = document.getElementById('verify-code-input').value.trim();
-  if (input === sgVerifyCode) {
-    // Code correct - proceed to app
+  if (!input || input.length < 6) {
+    showToast('Entre le code à 6 chiffres!');
+    return;
+  }
+  if (sgVerifyCode && input === sgVerifyCode) {
     document.getElementById('verification').style.display = 'none';
     finishOb_complete();
   } else {
