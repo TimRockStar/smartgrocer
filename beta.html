@@ -1159,18 +1159,25 @@ function removeIng(i){ings.splice(i,1);renderTags();/* gen-btn always enabled */
 function renderTags(){const el=document.getElementById('ing-tags');el.innerHTML=ings.length?ings.map((ing,i)=>`<div class="tag">${ing}<button onclick="removeIng(${i})">×</button></div>`).join(''):'<span style="font-size:11px;color:var(--sub);">Ajoute des ingrédients / Add ingredients...</span>';}
 async function genAll(){
   if(!isPremium&&recsToday>=LIMITS.recs){showPaywall('Limite de recettes atteinte!','Tu as utilisé tes 3 recettes gratuites. Passe à Premium pour des recettes illimitées!');return;}
-  // allow generation
-  document.getElementById('gen-btn').disabled=true;document.getElementById('rec-ld').classList.add('on');document.getElementById('rec-res').style.display='none';
+  var ingredientsList = ings.length > 0 ? ings.join(', ') : 'poulet, riz, légumes, tomates, oignons';
+  document.getElementById('rec-ld').classList.add('on');
+  document.getElementById('rec-res').style.display='none';
   try{
-    const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer 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'},body:JSON.stringify({model:'llama-3.3-70b-versatile',max_completion_tokens:1400,messages:[{role:'user',content:`Chef cuisinier. Ingrédients: ${ings.join(', ')}. 3 recettes + 4 vidéos YouTube. JSON seulement:\n{"recettes":[{"emoji":"🍳","nom":"Nom","temps":"20 min","portions":"2 portions","match":"Utilise 4/5 ingrédients","etapes":["Étape 1","Étape 2","Étape 3","Étape 4"]}],"youtubeVideos":[{"query":"recette facile","titre":"Titre viral","channel":"Channel","views":"2.3M vues","duration":"8:42","viral":true}]}`}]})});
-    const data=await res.json();const text=data.choices[0].message.content.replace(/```json|```/g,'').trim();const parsed=JSON.parse(text);
+    var res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer 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'},body:JSON.stringify({model:'llama-3.3-70b-versatile',max_completion_tokens:1400,messages:[{role:'user',content:'Chef cuisinier. Ingrédients: '+ingredientsList+'. Génère 3 recettes + 4 vidéos YouTube populaires. JSON seulement: {"recettes":[{"emoji":"🍳","nom":"Nom recette","temps":"20 min","portions":"2 portions","match":"Utilise les ingrédients","etapes":["Étape 1","Étape 2","Étape 3","Étape 4"]}],"youtubeVideos":[{"query":"recette facile","titre":"Titre viral","channel":"Channel","views":"2.3M vues","duration":"8:42","viral":true}]}'}]})});
+    var data=await res.json();
+    var text=data.choices[0].message.content.replace(/```json|```/g,'').trim();
+    var parsed=JSON.parse(text);
     curRecs=parsed.recettes;renderRecs(parsed.recettes);renderYT(parsed.youtubeVideos||[]);renderCommVids();
     document.getElementById('rec-res').style.display='block';
     recsToday++;addPoints(5);updateLimitDots();showToast('🍳 Recettes générées! +'+(isPremium?10:5)+' pts');
-    if(!isPremium&&recsToday===2)showToast('⚠️ 1 recette gratuite restante aujourd\'hui!');
-  }catch(e){console.error('Recipe error:',e);document.getElementById('rg').innerHTML='<div style="color:var(--sub);font-size:12px;">Erreur: '+e.message+'</div>';document.getElementById('rec-res').style.display='block';}
-  document.getElementById('rec-ld').classList.remove('on');document.getElementById('gen-btn').disabled=false;
+  }catch(e){
+    console.error('Recipe error:',e);
+    document.getElementById('rg').innerHTML='<div style="color:var(--sub);font-size:12px;padding:1rem;text-align:center;">Erreur de génération — réessaie!</div>';
+    document.getElementById('rec-res').style.display='block';
+  }
+  document.getElementById('rec-ld').classList.remove('on');
 }
+
 function renderRecs(recs){document.getElementById('rg').innerHTML=recs.map((r,i)=>`<div class="rc" id="rc-${i}" onclick="selRec(${i})"><div style="font-size:22px;margin-bottom:4px;">${r.emoji}</div><div style="font-size:12px;font-weight:700;margin-bottom:2px;">${r.nom}</div><div style="font-size:10px;color:var(--sub);">${r.temps} · ${r.portions}</div><div style="font-size:10px;color:var(--g);margin-top:3px;">${r.match}</div></div>`).join('');}
 function selRec(i){
   document.querySelectorAll('.rc').forEach(c=>c.classList.remove('sel'));
@@ -1237,8 +1244,7 @@ function renderYT(vids){document.getElementById('vg').innerHTML=vids.map(v=>`<di
 function renderCommVids(){
   var sh=[...commRecs].sort(function(){return Math.random()-0.5;}).slice(0,4);
   document.getElementById('cg').innerHTML=sh.map(function(v){
-    var safeNom = v.nom.replace(/'/g, " ");
-    return '<div class="cv" onclick="sendPrompt(\'Donne-moi la recette complete de ' + safeNom + ' avec ingredients et etapes\')">' +
+    return '<div class="cv" onclick="openRecipeFromCommunity('+v.id+')">' +
     '<div class="ct"><span>'+v.emoji+'</span><div class="cpb"><i class="ti ti-player-play"></i></div>' +
     (v.viral?'<div style="position:absolute;top:5px;left:5px;background:rgba(29,158,117,0.9);color:#fff;font-size:9px;padding:2px 6px;border-radius:999px;font-weight:700;">🔥 Viral</div>':'') +
     '</div><div class="ci"><div class="ctitle">'+v.nom+'</div>' +
@@ -1246,6 +1252,23 @@ function renderCommVids(){
     '</div></div>';
   }).join('');
 }
+
+function openRecipeFromCommunity(id) {
+  var rec = commRecs.find(function(r){ return r.id === id; });
+  if(!rec) return;
+  // Go to Social and filter by this recipe
+  goTo('social', null);
+  document.getElementById('comm-feed').style.display = 'block';
+  document.getElementById('comm-upload').style.display = 'none';
+  var searchEl = document.getElementById('cs');
+  if(searchEl) {
+    searchEl.value = rec.nom.split(' ')[0];
+    filterC();
+  }
+  window.scrollTo(0,0);
+  showToast('🎬 ' + rec.nom);
+}
+
 function switchRT(t,btn,cls){document.querySelectorAll('#recettes .tab').forEach(x=>x.classList.remove('on','onc'));btn.classList.add(cls);['recettes','youtube','community'].forEach(p=>document.getElementById('p-'+p).style.display='none');document.getElementById('p-'+t).style.display='block';}
 function addGr(){
   const v=document.getElementById('gr-in').value.trim();if(!v)return;
@@ -1390,7 +1413,27 @@ function addChatMsg(role,text){const el=document.createElement('div');el.classNa
 async function sendChat(){
   const v=document.getElementById('chat-in').value.trim();if(!v)return;
   addChatMsg('user',v);document.getElementById('chat-in').value='';
-  try{const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer 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'},body:JSON.stringify({model:'llama-3.3-70b-versatile',max_completion_tokens:300,messages:[{role:'user',content:'Tu es l\'assistant SmartGrocer, app épicerie bilingue FR/EN. Réponds dans la langue de la question, court et utile (max 2-3 phrases). Question: '+v}]})});const data=await res.json();addChatMsg('bot',data.choices[0].message.content.trim());}catch(e){addChatMsg('bot','Désolé, erreur de connexion!');}
+  try{
+    const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer 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'},
+      body:JSON.stringify({
+        model:'llama-3.3-70b-versatile',
+        max_completion_tokens:600,
+        messages:[{role:'user',content:'Tu es un assistant épicerie et chef cuisinier expert. Réponds en français. Si on te demande une recette, donne-la complète avec ingrédients et étapes. Question: '+v}]
+      })
+    });
+    const data=await res.json();
+    if(data.choices && data.choices[0]){
+      addChatMsg('bot',data.choices[0].message.content.trim());
+    } else {
+      addChatMsg('bot','Désolé, réessaie dans un moment!');
+      console.error('Groq error:', data);
+    }
+  }catch(e){
+    addChatMsg('bot','Désolé, erreur de connexion!');
+    console.error('Chat error:',e);
+  }
 }
 
 // EmailJS
@@ -1812,16 +1855,14 @@ async function loadSpecials() {
 
 
 function openRecipe(nom, ingredients) {
-  goTo('recettes', null);
-  ings = ingredients.split(',').map(function(i){ return i.trim(); });
-  renderTags();
-  // Show chatbot with full recipe instead of generating
-  setTimeout(function() {
-    chatOpen = true;
-    document.getElementById('chat-box').className = 'chat-box open';
-    document.getElementById('chat-in').value = 'Donne-moi la recette complète de ' + nom + ' avec les ingrédients et les étapes';
-    sendChat();
-  }, 300);
+  goTo('social', document.querySelectorAll('.nb')[4]);
+  document.getElementById('comm-feed').style.display = 'block';
+  document.getElementById('comm-upload').style.display = 'none';
+  document.querySelectorAll('#social .tab').forEach(function(t){ t.classList.remove('on','onc'); });
+  document.querySelectorAll('#social .tab')[0].classList.add('onc');
+  filterC();
+  window.scrollTo(0,0);
+  showToast('🎬 Vidéos de recettes — ' + nom);
 }
 
 </script>
