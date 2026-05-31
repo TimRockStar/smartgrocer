@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
@@ -1789,7 +1788,7 @@ function startRealScan() {
     scanDone = true;
     var status = document.getElementById('scan-status');
     if(status) status.textContent = 'Code scanne!';
-    setTimeout(function() { stopRealScan(); document.getElementById('prod-in').value=code; lookupBarcode(code); }, 300);
+    setTimeout(function() { stopRealScan(); document.getElementById('prod-in').value=''; lookupBarcode(code); }, 300);
   });
 }
 
@@ -1852,7 +1851,7 @@ async function lookupBarcode(code) {
       document.getElementById('sg').innerHTML = '<div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:12px;padding:1rem;text-align:center;">' +
         '<div style="font-size:13px;font-weight:700;color:#92400e;margin-bottom:8px;">🔍 Produit non trouvé</div>' +
         '<div style="font-size:12px;color:#78350f;margin-bottom:10px;">Entre le nom ci-dessous et clique Rechercher.<br>Le produit sera ajouté à notre banque de données!</div>' +
-        '<div style="font-size:10px;color:#92400e;background:#fff;border-radius:8px;padding:4px 8px;">Code: ' + code + '</div>' +
+        
         '</div>';
       document.getElementById('px-res').style.display = 'block';
       window._lastScannedCode = code;
