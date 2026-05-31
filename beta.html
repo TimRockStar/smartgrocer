@@ -1,1 +1,2038 @@
 
+<!DOCTYPE html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="description" content="SmartGrocer — Compare grocery prices, find AI recipes, manage your food budget and store loyalty cards.">
+<meta name="theme-color" content="#1D9E75">
+<title>SmartGrocer — Smart Grocery App</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/3.19.0/iconfont/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{--g:#1D9E75;--g2:#0F6E56;--c:#D85A30;--p:#534AB7;--b:#378ADD;--gold:#C9A227;--bg:#FFF8F0;--card:#fff;--border:#e5e7eb;--text:#1a1a2e;--sub:#6b7280;--light:#f3f4f6;}
+body{font-family:system-ui,-apple-system,sans-serif;font-size:14px;background:var(--bg);max-width:480px;margin:0 auto;min-height:100vh;}
+.nav{display:flex;background:#7B0000;padding:6px 8px 10px;border-top:none;position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;z-index:200;box-shadow:0 -4px 20px rgba(0,0,0,0.3);}
+.nb{flex:1;min-width:44px;padding:6px 2px 4px;font-size:11px;font-weight:700;cursor:pointer;text-align:center;color:rgba(255,255,255,0.45);background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:3px;border-radius:10px;transition:all 0.2s;}
+.nb i{font-size:22px;}
+.nb.active{color:#fff;background:rgba(255,255,255,0.15);}
+.page{display:none;padding-bottom:90px;padding-top:52px;}
+.page.active{display:block;}
+.hero{padding:1.5rem 1.5rem 2.5rem;border-radius:0 0 32px 32px;position:relative;overflow:hidden;margin-bottom:1.5rem;}
+.hc1{position:absolute;top:-40px;right:-40px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,0.08);}
+.hc2{position:absolute;bottom:-60px;left:-30px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,0.05);}
+.logo-row{display:flex;align-items:center;gap:10px;margin-bottom:1.25rem;}
+.lsvg{width:44px;height:44px;flex-shrink:0;}
+.lt{font-size:20px;font-weight:800;color:#fff;line-height:1;}
+.ls{font-size:10px;color:rgba(255,255,255,0.75);margin-top:2px;}
+.hstats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.hs{background:rgba(255,255,255,0.15);border-radius:14px;padding:10px;text-align:center;}
+.hs-n{font-size:20px;font-weight:700;color:#fff;}
+.hs-l{font-size:9px;color:rgba(255,255,255,0.8);margin-top:2px;}
+.px{padding:0 1rem;}
+.sl{font-size:16px;font-weight:700;color:var(--text);margin-bottom:12px;}
+.sl2{font-size:11px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1rem;margin-bottom:10px;}
+.btn{padding:8px 14px;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:opacity 0.15s;}
+.btn:hover{opacity:0.88;}
+.btn:disabled{opacity:0.4;cursor:not-allowed;}
+.bg{background:var(--g);color:#fff;}
+.bb{background:var(--b);color:#fff;}
+.bc{background:var(--c);color:#fff;}
+.bp{background:var(--p);color:#fff;}
+.bgold{background:var(--gold);color:#fff;}
+.bo{background:none;border:1px solid var(--border);color:var(--text);}
+.bf{width:100%;justify-content:center;padding:12px;font-size:14px;}
+.badge{display:inline-block;font-size:10px;padding:2px 8px;border-radius:999px;font-weight:700;}
+.bdg{background:#dcfce7;color:#166534;}
+.bdc{background:#FAECE7;color:#993C1D;}
+.bdgold{background:#fef3c7;color:#92400e;}
+.bdfree{background:var(--light);color:var(--sub);}
+.ld{text-align:center;color:var(--sub);font-size:13px;padding:1.25rem 0;display:none;}
+.ld.on{display:block;}
+input,select,textarea{padding:8px 10px;border:1px solid var(--border);border-radius:10px;font-size:13px;width:100%;font-family:inherit;color:var(--text);background:var(--card);}
+input:focus,select:focus{outline:none;border-color:var(--g);}
+.sr{display:flex;gap:8px;margin-bottom:1rem;}
+.sr input{flex:1;}
+.tag{display:inline-flex;align-items:center;gap:4px;background:#dbeafe;color:#1e40af;border-radius:999px;padding:3px 10px 3px 12px;font-size:11px;margin:2px;}
+.tag button{border:none;background:none;cursor:pointer;color:#1e40af;font-size:13px;padding:0;line-height:1;}
+.tabs{display:flex;border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:1rem;}
+.tab{flex:1;padding:7px 4px;font-size:11px;font-weight:700;cursor:pointer;text-align:center;color:var(--sub);background:var(--card);border:none;}
+.tab.on{background:var(--g);color:#fff;}
+.tab.onc{background:var(--c);color:#fff;}
+.sugg{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:1rem;}
+.sg{background:var(--light);border:1px solid var(--border);border-radius:999px;padding:4px 12px;font-size:11px;cursor:pointer;color:var(--text);}
+.sg:hover{border-color:var(--b);color:var(--b);}
+.qgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:1.5rem;}
+.qc{border-radius:20px;padding:1.25rem 1rem;cursor:pointer;position:relative;overflow:hidden;min-height:110px;display:flex;flex-direction:column;justify-content:space-between;}
+.qc-blob{position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,0.12);}
+.qc i{font-size:24px;color:rgba(255,255,255,0.9);}
+.qc-t{font-size:13px;font-weight:700;color:#fff;}
+.qc-s{font-size:10px;color:rgba(255,255,255,0.8);margin-top:2px;}
+.dscroll{display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;margin-bottom:1.5rem;scrollbar-width:none;}
+.dscroll::-webkit-scrollbar{display:none;}
+.dc{background:var(--card);border-radius:16px;padding:12px;min-width:150px;flex-shrink:0;border:1px solid var(--border);}
+.pts-card{background:linear-gradient(135deg,#C9A227,#9A7A10);border-radius:20px;padding:1.25rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:12px;cursor:pointer;}
+.trial{background:linear-gradient(135deg,#534AB7,#378ADD);border-radius:14px;padding:10px 14px;margin-bottom:1rem;display:flex;align-items:center;gap:10px;cursor:pointer;}
+.sp-zone{width:100%;height:150px;background:var(--light);border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--sub);margin-bottom:1rem;border:1px solid var(--border);}
+.sf{position:relative;width:150px;height:75px;border:2px solid var(--g);border-radius:8px;}
+.sf::before{content:'';position:absolute;top:-2px;left:-2px;width:14px;height:14px;border-top:3px solid var(--g);border-left:3px solid var(--g);border-radius:3px 0 0 0;}
+.sf::after{content:'';position:absolute;bottom:-2px;right:-2px;width:14px;height:14px;border-bottom:3px solid var(--g);border-right:3px solid var(--g);border-radius:0 0 3px 0;}
+.sl3{position:absolute;width:100%;height:2px;background:var(--g);opacity:0.8;animation:scan 2s linear infinite;}
+@keyframes scan{0%{top:0;}100%{top:100%;}}
+.bd{background:#dcfce7;border:1px solid #86efac;border-radius:14px;padding:0.875rem;margin-bottom:1rem;display:none;}
+.bd.on{display:block;}
+.sg2{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:1rem;}
+.sc{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:0.75rem;}
+.sc.sale{border-color:#86efac;}
+.rg{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:1rem;}
+.rc{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:0.875rem;cursor:pointer;}
+.rc:hover,.rc.sel{border-color:var(--g);}
+.rc.sel{border-width:2px;}
+.steps li{display:flex;gap:8px;padding:6px 0;border-bottom:1px solid var(--light);font-size:12px;color:var(--text);line-height:1.5;list-style:none;}
+.steps li:last-child{border-bottom:none;}
+.snum{width:20px;height:20px;background:#dcfce7;color:#166534;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;margin-top:1px;}
+.vg{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:10px;margin-bottom:1rem;}
+.vc{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;cursor:pointer;}
+.vc:hover{border-color:var(--c);}
+.vt{width:100%;height:90px;background:var(--light);display:flex;align-items:center;justify-content:center;position:relative;}
+.pb{width:28px;height:28px;background:rgba(212,84,48,0.9);border-radius:50%;display:flex;align-items:center;justify-content:center;position:absolute;}
+.pb i{color:#fff;font-size:12px;margin-left:2px;}
+.vb{position:absolute;top:5px;left:5px;background:rgba(212,84,48,0.9);color:#fff;font-size:9px;padding:2px 6px;border-radius:999px;font-weight:700;}
+.vi{padding:0.625rem;}
+.vtitle{font-size:11px;font-weight:700;color:var(--text);margin-bottom:2px;line-height:1.4;}
+.vmeta{font-size:10px;color:var(--sub);}
+.cv{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;cursor:pointer;}
+.cv:hover{border-color:var(--g);}
+.ct{width:100%;height:80px;background:var(--light);display:flex;align-items:center;justify-content:center;font-size:26px;position:relative;}
+.cpb{width:24px;height:24px;background:rgba(29,158,117,0.9);border-radius:50%;display:flex;align-items:center;justify-content:center;position:absolute;}
+.cpb i{color:#fff;font-size:11px;margin-left:1px;}
+.ci{padding:0.5rem;}
+.ctitle{font-size:11px;font-weight:700;color:var(--text);margin-bottom:2px;}
+.cmeta{font-size:10px;color:var(--sub);}
+.av{width:14px;height:14px;border-radius:50%;background:#dbeafe;color:#1e40af;display:inline-flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;}
+.gi{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--light);}
+.gi:last-child{border-bottom:none;}
+.gc{width:18px;height:18px;border-radius:4px;border:2px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:10px;}
+.gc.done{background:var(--g);border-color:var(--g);color:#fff;}
+.feed-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:0.875rem;margin-bottom:8px;}
+.pr-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--light);}
+.pr-row:last-child{border-bottom:none;}
+.limit-bar{display:flex;align-items:center;gap:8px;background:var(--light);border-radius:8px;padding:8px 12px;margin-bottom:1rem;}
+.limit-dots{display:flex;gap:4px;}
+.ldot{width:10px;height:10px;border-radius:50%;background:var(--border);}
+.ldot.used{background:var(--g);}
+.ldot.used.warn{background:#f59e0b;}
+.ldot.used.danger{background:#ef4444;}
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:2000;display:none;align-items:flex-end;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal-box{background:var(--card);border-radius:24px 24px 0 0;padding:1.5rem;width:100%;max-width:480px;animation:slideUp 0.3s ease;position:relative;}
+@keyframes slideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
+
+
+
+
+.chat-header{background:var(--g);color:#fff;padding:0.75rem 1rem;display:flex;align-items:center;gap:8px;}
+.chat-msgs{flex:1;overflow-y:auto;padding:0.75rem;display:flex;flex-direction:column;gap:8px;}
+.msg{max-width:82%;padding:7px 11px;border-radius:10px;font-size:11px;line-height:1.5;}
+.msg.bot{background:var(--light);color:var(--text);align-self:flex-start;border-radius:4px 10px 10px 10px;}
+.msg.user{background:var(--g);color:#fff;align-self:flex-end;border-radius:10px 4px 10px 10px;}
+.chat-input-row{display:flex;gap:6px;padding:0.625rem;border-top:1px solid var(--light);}
+.chat-input-row input{flex:1;padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-size:11px;}
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#111827;color:#fff;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:700;opacity:0;transition:opacity 0.3s;pointer-events:none;z-index:3000;white-space:nowrap;}
+.toast.show{opacity:1;}
+.plus-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.4);z-index:500;display:none;}
+.plus-overlay.open{display:block;}
+.plus-sheet{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);width:calc(100% - 2rem);max-width:440px;background:var(--card);border-radius:20px;padding:1.25rem;z-index:501;box-shadow:0 -8px 32px rgba(0,0,0,0.15);}
+.plus-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.plus-item{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 8px;border-radius:14px;cursor:pointer;background:var(--light);border:1px solid var(--border);}
+.plus-item:hover{background:var(--border);}
+.plus-item i{font-size:22px;}
+.plus-item-label{font-size:11px;font-weight:700;color:var(--text);}
+.loyalty-card{border-radius:20px;padding:1.5rem;cursor:pointer;box-shadow:0 12px 32px rgba(0,0,0,0.15);margin-bottom:12px;}
+.mini-card{background:var(--card);border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:12px;border:1px solid var(--border);cursor:pointer;margin-bottom:8px;transition:all 0.2s;}
+.mini-card:hover{border-color:var(--g);}
+.mini-card.active-mini{border-color:var(--g);border-width:2px;}
+.bc-full{position:fixed;top:0;left:0;right:0;bottom:0;background:#fff;z-index:400;display:none;flex-direction:column;align-items:center;justify-content:center;padding:2rem;}
+.bc-full.open{display:flex;}
+.al{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--light);}
+.al:last-child{border-bottom:none;}
+.atog{position:relative;width:36px;height:20px;flex-shrink:0;}
+.atog input{opacity:0;width:0;height:0;position:absolute;}
+.ts{position:absolute;top:0;left:0;right:0;bottom:0;background:var(--border);border-radius:999px;cursor:pointer;transition:0.2s;}
+.ts:before{content:'';position:absolute;height:14px;width:14px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:0.2s;}
+.atog input:checked+.ts{background:var(--g);}
+.atog input:checked+.ts:before{transform:translateX(16px);}
+.bbar-w{background:var(--light);border-radius:999px;height:8px;margin:6px 0 3px;overflow:hidden;}
+.bbar{height:100%;border-radius:999px;transition:width 0.4s;}
+.bcat{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.bdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.bcbw{width:70px;background:var(--light);border-radius:999px;height:6px;}
+.bcb{height:100%;border-radius:999px;}
+.map-ph{background:linear-gradient(135deg,#bae6fd,#93c5fd);border-radius:16px;height:140px;display:flex;align-items:center;justify-content:center;margin-bottom:1rem;position:relative;overflow:hidden;}
+.map-pin{position:absolute;font-size:22px;cursor:pointer;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3));}
+.store-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--card);border:1px solid var(--border);border-radius:12px;margin-bottom:8px;cursor:pointer;}
+.store-item:hover{border-color:var(--g);}
+.prof-header{background:linear-gradient(160deg,#1a1a2e,#2d2d4e);padding:1.5rem 1.5rem 2.5rem;border-radius:0 0 32px 32px;margin-bottom:1.5rem;position:relative;overflow:hidden;}
+.prof-avatar{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--g),var(--g2));display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#fff;border:3px solid rgba(255,255,255,0.2);}
+.lang-toggle{display:flex;gap:6px;background:var(--light);border-radius:8px;padding:4px;margin-bottom:1rem;}
+.lang-btn{flex:1;padding:5px;border:none;border-radius:6px;cursor:pointer;font-size:12px;font-weight:700;background:none;color:var(--sub);}
+.lang-btn.active{background:var(--card);color:var(--g);box-shadow:0 1px 3px rgba(0,0,0,0.1);}
+.prem-feature{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--light);font-size:12px;color:var(--text);}
+.prem-feature:last-child{border-bottom:none;}
+.stores-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1rem;}
+.store-chip{background:var(--light);border:1px solid var(--border);border-radius:14px;padding:12px 8px;text-align:center;cursor:pointer;}
+.store-chip:hover{border-color:var(--g);background:#E1F5EE;}
+.store-chip-icon{font-size:24px;display:block;margin-bottom:4px;}
+.store-chip-name{font-size:11px;font-weight:700;color:var(--text);}
+.hero-landing{background:linear-gradient(160deg,#1D9E75 0%,#0F6E56 60%,#085041 100%);padding:3rem 1.5rem;text-align:center;position:relative;overflow:hidden;}
+.feature-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:1.5rem 0;}
+.feature-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1rem;text-align:center;}
+.feature-card i{font-size:28px;color:var(--g);margin-bottom:8px;display:block;}
+.ob-step{display:none;padding:1.5rem 1rem;}
+.ob-step.active{display:block;}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+
+<style>
+#quagga-container video {
+  width: 100% !important;
+  height: auto !important;
+  display: block !important;
+  border-radius: 14px;
+}
+#quagga-container canvas {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+</style>
+<!-- Stripe Buy Button -->
+<script async src="https://js.stripe.com/v3/buy-button.js"></script>
+<!-- MailerLite Universal -->
+<script>
+(function(w,d,e,u,f,l,n){w[f]=w[f]||function(){(w[f].q=w[f].q||[])
+.push(arguments);},l=d.createElement(e),l.async=1,l.src=u,
+n=d.getElementsByTagName(e)[0],n.parentNode.insertBefore(l,n);})
+(window,document,'script','https://assets.mailerlite.com/js/universal.js','ml');
+ml('account', '2355363');
+</script>
+</head>
+<body>
+<div class="toast" id="toast"></div>
+
+<!-- LOGO SVG TEMPLATE (reused inline) -->
+<svg style="display:none">
+  <symbol id="logo-icon" viewBox="0 0 680 500">
+    <path d="M340,60 L430,95 L430,190 Q430,240 340,270 Q250,240 250,190 L250,95 Z" fill="rgba(255,255,255,0.2)"/>
+    <path d="M340,70 L422,102 L422,188 Q422,234 340,262 Q258,234 258,188 L258,102 Z" fill="rgba(255,255,255,0.15)"/>
+    <path d="M308,215 L312,183 L368,183 L372,215 Z" fill="white"/>
+    <path d="M301,183 Q301,170 312,170 L368,170 Q379,170 379,183" fill="none" stroke="white" stroke-width="6" stroke-linecap="round"/>
+    <circle cx="320" cy="224" r="9" fill="white"/>
+    <circle cx="360" cy="224" r="9" fill="white"/>
+    <path d="M305,100 L314,85 L323,98 L340,80 L357,98 L366,85 L375,100 L372,112 L308,112 Z" fill="#C9A227"/>
+    <circle cx="292" cy="88" r="20" fill="#D85A30"/>
+    <text x="292" y="94" text-anchor="middle" font-family="system-ui" font-size="13" font-weight="700" fill="white">SG</text>
+  </symbol>
+</svg>
+
+<!-- PAYWALL -->
+<div class="modal-overlay" id="paywall">
+  <div class="modal-box">
+    <button onclick="closePaywall()" style="position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:20px;cursor:pointer;color:var(--sub);">✕</button>
+    <div style="text-align:center;margin-bottom:1rem;">
+      <div style="font-size:36px;margin-bottom:8px;">⭐</div>
+      <div style="font-size:18px;font-weight:700;" id="paywall-title">Limite atteinte!</div>
+      <div style="font-size:13px;color:var(--sub);margin-top:4px;" id="paywall-msg">Passe à Premium pour continuer.</div>
+    </div>
+    <div style="background:linear-gradient(135deg,var(--p),var(--b));border-radius:16px;padding:1.25rem;color:#fff;text-align:center;margin-bottom:1rem;">
+      <div style="font-size:13px;opacity:0.9;margin-bottom:4px;">🎉 Essai gratuit 30 jours</div>
+      <div style="font-size:28px;font-weight:700;">$4.99<span style="font-size:14px;font-weight:400;">/mois</span></div>
+      <div style="font-size:11px;opacity:0.85;margin-top:2px;">Carte de crédit requise · Annulez à tout moment</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:1rem;">
+      <div style="display:flex;align-items:center;gap:8px;font-size:12px;"><span style="color:var(--g);font-weight:700;">✓</span>Scanner illimité · Recettes illimitées</div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:12px;"><span style="color:var(--g);font-weight:700;">✓</span>2x points · Sans pub · Portefeuille illimité</div>
+    </div>
+    <stripe-buy-button
+  buy-button-id="buy_btn_1TZxji8g6DMr5MKkOUY5K31c"
+  publishable-key="pk_live_51TZwZv8g6DMr5MKkRPebAg4U59jlMgIURfwaZcaMTgpSEFTn5jCQ2RQzowgt7RvPwE3sbDalFZADRoTj9N5kLegR00L4Tyau8k"
+></stripe-buy-button>
+    <button class="btn bo bf" onclick="closePaywall()" style="margin-top:8px;">Continuer gratuitement</button>
+    <div style="text-align:center;margin-top:10px;font-size:10px;color:var(--sub);">
+      <a href="https://timrockstar.github.io/smartgrocer/privacy.html" target="_blank" style="color:var(--sub);">Politique de confidentialité</a> · 
+      <a href="https://timrockstar.github.io/smartgrocer/terms.html" target="_blank" style="color:var(--sub);">Conditions d'utilisation</a>
+    </div>
+  </div>
+</div>
+
+<!-- PLUS MENU --><!-- PLUS MENU -->
+<div class="plus-overlay" id="plus-overlay" onclick="closePlus()">
+  <div class="plus-sheet" onclick="event.stopPropagation()">
+    <div style="font-size:11px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:12px;">Plus d'options</div>
+    <div class="plus-grid">
+      <div class="plus-item" onclick="goExtra('carte')"><i class="ti ti-map-pin" style="color:var(--b);"></i><div class="plus-item-label">Carte</div></div>
+      <div class="plus-item" onclick="goExtra('wallet')"><i class="ti ti-wallet" style="color:var(--gold);"></i><div class="plus-item-label">Portefeuille</div></div>
+      <div class="plus-item" onclick="goExtra('alertes')"><i class="ti ti-bell" style="color:var(--gold);"></i><div class="plus-item-label">Alertes</div></div>
+      <div class="plus-item" onclick="goExtra('budget')"><i class="ti ti-chart-pie" style="color:var(--p);"></i><div class="plus-item-label">Budget</div></div>
+      <div class="plus-item" onclick="goExtra('profil')"><i class="ti ti-user" style="color:var(--p);"></i><div class="plus-item-label">Profil</div></div>
+      <div class="plus-item" onclick="goExtra('premium')"><i class="ti ti-star" style="color:var(--gold);"></i><div class="plus-item-label">Premium</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- WALLET ADD MODAL -->
+<div class="modal-overlay" id="wallet-modal" onclick="closeWalletModal()">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <div style="font-size:17px;font-weight:700;margin-bottom:1rem;">➕ Ajouter une carte</div>
+    <div class="stores-grid">
+      <div class="store-chip" onclick="addCard('IGA','🏪','linear-gradient(135deg,#E53935,#B71C1C)')"><span class="store-chip-icon">🏪</span><div class="store-chip-name">IGA</div></div>
+      <div class="store-chip" onclick="addCard('Maxi','🏬','linear-gradient(135deg,#C62828,#880E4F)')"><span class="store-chip-icon">🏬</span><div class="store-chip-name">Maxi</div></div>
+      <div class="store-chip" onclick="addCard('Metro','🛒','linear-gradient(135deg,#1565C0,#0D47A1)')"><span class="store-chip-icon">🛒</span><div class="store-chip-name">Metro</div></div>
+      <div class="store-chip" onclick="addCard('Walmart','🏢','linear-gradient(135deg,#1565C0,#003087)')"><span class="store-chip-icon">🏢</span><div class="store-chip-name">Walmart</div></div>
+      <div class="store-chip" onclick="addCard('Costco','🏭','linear-gradient(135deg,#C62828,#1565C0)')"><span class="store-chip-icon">🏭</span><div class="store-chip-name">Costco</div></div>
+      <div class="store-chip" onclick="addCard('Jean Coutu','💊','linear-gradient(135deg,#2E7D32,#1B5E20)')"><span class="store-chip-icon">💊</span><div class="store-chip-name">Jean Coutu</div></div>
+      <div class="store-chip" onclick="addCard('Pharmaprix','💙','linear-gradient(135deg,#1565C0,#283593)')"><span class="store-chip-icon">💙</span><div class="store-chip-name">Pharmaprix</div></div>
+      <div class="store-chip" onclick="addCard('Dollarama','💛','linear-gradient(135deg,#F57F17,#E65100)')"><span class="store-chip-icon">💛</span><div class="store-chip-name">Dollarama</div></div>
+      <div class="store-chip" onclick="addCard('Tim Hortons','☕','linear-gradient(135deg,#C62828,#B71C1C)')"><span class="store-chip-icon">☕</span><div class="store-chip-name">Tim Hortons</div></div>
+    </div>
+    <button class="btn bo bf" onclick="closeWalletModal()">Annuler</button>
+  </div>
+</div>
+
+<!-- BARCODE FULLSCREEN -->
+<div class="bc-full" id="bc-full">
+  <div style="font-size:22px;font-weight:700;color:var(--text);margin-bottom:4px;" id="bf-name"></div>
+  <div style="font-size:12px;color:var(--sub);margin-bottom:2rem;" id="bf-type"></div>
+  <div style="display:flex;gap:2px;justify-content:center;align-items:center;height:100px;background:#fff;padding:1rem;border-radius:12px;border:1px solid var(--light);margin-bottom:1rem;width:100%;" id="bf-bars"></div>
+  <div style="font-size:18px;font-weight:700;color:var(--text);letter-spacing:4px;margin-bottom:2rem;" id="bf-number"></div>
+  <button class="btn bg bf" onclick="hideBc()">Fermer</button>
+</div>
+
+<div id="landing" style="display:none;"></div>
+
+<!-- ONBOARDING -->
+<div id="onboarding" style="display:none;padding:1.5rem 1rem;">
+  <div style="margin:0 auto 1rem;width:70px;text-align:center;">
+    <svg width="70" height="70" viewBox="0 0 680 500"><path d="M340,60 L430,95 L430,190 Q430,240 340,270 Q250,240 250,190 L250,95 Z" fill="#1D9E75"/><path d="M340,70 L422,102 L422,188 Q422,234 340,262 Q258,234 258,188 L258,102 Z" fill="#0F6E56"/><path d="M308,215 L312,183 L368,183 L372,215 Z" fill="white"/><path d="M301,183 Q301,170 312,170 L368,170 Q379,170 379,183" fill="none" stroke="white" stroke-width="6" stroke-linecap="round"/><circle cx="320" cy="224" r="9" fill="white"/><circle cx="360" cy="224" r="9" fill="white"/><path d="M305,100 L314,85 L323,98 L340,80 L357,98 L366,85 L375,100 L372,112 L308,112 Z" fill="#C9A227"/><circle cx="292" cy="88" r="20" fill="#D85A30"/><text x="292" y="94" text-anchor="middle" font-family="system-ui" font-size="13" font-weight="700" fill="white">SG</text></svg>
+  </div>
+  <div style="font-size:22px;font-weight:800;text-align:center;margin-bottom:6px;"><span style="color:var(--g);">Smart</span><span style="color:var(--gold);">Grocer</span></div>
+  <div style="font-size:13px;color:var(--sub);text-align:center;margin-bottom:1.25rem;">Crée ton compte en 30 secondes!</div>
+  
+  <div style="background:#dcfce7;border:1px solid #86efac;border-radius:12px;padding:10px;margin-bottom:1.25rem;text-align:center;">
+    <div style="font-size:13px;font-weight:700;color:#166534;">🎉 Essai Premium 30 jours gratuits!</div>
+    <div style="font-size:11px;color:#166534;margin-top:3px;">Les 1000 premiers membres · Essai Premium inclus!</div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:1.25rem;">
+    <div>
+      <label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:4px;">Prénom / First name <span style="color:#ef4444;">*</span></label>
+      <input type="text" id="ob-name" placeholder="Ex: Tim"/>
+    </div>
+    <div>
+      <label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:4px;">Email <span style="color:#ef4444;">*</span></label>
+      <input type="email" id="ob-email" placeholder="ton@email.com"/>
+    </div>
+    <div>
+      <label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:4px;">Ville / City <span style="color:#ef4444;">*</span></label>
+      <input type="text" id="ob-city" placeholder="Ex: Joliette"/>
+    </div>
+    <div>
+      <label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:4px;">Province</label>
+      <select id="ob-province">
+        <option>Québec</option>
+        <option>Ontario</option>
+        <option>Colombie-Britannique</option>
+        <option>Alberta</option>
+        <option>Manitoba</option>
+        <option>Saskatchewan</option>
+        <option>Nouveau-Brunswick</option>
+        <option>Nouvelle-Écosse</option>
+      </select>
+    </div>
+    <div>
+      <label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:4px;">Code postal / Postal code</label>
+      <input type="text" id="ob-postal" placeholder="Ex: J6E 2B1" style="text-transform:uppercase;"/>
+    </div>
+  </div>
+
+  <button class="btn bg bf" onclick="finishOb()" style="font-size:14px;padding:13px;">
+    <i class="ti ti-check"></i> Commencer gratuitement!
+  </button>
+  <div style="font-size:10px;color:var(--sub);text-align:center;margin-top:8px;">
+    Tu peux passer à Premium à tout moment depuis l'app<br>
+    <a href="https://timrockstar.github.io/smartgrocer/privacy.html" target="_blank" style="color:var(--sub);">Politique de confidentialité</a> · 
+    <a href="https://timrockstar.github.io/smartgrocer/terms.html" target="_blank" style="color:var(--sub);">Conditions d'utilisation</a>
+  </div>
+</div>
+
+
+
+
+<!-- EMAIL VERIFICATION -->
+<div id="verification" style="display:none;padding:1.5rem 1rem;text-align:center;">
+  <div style="margin:2rem auto 1.5rem;width:70px;">
+    <svg width="70" height="70" viewBox="0 0 680 500"><path d="M340,60 L430,95 L430,190 Q430,240 340,270 Q250,240 250,190 L250,95 Z" fill="#1D9E75"/><path d="M340,70 L422,102 L422,188 Q422,234 340,262 Q258,234 258,188 L258,102 Z" fill="#0F6E56"/><path d="M308,215 L312,183 L368,183 L372,215 Z" fill="white"/><path d="M301,183 Q301,170 312,170 L368,170 Q379,170 379,183" fill="none" stroke="white" stroke-width="6" stroke-linecap="round"/><circle cx="320" cy="224" r="9" fill="white"/><circle cx="360" cy="224" r="9" fill="white"/><path d="M305,100 L314,85 L323,98 L340,80 L357,98 L366,85 L375,100 L372,112 L308,112 Z" fill="#C9A227"/></svg>
+  </div>
+  <div style="font-size:22px;font-weight:800;margin-bottom:6px;"><span style="color:#1D9E75;">Smart</span><span style="color:#C9A227;">Grocer</span></div>
+  <div style="font-size:16px;font-weight:700;margin-bottom:8px;">📧 Vérifie ton email</div>
+  <div style="font-size:13px;color:#6b7280;margin-bottom:4px;">On a envoyé un code à</div>
+  <div style="font-size:14px;font-weight:700;color:#1D9E75;margin-bottom:1.5rem;" id="verify-email-display"></div>
+  
+  <div style="background:#f3f4f6;border-radius:16px;padding:1.5rem;margin-bottom:1.5rem;">
+    <div style="font-size:12px;color:#6b7280;margin-bottom:12px;">Entre le code à 6 chiffres / Enter the 6-digit code</div>
+    <input type="text" id="verify-code-input" placeholder="000000" 
+      style="width:100%;padding:16px;border:2px solid #e5e7eb;border-radius:12px;font-size:24px;text-align:center;letter-spacing:8px;font-family:monospace;margin-bottom:10px;"
+      maxlength="6"
+      oninput="this.value=this.value.replace(/[^0-9]/g,'').substring(0,6)"
+      onkeydown="if(event.key==='Enter')verifyCode()"/>
+    <div id="verify-error" style="display:none;color:#ef4444;font-size:12px;margin-bottom:8px;">❌ Code incorrect — réessaie!</div>
+    <button onclick="verifyCode()" style="width:100%;background:linear-gradient(135deg,#1D9E75,#0F6E56);color:#fff;border:none;border-radius:12px;padding:14px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px;">✅ Vérifier / Verify</button>
+    <button onclick="resendCode()" style="width:100%;background:none;border:1px solid #e5e7eb;border-radius:12px;padding:10px;font-size:12px;font-weight:700;cursor:pointer;color:#6b7280;" id="resend-btn">📤 Renvoyer le code / Resend code</button>
+  </div>
+  <div style="font-size:11px;color:#9ca3af;">Vérifie ton dossier spam si tu ne vois pas l'email</div>
+</div>
+
+<!-- APP -->
+<!-- BETA BANNER -->
+<div id="beta-banner" style="display:none;background:linear-gradient(135deg,#7B0000,#5C0000);padding:10px 16px;position:fixed;top:0;left:0;right:0;z-index:500;max-width:480px;margin:0 auto;">
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+    <div>
+      <div style="font-size:12px;font-weight:700;color:#fff;">🧪 Version Bêta</div>
+      <div style="font-size:10px;color:rgba(255,255,255,0.85);">Toutes les fonctionnalités débloquées!</div>
+    </div>
+    <button onclick="openFeedback()" style="background:#fff;color:#7B0000;border:none;border-radius:10px;padding:8px 12px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;">📝 Donner mon feedback</button>
+  </div>
+</div>
+<div id="app" style="display:none;">
+
+<div class="trial" id="trial-banner" style="display:none!important;" style="margin:0.75rem 1rem 0;" onclick="goExtra('premium')">
+  <div style="font-size:18px;">⭐</div>
+  <div style="flex:1"><div style="font-size:12px;font-weight:700;color:#fff;">Premium gratuit — 30 jours restants</div><div style="font-size:10px;color:rgba(255,255,255,0.8);">Clique pour gérer ton abonnement</div></div>
+  <div style="background:rgba(255,255,255,0.2);color:#fff;font-size:10px;font-weight:700;padding:4px 8px;border-radius:6px;">Gérer</div>
+</div>
+
+<!-- HOME -->
+<div id="home" class="page active">
+  <div class="hero" style="background:linear-gradient(160deg,#1D9E75 0%,#0F6E56 50%,#085041 100%);">
+    <div class="hc1"></div><div class="hc2"></div>
+    <div class="logo-row">
+      <svg class="lsvg" viewBox="0 0 680 500"><use href="#logo-icon"/></svg>
+      <div><div class="lt"><span>Smart</span><span style="color:#C9A227;">Grocer</span></div><div class="ls">Bonjour <span id="h-name">Tim</span> 👋</div></div>
+    </div>
+    <div class="hstats">
+      <div class="hs"><div class="hs-n" id="h-scans">∞</div><div class="hs-l">Scans restants</div></div>
+      <div class="hs"><div class="hs-n">$38</div><div class="hs-l">Économisé</div></div>
+      <div class="hs"><div class="hs-n" id="h-pts">0</div><div class="hs-l">Points</div></div>
+    </div>
+  </div>
+  <div class="px">
+    <div class="sl">Accès rapide</div>
+    <div class="qgrid">
+      <div class="qc" style="background:linear-gradient(135deg,#1D9E75,#0F6E56)" onclick="goTo('prix',null)"><div class="qc-blob"></div><i class="ti ti-barcode"></i><div><div class="qc-t">Scanner prix</div><div class="qc-s" id="ql-scan">Illimité ⭐</div></div></div>
+      <div class="qc" style="background:linear-gradient(135deg,#D85A30,#B84520)" onclick="goTo('recettes',null)"><div class="qc-blob"></div><i class="ti ti-salad"></i><div><div class="qc-t">Recettes IA</div><div class="qc-s">+ Vidéos YouTube</div></div></div>
+      <div class="qc" style="background:linear-gradient(135deg,#378ADD,#1A5FA8)" onclick="goTo('liste',null)"><div class="qc-blob"></div><i class="ti ti-shopping-cart"></i><div><div class="qc-t">Ma liste</div><div class="qc-s" id="ql-list">0 article</div></div></div>
+      <div class="qc" style="background:linear-gradient(135deg,#C9A227,#9A7A10)" onclick="goExtra('wallet')"><div class="qc-blob"></div><i class="ti ti-wallet"></i><div><div class="qc-t">Portefeuille</div><div class="qc-s" id="ql-wallet">3 cartes fidélité</div></div></div>
+    </div>
+    <div class="pts-card" onclick="goTo('points',null)">
+      <div style="font-size:28px;">🏆</div>
+      <div style="flex:1"><div style="font-size:20px;font-weight:700;color:#fff;" id="pts-home">0 pts</div><div style="font-size:10px;color:rgba(255,255,255,0.85);">Clique pour voir tes récompenses</div></div>
+      <div style="background:rgba(255,255,255,0.2);color:#fff;font-size:10px;font-weight:700;padding:4px 10px;border-radius:999px;" id="h-level">Bronze</div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <div class="sl" style="margin-bottom:0;">🔥 Spéciaux cette semaine</div>
+      <div style="font-size:10px;color:var(--sub);">Générés par IA</div>
+    </div>
+    <div class="dscroll" id="specials-scroll">
+      <div class="dc" style="display:flex;align-items:center;justify-content:center;min-width:150px;">
+        <div style="text-align:center;color:var(--sub);font-size:12px;"><i class="ti ti-refresh" style="font-size:20px;display:block;margin-bottom:4px;"></i>Chargement...</div>
+      </div>
+    </div>
+    <div class="sl">🍳 Recettes tendances</div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:1rem;">
+      <div style="background:var(--card);border-radius:16px;padding:12px;display:flex;align-items:center;gap:12px;border:1px solid var(--border);cursor:pointer;" onclick="openRecipe('Pâtes Alfredo au poulet','poulet,pâtes,crème,parmesan')">
+        <div style="width:50px;height:50px;background:linear-gradient(135deg,#D85A30,#B84520);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">🍝</div>
+        <div style="flex:1"><div style="font-size:13px;font-weight:700;">Pâtes Alfredo au poulet</div><div style="font-size:10px;color:var(--sub);margin-top:2px;">Marie L. · 30 min · ❤️ 1 284</div></div>
+        <div class="badge bdc">🔥 Viral</div>
+      </div>
+      <div style="background:var(--card);border-radius:16px;padding:12px;display:flex;align-items:center;gap:12px;border:1px solid var(--border);cursor:pointer;" onclick="openRecipe('Soupe crémeuse aux légumes','carottes,pommes de terre,oignons,crème')">
+        <div style="width:50px;height:50px;background:linear-gradient(135deg,#1D9E75,#0F6E56);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">🥘</div>
+        <div style="flex:1"><div style="font-size:13px;font-weight:700;">Soupe crémeuse légumes</div><div style="font-size:10px;color:var(--sub);margin-top:2px;">Jean-F. B. · 45 min · ❤️ 893</div></div>
+        <div class="badge bdc">🔥 Viral</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PRIX -->
+<div id="prix" class="page">
+  <div class="hero" style="background:linear-gradient(160deg,#378ADD,#1A5FA8);">
+    <div class="hc1"></div>
+    <div class="logo-row">
+      <svg class="lsvg" viewBox="0 0 680 500"><use href="#logo-icon"/></svg>
+      <div><div class="lt"><span>Smart</span><span style="color:#C9A227;">Grocer</span></div><div class="ls">Comparateur de prix</div></div>
+      <div class="badge bdgold" id="scan-badge" style="margin-left:auto;">⭐ Illimité</div>
+    </div>
+  </div>
+  <div class="px">
+    <div class="limit-bar" id="scan-limit-bar" style="display:none;"><div style="font-size:11px;flex:1;">Scans aujourd'hui</div><div class="limit-dots" id="scan-dots"></div><div style="font-size:11px;font-weight:700;" id="scan-count-text">0/5</div></div>
+    <div id="scan-idle">
+      <div class="sp-zone"><div class="sf"><div class="sl3"></div></div><div style="font-size:11px;margin-top:8px;">Prêt à scanner / Ready to scan</div></div>
+      <div style="display:flex;gap:8px;margin-bottom:1rem;">
+        <button class="btn bb" style="flex:1;" onclick="startRealScan()"><i class="ti ti-camera"></i> Scanner un produit</button>
+      </div>
+    </div>
+    <div id="scan-active" style="display:none;">
+      <div style="position:relative;width:100%;border-radius:14px;overflow:hidden;margin-bottom:0.875rem;background:#000;">
+        <div id="quagga-container" style="width:100%;position:relative;"></div>
+        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:75%;height:80px;border:3px solid #1D9E75;border-radius:8px;pointer-events:none;z-index:10;">
+          <div style="position:absolute;top:-3px;left:-3px;width:18px;height:18px;border-top:4px solid #1D9E75;border-left:4px solid #1D9E75;border-radius:3px 0 0 0;"></div>
+          <div style="position:absolute;top:-3px;right:-3px;width:18px;height:18px;border-top:4px solid #1D9E75;border-right:4px solid #1D9E75;border-radius:0 3px 0 0;"></div>
+          <div style="position:absolute;bottom:-3px;left:-3px;width:18px;height:18px;border-bottom:4px solid #1D9E75;border-left:4px solid #1D9E75;border-radius:0 0 0 3px;"></div>
+          <div style="position:absolute;bottom:-3px;right:-3px;width:18px;height:18px;border-bottom:4px solid #1D9E75;border-right:4px solid #1D9E75;border-radius:0 0 3px 0;"></div>
+        </div>
+        <div id="scan-status" style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.65);color:#fff;font-size:11px;padding:4px 12px;border-radius:999px;white-space:nowrap;z-index:10;">📷 Pointe vers un code barre...</div>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:1rem;">
+        <button class="btn bc" style="flex:1;" onclick="stopRealScan()"><i class="ti ti-x"></i> Arrêter le scanner</button>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:0.875rem;"><div style="flex:1;height:1px;background:var(--light);"></div><div style="font-size:10px;color:var(--sub);">ou recherche / or search</div><div style="flex:1;height:1px;background:var(--light);"></div></div>
+    <div class="sugg">
+      <div class="sg" onclick="setProd('beurre d\'arachide Kraft 1kg')">🥜 Kraft</div>
+      <div class="sg" onclick="setProd('lait 2% 4L')">🥛 Lait</div>
+      <div class="sg" onclick="setProd('poulet entier')">🍗 Poulet</div>
+      <div class="sg" onclick="setProd('œufs douzaine')">🥚 Œufs</div>
+      <div class="sg" onclick="setProd('pain tranché')">🍞 Pain</div>
+    </div>
+    <div class="sr"><input type="text" id="prod-in" placeholder="Nom du produit..."/><button class="btn bb" id="scan-btn" onclick="searchProd()"><i class="ti ti-search"></i></button></div>
+    <div class="ld" id="px-ld"><i class="ti ti-refresh"></i> Comparaison en cours...</div>
+    <div id="px-res" style="display:none;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem;"><span id="px-em" style="font-size:24px;"></span><div><div id="px-nm" style="font-size:14px;font-weight:600;"></div><div id="px-bc" style="font-size:10px;color:var(--sub);"></div></div></div>
+      <div class="bd" id="bd">
+        <div style="font-size:10px;font-weight:700;color:#166534;text-transform:uppercase;margin-bottom:5px;">🏆 Meilleur prix / Best price</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;"><div><div style="font-size:14px;font-weight:700;color:#14532d;" id="bs"></div><div style="font-size:10px;color:#166534;" id="bsv"></div></div><div style="font-size:22px;font-weight:700;color:#14532d;" id="bp"></div></div>
+      </div>
+      <div class="sg2" id="sg"></div>
+      <div id="fb" style="background:var(--light);border-radius:12px;padding:0.875rem;margin-bottom:1rem;display:none;"><div class="sl2" style="margin-bottom:6px;">📏 Meilleur format / Best value</div><div id="fr"></div></div>
+      <div style="background:#dcfce7;border:1px solid #86efac;border-radius:14px;padding:0.875rem;margin-bottom:1rem;">
+        <div style="font-size:12px;font-weight:700;color:#166534;margin-bottom:8px;">➕ Ajouter à ta liste / Add to list</div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn bg" style="flex:1;" onclick="addScannedToList()"><i class="ti ti-shopping-cart"></i> Ajouter</button>
+          <button class="btn bo" style="flex:1;" onclick="goTo('liste',null)"><i class="ti ti-list"></i> Voir liste</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RECETTES -->
+<div id="recettes" class="page">
+  <div class="hero" style="background:linear-gradient(160deg,#D85A30,#993C1D);">
+    <div class="hc1"></div>
+    <div class="logo-row">
+      <svg class="lsvg" viewBox="0 0 680 500"><use href="#logo-icon"/></svg>
+      <div><div class="lt"><span>Smart</span><span style="color:#C9A227;">Grocer</span></div><div class="ls">Recettes IA + Vidéos virales</div></div>
+      <div class="badge bdgold" id="rec-badge" style="margin-left:auto;">⭐ Illimitées</div>
+    </div>
+  </div>
+  <div class="px">
+    <div class="limit-bar" id="rec-limit-bar" style="display:none;"><div style="font-size:11px;flex:1;">Recettes aujourd'hui</div><div class="limit-dots" id="rec-dots"></div><div style="font-size:11px;font-weight:700;" id="rec-count-text">0/3</div></div>
+    <div class="sl2">Tes ingrédients</div>
+    <div class="sr"><input type="text" id="ing-in" placeholder="Ex: poulet, riz, tomates..."/><button class="btn bg" onclick="addIng()"><i class="ti ti-plus"></i></button></div>
+    <div id="ing-tags" style="margin-bottom:1rem;min-height:28px;"><span style="font-size:11px;color:var(--sub);">Ajoute des ingrédients / Add ingredients...</span></div>
+    <button class="btn bg bf" id="gen-btn" onclick="genAll()"><i class="ti ti-wand"></i> Générer recettes + vidéos virales</button>
+    <div class="ld" id="rec-ld" style="margin-top:1rem;"><i class="ti ti-refresh"></i> Génération en cours...</div>
+    <div id="rec-res" style="display:none;margin-top:1.25rem;">
+      <div class="tabs">
+        <button class="tab on" id="tr" onclick="switchRT('recettes',this,'on')"><i class="ti ti-chef-hat"></i> Recettes</button>
+        <button class="tab" id="ty" onclick="switchRT('youtube',this,'onc')"><i class="ti ti-brand-youtube"></i> YouTube</button>
+        <button class="tab" id="tc" onclick="switchRT('community',this,'on')"><i class="ti ti-users"></i> Communauté</button>
+      </div>
+      <div id="p-recettes"><div class="rg" id="rg"></div><div id="db" style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1rem;margin-bottom:1rem;display:none;"><div style="display:flex;align-items:center;gap:10px;margin-bottom:0.875rem;"><div id="de" style="font-size:28px;"></div><div><div id="dn" style="font-size:14px;font-weight:700;"></div><div id="dm" style="font-size:11px;color:var(--sub);"></div></div></div><ol class="steps" id="ds"></ol><div style="display:flex;gap:8px;margin-top:0.875rem;"><button class="btn bo" style="flex:1;" id="full-rec-btn">Recette complète ↗</button><button class="btn bc" style="flex:1;" onclick="switchRT('youtube',document.getElementById('ty'),'onc')"><i class="ti ti-brand-youtube"></i> Vidéos</button></div></div></div>
+      <div id="p-youtube" style="display:none;"><div class="vg" id="vg"></div></div>
+      <div id="p-community" style="display:none;"><div class="vg" id="cg"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- LISTE -->
+<div id="liste" class="page">
+  <div class="hero" style="background:linear-gradient(160deg,#0F6E56,#04342C);">
+    <div class="hc1"></div>
+    <div class="logo-row">
+      <svg class="lsvg" viewBox="0 0 680 500"><use href="#logo-icon"/></svg>
+      <div><div class="lt"><span>Smart</span><span style="color:#C9A227;">Grocer</span></div><div class="ls">Liste d'épicerie</div></div>
+      <div class="badge bdgold" id="list-badge" style="margin-left:auto;">⭐ Illimitée</div>
+    </div>
+  </div>
+  <div class="px">
+    <div class="limit-bar" id="list-limit-bar" style="display:none;"><div style="font-size:11px;flex:1;">Articles (max 10 gratuit)</div><div style="font-size:11px;font-weight:700;" id="list-count-text">0/10</div></div>
+    <div class="sr"><input type="text" id="gr-in" placeholder="Ajouter un article / Add item..."/><button class="btn bg" onclick="addGr()"><i class="ti ti-plus"></i> Ajouter</button></div>
+    <div class="card"><div id="gr-items"><div style="color:var(--sub);font-size:12px;padding:8px 0;">Ta liste est vide / Your list is empty!</div></div></div>
+    <div id="gr-foot" style="display:none;">
+      <div class="card"><div style="display:flex;justify-content:space-between;align-items:center;"><div><div style="font-size:12px;color:var(--sub);">Total estimé / Estimated total</div></div><div style="font-size:20px;font-weight:700;" id="gr-total">$0.00</div></div></div>
+      <button class="btn bg bf" onclick="sendPrompt('Compare le coût total de cette liste entre IGA, Maxi, Metro et Walmart')">Comparer le total entre épiceries ↗</button>
+    </div>
+  </div>
+</div>
+
+<!-- SOCIAL -->
+<div id="social" class="page">
+  <div class="hero" style="background:linear-gradient(160deg,#534AB7,#3C3489);">
+    <div class="hc1"></div>
+    <div class="logo-row">
+      <svg class="lsvg" viewBox="0 0 680 500"><use href="#logo-icon"/></svg>
+      <div><div class="lt"><span>Smart</span><span style="color:#C9A227;">Grocer</span></div><div class="ls">48 293 membres · 12 847 recettes</div></div>
+    </div>
+  </div>
+  <div class="px">
+    <div class="tabs">
+      <button class="tab onc" onclick="switchCT('feed',this)">🔥 Tendances</button>
+      <button class="tab" onclick="switchCT('feed',this)">🕐 Récentes</button>
+      <button class="tab" onclick="switchCT('upload',this)">📤 Partager</button>
+    </div>
+    <div id="comm-feed"><input type="text" placeholder="Rechercher / Search..." id="cs" style="margin-bottom:0.875rem;" oninput="filterC()"/><div id="cl"></div></div>
+    <div id="comm-upload" style="display:none;">
+      <div class="card">
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div><div class="sl2">Nom de ta recette</div><input type="text" id="up-nm" placeholder="Ex: Pâtes crémeuses..."/></div>
+          <div><div class="sl2">Ingrédients</div><input type="text" id="up-ig" placeholder="Ex: saumon, pâtes..."/></div>
+          <div id="upload-zone" style="border:2px dashed var(--border);border-radius:12px;padding:1.25rem;text-align:center;color:var(--sub);font-size:12px;cursor:pointer;" onclick="checkUpload()">
+          <i class="ti ti-video-plus" style="font-size:20px;display:block;margin-bottom:4px;"></i>
+          <span id="upload-label">Uploader ta vidéo ou photo</span>
+          <div id="premium-upload-lock" style="display:none;margin-top:6px;">
+            <span style="background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;padding:3px 8px;border-radius:999px;">🔒 Premium requis</span>
+          </div>
+        </div>
+          <button class="btn bc bf" id="share-btn" onclick="submitUp()">📤 Partager / Share</button>
+          <div id="share-premium-msg" style="display:none;background:#fef3c7;border:1px solid #fcd34d;border-radius:10px;padding:8px;text-align:center;margin-top:6px;">
+            <div style="font-size:12px;font-weight:700;color:#92400e;">🔒 Partage réservé aux membres Premium</div>
+            <div style="font-size:11px;color:#78350f;margin:4px 0;">Passe à Premium pour partager tes recettes avec la communauté!</div>
+            <stripe-buy-button
+              buy-button-id="buy_btn_1TZxji8g6DMr5MKkOUY5K31c"
+              publishable-key="pk_live_51TZwZv8g6DMr5MKkRPebAg4U59jlMgIURfwaZcaMTgpSEFTn5jCQ2RQzowgt7RvPwE3sbDalFZADRoTj9N5kLegR00L4Tyau8k"
+            ></stripe-buy-button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- POINTS -->
+<div id="points" class="page">
+  <div class="hero" style="background:linear-gradient(160deg,#C9A227,#9A7A10);">
+    <div class="hc1"></div>
+    <div class="logo-row">
+      <svg class="lsvg" viewBox="0 0 680 500"><use href="#logo-icon"/></svg>
+      <div><div class="lt"><span>Smart</span><span style="color:#C9A227;">Grocer</span></div><div style="font-size:20px;font-weight:700;color:#fff;margin-top:4px;"><span id="pts-hero">0</span> pts · <span id="level-hero">Bronze</span> 🏆</div></div>
+    </div>
+    <div style="background:rgba(255,255,255,0.2);border-radius:999px;height:8px;overflow:hidden;"><div class="bbar" id="pts-bar" style="background:#fff;width:0%;"></div></div>
+    <div style="font-size:10px;color:rgba(255,255,255,0.8);margin-top:4px;" id="pts-level-text">100 pts pour Argent</div>
+  </div>
+  <div class="px">
+    <div class="sl">Récompenses disponibles</div>
+    <div id="rewards-list"></div>
+    <div class="card" style="background:linear-gradient(135deg,var(--p),var(--b));color:#fff;text-align:center;border:none;cursor:pointer;" onclick="goExtra('premium')">
+      <div style="font-size:14px;font-weight:700;">⭐ Passer à Premium → 2x points</div>
+      <div style="font-size:11px;opacity:0.85;margin-top:2px;">$4.99/mois · Essai 30 jours gratuit</div>
+    </div>
+  </div>
+</div>
+
+<!-- CARTE -->
+<div id="carte" class="page">
+  <div class="hero" style="background:linear-gradient(160deg,#378ADD,#1A5FA8);">
+    <div class="hc1"></div>
+    <div class="logo-row">
+      <svg class="lsvg" viewBox="0 0 680 500"><use href="#logo-icon"/></svg>
+      <div><div class="lt"><span>Smart</span><span style="color:#C9A227;">Grocer</span></div><div class="ls" id="carte-city">Épiceries · Joliette, QC · 5 km</div></div>
+    </div>
+  </div>
+  <div class="px">
+    <div class="map-ph">
+      <div style="position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg,#bae6fd55,#93c5fd55);border-radius:16px;"></div>
+      <div class="map-pin" style="top:30%;left:30%;">🏪</div>
+      <div class="map-pin" style="top:50%;left:55%;">🏬</div>
+      <div class="map-pin" style="top:65%;left:35%;">🏪</div>
+      <div class="map-pin" style="top:25%;left:65%;">🏢</div>
+      <div class="map-pin" style="top:70%;left:68%;">🏭</div>
+      <div style="background:rgba(255,255,255,0.9);border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;color:#1A5FA8;">📍 Joliette, QC</div>
+    </div>
+    <div class="sl">5 épiceries dans un rayon de 5 km</div>
+    <div class="store-item"><div style="font-size:22px;">🏪</div><div style="flex:1"><div style="font-size:13px;font-weight:700;">IGA Joliette</div><div style="font-size:10px;color:var(--sub);">1.2 km · 700 boul. Firestone</div></div><div style="text-align:right;"><div class="badge bdg">Ouvert</div><div style="font-size:10px;color:var(--sub);margin-top:3px;">3 spéciaux</div></div></div>
+    <div class="store-item"><div style="font-size:22px;">🏬</div><div style="flex:1"><div style="font-size:13px;font-weight:700;">Maxi Joliette</div><div style="font-size:10px;color:var(--sub);">2.3 km · 1075 boul. Firestone</div></div><div style="text-align:right;"><div class="badge bdg">Ouvert</div><div style="font-size:10px;color:var(--sub);margin-top:3px;">7 spéciaux</div></div></div>
+    <div class="store-item"><div style="font-size:22px;">🏪</div><div style="flex:1"><div style="font-size:13px;font-weight:700;">Metro Joliette</div><div style="font-size:10px;color:var(--sub);">3.1 km · 900 boul. Base-de-Roc</div></div><div style="text-align:right;"><div class="badge bdg">Ouvert</div><div style="font-size:10px;color:var(--sub);margin-top:3px;">5 spéciaux</div></div></div>
+    <div class="store-item"><div style="font-size:22px;">🏢</div><div style="flex:1"><div style="font-size:13px;font-weight:700;">Walmart Joliette</div><div style="font-size:10px;color:var(--sub);">4.5 km · 1225 boul. Firestone</div></div><div style="text-align:right;"><div class="badge bdg">Ouvert</div><div style="font-size:10px;color:var(--sub);margin-top:3px;">12 spéciaux</div></div></div>
+    <div class="store-item"><div style="font-size:22px;">🏭</div><div style="flex:1"><div style="font-size:13px;font-weight:700;">Costco Terrebonne</div><div style="font-size:10px;color:var(--sub);">28 km · Terrebonne</div></div><div style="text-align:right;"><div class="badge bdg">Ouvert</div><div style="font-size:10px;color:var(--sub);margin-top:3px;">Membres</div></div></div>
+  </div>
+</div>
+
+<!-- WALLET -->
+<div id="wallet" class="page">
+  <div class="hero" style="background:linear-gradient(160deg,#1a1a2e,#2d2d4e);">
+    <div class="hc1"></div>
+    <div class="logo-row">
+      <svg class="lsvg" viewBox="0 0 680 500"><use href="#logo-icon"/></svg>
+      <div><div class="lt"><span>Smart</span><span style="color:#C9A227;">Grocer</span></div><div class="ls">Portefeuille numérique</div></div>
+    </div>
+    <div class="hstats">
+      <div class="hs"><div class="hs-n" id="w-count">0</div><div class="hs-l">Cartes</div></div>
+      <div class="hs"><div class="hs-n" id="w-pts">0</div><div class="hs-l">Points total</div></div>
+      <div class="hs"><div class="hs-n" id="w-val">$0</div><div class="hs-l">Valeur est.</div></div>
+    </div>
+  </div>
+  <div class="px">
+    <!-- Scanner Section -->
+    <div id="w-scan-idle">
+      <div style="background:linear-gradient(135deg,#1a1a2e,#2d2d4e);border-radius:16px;padding:1.25rem;margin-bottom:1rem;text-align:center;">
+        <div style="font-size:28px;margin-bottom:8px;">📱</div>
+        <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:6px;">Scanner de cartes fidélité</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.75);margin-bottom:10px;line-height:1.5;">Disponible dans la version native sur App Store et Google Play!</div>
+        <div style="background:rgba(201,162,39,0.2);border:1px solid rgba(201,162,39,0.4);border-radius:10px;padding:8px 12px;font-size:11px;color:#C9A227;font-weight:700;">🚀 Bientôt disponible sur iOS et Android</div>
+      </div>
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px;">Ajouter une carte manuellement</div>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:1rem;">
+        <div class="store-chip" onclick="quickAddCard('PC Optimum','💙','linear-gradient(135deg,#003087,#0057B8)','rgba(0,48,135,0.35)')"><span class="store-chip-icon">💙</span><div class="store-chip-name">PC Optimum</div></div>
+        <div class="store-chip" onclick="quickAddCard('Air Miles','✈️','linear-gradient(135deg,#C62828,#1565C0)','rgba(198,40,40,0.35)')"><span class="store-chip-icon">✈️</span><div class="store-chip-name">Air Miles</div></div>
+        <div class="store-chip" onclick="quickAddCard('Méritas IGA','🏪','linear-gradient(135deg,#E53935,#B71C1C)','rgba(229,57,53,0.35)')"><span class="store-chip-icon">🏪</span><div class="store-chip-name">Méritas IGA</div></div>
+        <div class="store-chip" onclick="quickAddCard('Metro & Moi','🛒','linear-gradient(135deg,#1565C0,#0D47A1)','rgba(21,101,192,0.35)')"><span class="store-chip-icon">🛒</span><div class="store-chip-name">Metro & Moi</div></div>
+        <div class="store-chip" onclick="quickAddCard('Maxi','🏬','linear-gradient(135deg,#C62828,#880E4F)','rgba(198,40,40,0.35)')"><span class="store-chip-icon">🏬</span><div class="store-chip-name">Maxi</div></div>
+        <div class="store-chip" onclick="quickAddCard('CAA','🚗','linear-gradient(135deg,#1B5E20,#2E7D32)','rgba(27,94,32,0.35)')"><span class="store-chip-icon">🚗</span><div class="store-chip-name">CAA</div></div>
+        <div class="store-chip" onclick="quickAddCard('Petro-Points','⛽','linear-gradient(135deg,#E65100,#F57F17)','rgba(230,81,0,0.35)')"><span class="store-chip-icon">⛽</span><div class="store-chip-name">Petro-Points</div></div>
+        <div class="store-chip" onclick="quickAddCard('Jean Coutu','💊','linear-gradient(135deg,#2E7D32,#1B5E20)','rgba(46,125,50,0.35)')"><span class="store-chip-icon">💊</span><div class="store-chip-name">Jean Coutu</div></div>
+        <div class="store-chip" onclick="quickAddCard('Pharmaprix','💙','linear-gradient(135deg,#1565C0,#283593)','rgba(21,101,192,0.35)')"><span class="store-chip-icon">💙</span><div class="store-chip-name">Pharmaprix</div></div>
+        <div class="store-chip" onclick="quickAddCard('Costco','🏭','linear-gradient(135deg,#C62828,#1565C0)','rgba(0,0,0,0.3)')"><span class="store-chip-icon">🏭</span><div class="store-chip-name">Costco</div></div>
+        <div class="store-chip" onclick="quickAddCard('Tim Hortons','☕','linear-gradient(135deg,#C62828,#B71C1C)','rgba(198,40,40,0.35)')"><span class="store-chip-icon">☕</span><div class="store-chip-name">Tim Hortons</div></div>
+        <div class="store-chip" onclick="quickAddCard('RONA','🔨','linear-gradient(135deg,#E65100,#BF360C)','rgba(230,81,0,0.35)')"><span class="store-chip-icon">🔨</span><div class="store-chip-name">RONA</div></div>
+      </div>
+      <button class="btn bo bf" onclick="quickAddCustomCard()">+ Autre carte</button>
+    </div>
+    <div id="w-scan-active" style="display:none;"></div>
+    <div id="w-scan-active" style="display:none;">
+      <div style="position:relative;width:100%;border-radius:14px;overflow:hidden;margin-bottom:0.875rem;background:#000;">
+        <div id="w-quagga-container" style="width:100%;"></div>
+        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:75%;height:60px;border:3px solid #C9A227;border-radius:8px;pointer-events:none;z-index:10;">
+          <div style="position:absolute;top:-3px;left:-3px;width:18px;height:18px;border-top:4px solid #C9A227;border-left:4px solid #C9A227;border-radius:3px 0 0 0;"></div>
+          <div style="position:absolute;top:-3px;right:-3px;width:18px;height:18px;border-top:4px solid #C9A227;border-right:4px solid #C9A227;border-radius:0 3px 0 0;"></div>
+          <div style="position:absolute;bottom:-3px;left:-3px;width:18px;height:18px;border-bottom:4px solid #C9A227;border-left:4px solid #C9A227;border-radius:0 0 0 3px;"></div>
+          <div style="position:absolute;bottom:-3px;right:-3px;width:18px;height:18px;border-bottom:4px solid #C9A227;border-right:4px solid #C9A227;border-radius:0 0 3px 0;"></div>
+        </div>
+        <div id="w-scan-status" style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.65);color:#fff;font-size:11px;padding:4px 12px;border-radius:999px;white-space:nowrap;z-index:10;">📷 Scanne le code barre de ta carte...</div>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:1rem;">
+        <button class="btn bc" style="flex:1;" onclick="stopCardScan()"><i class="ti ti-x"></i> Annuler</button>
+      </div>
+    </div>
+
+    <!-- Card Name Modal -->
+    <div id="w-name-modal" style="display:none;background:#fff;border:2px solid var(--gold);border-radius:16px;padding:1.25rem;margin-bottom:1rem;">
+      <div style="font-size:14px;font-weight:700;margin-bottom:10px;">✅ Code scanné! Nom de la carte?</div>
+      <div style="font-size:11px;color:var(--sub);margin-bottom:10px;" id="w-scanned-code"></div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;" id="w-card-suggestions"></div>
+      <input type="text" id="w-card-name" placeholder="Ou entre le nom manuellement..." style="margin-bottom:8px;"/>
+      <div style="display:flex;gap:8px;">
+        <button class="btn bgold" style="flex:1;" onclick="confirmAddCard()"><i class="ti ti-check"></i> Ajouter</button>
+        <button class="btn bo" style="flex:1;" onclick="cancelCardScan()">Annuler</button>
+      </div>
+    </div>
+
+    <!-- Active Card Display -->
+    <div class="sl2" id="w-active-label" style="display:none;">Carte active — Appuie pour le code</div>
+    <div id="active-card-display" class="loyalty-card" onclick="showBc()" style="display:none;"></div>
+    <div style="display:flex;justify-content:center;gap:6px;margin-bottom:1.5rem;" id="w-dots"></div>
+
+    <!-- All Cards -->
+    <div class="sl2" id="w-list-label" style="display:none;">Toutes mes cartes</div>
+    <div id="mini-cards-list"></div>
+
+    <!-- Empty state -->
+    <div id="w-empty" style="text-align:center;padding:2rem 1rem;color:var(--sub);">
+      <div style="font-size:40px;margin-bottom:8px;">💳</div>
+      <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px;">Aucune carte encore</div>
+      <div style="font-size:12px;">Scanne ta première carte de fidélité!</div>
+    </div>
+  </div>
+</div>
+
+<!-- ALERTES -->
+<div id="alertes" class="page">
+  <div class="hero" style="background:linear-gradient(160deg,#C9A227,#9A7A10);">
+    <div class="hc1"></div>
+    <div class="logo-row">
+      <svg class="lsvg" viewBox="0 0 680 500"><use href="#logo-icon"/></svg>
+      <div><div class="lt"><span>Smart</span><span style="color:#C9A227;">Grocer</span></div><div class="ls">Alertes spéciaux</div></div>
+    </div>
+  </div>
+  <div class="px">
+    <div class="sl">Alertes configurées</div>
+    <div class="card">
+      <div id="alerts-list">
+        <div class="al"><div style="font-size:20px;">🥜</div><div style="flex:1"><div style="font-size:13px;font-weight:700;">Beurre d'arachide Kraft</div><div style="font-size:11px;color:var(--sub);">Alerte si prix &lt; $6.50</div></div><label class="atog"><input type="checkbox" checked><div class="ts"></div></label></div>
+        <div class="al"><div style="font-size:20px;">🥛</div><div style="flex:1"><div style="font-size:13px;font-weight:700;">Lait 2% 4L</div><div style="font-size:11px;color:var(--sub);">Alerte si prix &lt; $5.99</div></div><label class="atog"><input type="checkbox" checked><div class="ts"></div></label></div>
+        <div class="al"><div style="font-size:20px;">🍗</div><div style="flex:1"><div style="font-size:13px;font-weight:700;">Poulet entier</div><div style="font-size:11px;color:var(--sub);">Alerte si prix &lt; $8.00</div></div><label class="atog"><input type="checkbox" checked><div class="ts"></div></label></div>
+      </div>
+    </div>
+    <div class="sl">Ajouter une alerte</div>
+    <div class="card">
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <input type="text" id="alert-prod" placeholder="Nom du produit..."/>
+        <div style="display:flex;gap:8px;"><input type="number" id="alert-price" placeholder="Prix max ($)" style="flex:1;"/><select id="alert-store" style="flex:1;"><option>Toutes les épiceries</option><option>IGA</option><option>Maxi</option><option>Metro</option><option>Walmart</option></select></div>
+        <button class="btn bgold bf" onclick="addAlert()"><i class="ti ti-bell-plus"></i> Créer l'alerte</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BUDGET -->
+<div id="budget" class="page">
+  <div class="hero" style="background:linear-gradient(160deg,#534AB7,#3C3489);">
+    <div class="hc1"></div>
+    <div class="logo-row">
+      <svg class="lsvg" viewBox="0 0 680 500"><use href="#logo-icon"/></svg>
+      <div><div class="lt"><span>Smart</span><span style="color:#C9A227;">Grocer</span></div><div class="ls">Budget épicerie · Mai 2026</div></div>
+    </div>
+  </div>
+  <div class="px">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;"><div style="font-size:13px;color:var(--sub);">Mai 2026</div><div style="font-size:22px;font-weight:700;">$247</div></div>
+      <div style="font-size:12px;color:var(--sub);margin-bottom:6px;">sur un budget de <span id="bmd">$400</span></div>
+      <div class="bbar-w"><div class="bbar" id="bbar" style="width:62%;background:var(--p);"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--sub);"><span>0%</span><span id="bpct">62% utilisé</span><span>100%</span></div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1rem;">
+      <div class="card" style="text-align:center;"><div style="font-size:18px;font-weight:700;color:var(--g);">$153</div><div style="font-size:10px;color:var(--sub);margin-top:2px;">Restant</div></div>
+      <div class="card" style="text-align:center;"><div style="font-size:18px;font-weight:700;">$82</div><div style="font-size:10px;color:var(--sub);margin-top:2px;">Moy./semaine</div></div>
+      <div class="card" style="text-align:center;"><div style="font-size:18px;font-weight:700;color:var(--g);">$38</div><div style="font-size:10px;color:var(--sub);margin-top:2px;">Économisé</div></div>
+    </div>
+    <div class="sl">Par catégorie</div>
+    <div class="card" id="bcc"></div>
+    <div class="sl">Ajuster mon budget</div>
+    <div class="card"><div style="display:flex;align-items:center;gap:12px;"><span style="font-size:12px;color:var(--sub);">$100</span><input type="range" min="100" max="800" value="400" step="10" style="flex:1;" oninput="updBudget(this.value)"/><span style="font-size:13px;font-weight:700;min-width:40px;" id="bsv">$400</span></div></div>
+    <button class="btn bp bf" onclick="sendPrompt('Conseils pour réduire mon budget épicerie mensuel à Gatineau')">Conseils pour économiser ↗</button>
+  </div>
+</div>
+
+<!-- PROFIL -->
+<div id="profil" class="page">
+  <div class="prof-header">
+    <div style="position:absolute;top:-40px;right:-40px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,0.05);"></div>
+    <div class="logo-row" style="margin-bottom:1.25rem;">
+      <svg class="lsvg" viewBox="0 0 680 500"><use href="#logo-icon"/></svg>
+      <div><div class="lt"><span>Smart</span><span style="color:#C9A227;">Grocer</span></div><div class="ls">Mon profil</div></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px;">
+      <div class="prof-avatar" id="pav">TR</div>
+      <div>
+        <div style="font-size:18px;font-weight:700;color:#fff;" id="pnm">TimRockStar</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.7);" id="pct">Gatineau, QC</div>
+        <div style="margin-top:6px;display:flex;gap:6px;"><div class="badge bdgold" id="prof-badge">⭐ Premium Trial</div><div class="badge" style="background:rgba(255,255,255,0.15);color:#fff;">🏆 Or</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="px">
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1.5rem;">
+      <div class="card" style="text-align:center;"><div style="font-size:18px;font-weight:700;" id="prof-scans">0</div><div style="font-size:10px;color:var(--sub);margin-top:2px;">Scans</div></div>
+      <div class="card" style="text-align:center;"><div style="font-size:18px;font-weight:700;color:var(--g);">$38</div><div style="font-size:10px;color:var(--sub);margin-top:2px;">Économisé</div></div>
+      <div class="card" style="text-align:center;"><div style="font-size:18px;font-weight:700;color:var(--gold);" id="prof-pts">0</div><div style="font-size:10px;color:var(--sub);margin-top:2px;">Points</div></div>
+    </div>
+    <div class="sl">Langue / Language</div>
+    <div class="lang-toggle"><button class="lang-btn active" id="lang-fr" onclick="setLang('fr')">🇫🇷 Français</button><button class="lang-btn" id="lang-en" onclick="setLang('en')">🇬🇧 English</button></div>
+    <div class="sl">Mon profil</div>
+    <div class="card">
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div><label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:3px;">Prénom / First name</label>
+        <input type="text" id="pp-name-input" placeholder="Ton prénom..." onchange="saveProfile()"/></div>
+        <div><label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:3px;">Email</label>
+        <input type="email" id="pp-email-input" placeholder="ton@email.com" onchange="saveProfile()"/></div>
+        <div><label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:3px;">Ville / City</label>
+        <input type="text" id="pp-city-input" placeholder="Ex: Joliette, QC" onchange="saveProfile()"/></div>
+
+        <div><label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:3px;">Régime / Diet</label>
+        <select id="pp-diet-input" onchange="saveProfile()"><option>Aucun / None</option><option>Végétarien</option><option>Végétalien</option><option>Sans gluten</option><option>Sans lactose</option></select></div>
+        <button class="btn bg bf" onclick="saveProfile();showToast('✅ Profil sauvegardé!')"><i class="ti ti-check"></i> Sauvegarder</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="pr-row"><div style="font-size:13px;">Plan actuel</div><div class="badge bdgold" id="pp-plan">⭐ Premium Trial</div></div>
+    </div>
+    <button class="btn bf" style="background:linear-gradient(135deg,var(--p),var(--b));color:#fff;margin-bottom:8px;" onclick="goExtra('premium')">⭐ Gérer mon abonnement</button>
+  </div>
+</div>
+
+<!-- PREMIUM -->
+<div id="premium" class="page">
+  <div class="hero" style="background:linear-gradient(160deg,var(--p),var(--b));">
+    <div class="hc1"></div>
+    <div class="logo-row">
+      <svg class="lsvg" viewBox="0 0 680 500"><use href="#logo-icon"/></svg>
+      <div><div class="lt"><span>Smart</span><span style="color:#C9A227;">Grocer</span></div><div class="ls">Plans & Abonnements</div></div>
+    </div>
+  </div>
+  <div class="px">
+    <div class="card" style="border:2px solid var(--border);">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.875rem;"><div style="font-size:14px;font-weight:700;">🆓 Gratuit / Free</div><div style="font-size:18px;font-weight:700;">$0<span style="font-size:11px;font-weight:400;color:var(--sub);">/mois</span></div></div>
+      <div style="display:flex;flex-direction:column;gap:4px;margin-bottom:1rem;"><div style="font-size:12px;">📷 5 scans/jour · 🍳 3 recettes/jour</div><div style="font-size:12px;">🔔 2 alertes · 🛒 10 articles liste</div><div style="font-size:12px;color:var(--sub);">📢 Publicités incluses</div></div>
+      <button class="btn bo bf" onclick="downgradeFree()">Passer au plan Gratuit</button>
+    </div>
+    <div class="card" style="border:2px solid var(--p);position:relative;">
+      <div style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--p);color:#fff;font-size:10px;font-weight:700;padding:3px 12px;border-radius:999px;">⭐ POPULAIRE</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;"><div style="font-size:14px;font-weight:700;">⭐ Premium</div><div><div style="font-size:18px;font-weight:700;color:var(--p);">$4.99<span style="font-size:11px;font-weight:400;color:var(--sub);">/mois</span></div><div style="font-size:10px;color:var(--sub);text-align:right;">ou $39.99/an</div></div></div>
+      <div style="font-size:11px;color:#166534;background:#dcfce7;border-radius:6px;padding:4px 8px;margin-bottom:0.875rem;font-weight:700;">🎉 30 jours gratuits — Annulez à tout moment</div>
+      <div style="display:flex;flex-direction:column;gap:4px;margin-bottom:1rem;">
+        <div class="prem-feature"><span style="color:var(--g);font-weight:700;">✓</span>Scanner illimité / Unlimited scanning</div>
+        <div class="prem-feature"><span style="color:var(--g);font-weight:700;">✓</span>Recettes IA illimitées / Unlimited AI recipes</div>
+        <div class="prem-feature"><span style="color:var(--g);font-weight:700;">✓</span>Alertes spéciaux illimitées</div>
+        <div class="prem-feature"><span style="color:var(--g);font-weight:700;">✓</span>Liste d'épicerie illimitée</div>
+        <div class="prem-feature"><span style="color:var(--g);font-weight:700;">✓</span>Upload vidéos communauté</div>
+        <div class="prem-feature"><span style="color:var(--g);font-weight:700;">✓</span>2x plus de points / 2x reward points</div>
+        <div class="prem-feature"><span style="color:var(--g);font-weight:700;">✓</span>Sans publicité / Ad-free</div>
+        <div class="prem-feature"><span style="color:var(--g);font-weight:700;">✓</span>Portefeuille numérique illimité</div>
+      </div>
+      <div style="background:#dcfce7;border:1px solid #86efac;border-radius:12px;padding:1rem;text-align:center;"><div style="font-size:14px;font-weight:700;color:#166534;">🧪 Version Bêta</div><div style="font-size:12px;color:#166534;margin-top:4px;">Toutes les fonctionnalités sont débloquées gratuitement!</div></div>
+      <div style="text-align:center;margin-top:8px;font-size:10px;color:var(--sub);">
+        <a href="https://timrockstar.github.io/smartgrocer/privacy.html" target="_blank" style="color:var(--sub);">Confidentialité</a> · 
+        <a href="https://timrockstar.github.io/smartgrocer/terms.html" target="_blank" style="color:var(--sub);">Conditions</a>
+      </div>
+    </div>
+    <div class="card" style="border:2px solid var(--gold);">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.875rem;"><div style="font-size:14px;font-weight:700;">👨‍👩‍👧‍👦 Famille</div><div style="font-size:18px;font-weight:700;color:var(--gold);">$8.99<span style="font-size:11px;font-weight:400;color:var(--sub);">/mois</span></div></div>
+      <div style="display:flex;flex-direction:column;gap:4px;margin-bottom:1rem;">
+        <div style="font-size:12px;"><span style="color:var(--gold);font-weight:700;">✓</span> Tout Premium + jusqu'à 5 comptes</div>
+        <div style="font-size:12px;"><span style="color:var(--gold);font-weight:700;">✓</span> Liste partagée en temps réel</div>
+      </div>
+      <button class="btn bgold bf" onclick="showToast('🚀 Bientôt disponible / Coming soon!')">Choisir Famille</button>
+    </div>
+  </div>
+</div>
+
+<!-- NAV BOTTOM -->
+
+
+
+</div><!-- end app -->
+
+<div class="nav">
+  <button class="nb active" onclick="goTo('home',this)"><i class="ti ti-home"></i>Accueil</button>
+  <button class="nb" onclick="goTo('prix',this)"><i class="ti ti-barcode"></i>Prix</button>
+  <button class="nb" onclick="goTo('recettes',this)"><i class="ti ti-salad"></i>Recettes</button>
+  <button class="nb" onclick="goTo('liste',this)"><i class="ti ti-shopping-cart"></i>Liste</button>
+  <button class="nb" onclick="goTo('social',this)"><i class="ti ti-users"></i>Social</button>
+  <button class="nb" onclick="goTo('points',this)"><i class="ti ti-trophy"></i>Points</button>
+  <button class="nb" onclick="openPlus()"><i class="ti ti-dots"></i>Plus</button>
+</div>
+
+
+
+<script>
+let isPremium=true,points=0,scansToday=0,recsToday=0,groceries=[],ings=[],selR=null,curRecs=[],currentProd='',camStream=null,totalScans=0; // BETA
+const LIMITS={scans:5,recs:3,list:10};
+const commRecs=[
+  {id:1,emoji:"🍝",nom:"Pâtes Alfredo au poulet",auteur:"Marie L.",ini:"ML",temps:"30 min",tags:["pâtes","poulet"],likes:1284,viral:true,liked:false},
+  {id:2,emoji:"🥘",nom:"Soupe crémeuse légumes",auteur:"Jean-F. B.",ini:"JB",temps:"45 min",tags:["soupe","végé"],likes:893,viral:true,liked:false},
+  {id:3,emoji:"🫔",nom:"Wrap poulet-miel",auteur:"Sophie T.",ini:"ST",temps:"15 min",tags:["rapide"],likes:672,viral:false,liked:false},
+  {id:4,emoji:"🍛",nom:"Cari pois chiches",auteur:"Priya M.",ini:"PM",temps:"35 min",tags:["végé"],likes:541,viral:false,liked:false},
+];
+let cFilt=[...commRecs];
+const rewards=[
+  {icon:'⭐',name:'1 mois Premium gratuit',pts:100,desc:'Code promo envoyé par email'},
+  {icon:'🎁',name:'2 mois Premium gratuits',pts:250,desc:'Code promo envoyé par email'},
+  {icon:'👨‍👩‍👧‍👦',name:'Plan Famille 1 mois',pts:500,desc:'5 comptes Premium gratuits'},
+  {icon:'🏆',name:'1 an Premium gratuit',pts:1000,desc:'Code promo envoyé par email'},
+];
+let walletCards=[];
+let walletCards_DEFAULT=[
+  {name:'IGA',type:'Carte Méritas',icon:'🏪',gradient:'linear-gradient(135deg,#E53935,#B71C1C)',number:'6234 5678 9012 3456',pts:1850,shadow:'rgba(229,57,53,0.35)'},
+  {name:'Maxi',type:'Carte Merci',icon:'🏬',gradient:'linear-gradient(135deg,#C62828,#880E4F)',number:'9876 5432 1098 7654',pts:1200,shadow:'rgba(198,40,40,0.35)'},
+  {name:'Metro',type:'Carte Metro&Moi',icon:'🛒',gradient:'linear-gradient(135deg,#1565C0,#0D47A1)',number:'1122 3344 5566 7788',pts:1200,shadow:'rgba(21,101,192,0.35)'},
+];
+let activeCard=0;
+
+function startApp(){document.getElementById('landing').style.display='none';document.getElementById('onboarding').style.display='block';}
+function nextOb(n){document.querySelectorAll('.ob-step').forEach(s=>s.classList.remove('active'));document.getElementById('ob'+n).classList.add('active');}
+function finishOb(){
+  // Validate required fields
+  const nameEl = document.getElementById('ob-name');
+  const emailEl = document.getElementById('ob-email');
+  const cityEl = document.getElementById('ob-city');
+  
+  if(!nameEl || !nameEl.value.trim()){
+    if(nameEl) nameEl.style.border='2px solid #ef4444';
+    showToast('⚠️ Entre ton prénom!'); return;
+  }
+  if(!emailEl || !emailEl.value.trim() || !emailEl.value.includes('@')){
+    if(emailEl){emailEl.style.border='2px solid #ef4444';}
+    showToast('⚠️ Entre un email valide!'); return;
+  }
+  if(!cityEl || !cityEl.value.trim()){
+    if(cityEl) cityEl.style.border='2px solid #ef4444';
+    showToast('⚠️ Entre ta ville!'); return;
+  }
+  
+  const name = nameEl.value.trim();
+  const email = emailEl.value.trim();
+  const city = cityEl.value.trim();
+  const province = document.getElementById('ob-province')?.value || 'Québec';
+  const postal = document.getElementById('ob-postal')?.value?.trim() || '';
+  const budget = document.getElementById('ob-budget')?.value || '400';
+  const fullCity = city + ', ' + province + (postal ? ' ' + postal : '');
+
+  // Update UI with user info
+  ['h-name','pnm'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=name;});
+  const pav=document.getElementById('pav');if(pav)pav.textContent=name.substring(0,2).toUpperCase();
+  ['pct','pp-city'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=fullCity;});
+  const carte=document.getElementById('carte-city');if(carte)carte.textContent='Épiceries · '+fullCity+' · 5 km';
+  const ppb=document.getElementById('pp-budget');if(ppb)ppb.textContent='$'+budget;
+
+  // Save to localStorage
+  const data = {
+    name: name, email: email, city: fullCity,
+    diet: 'Aucun', onboardingDone: true,
+    isPremium: true, points: 0, totalScans: 0,
+    groceries: [], walletCards: []
+  };
+  try { localStorage.setItem('smartgrocer_data', JSON.stringify(data)); console.log('Saved OK:', name, email, fullCity); } catch(e) { console.error('Save error:', e); }
+
+  // Save data for after verification
+  sgVerifyData = {name: name, email: email, city: fullCity, budget: budget};
+  
+  // Show verification screen
+  document.getElementById('onboarding').style.display='none';
+  document.getElementById('verify-email-display').textContent = email;
+  document.getElementById('verification').style.display='block';
+  
+  // Send verification email
+  showToast('📧 Envoi du code de vérification...', 3000);
+  sendVerificationEmail(name, email).then(function(ok) {
+    if (!ok) {
+      // If email fails, skip verification and go to app
+      showToast('⚠️ Email non envoyé — accès direct accordé');
+      document.getElementById('verification').style.display='none';
+      finishOb_complete();
+    }
+  });
+}
+
+function finishOb_complete() {
+  var data = sgVerifyData;
+  if (!data) return;
+  var name = data.name, email = data.email, fullCity = data.city;
+  
+  // Update UI
+  ['h-name','pnm'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=name;});
+  var pav=document.getElementById('pav');if(pav)pav.textContent=name.substring(0,2).toUpperCase();
+  ['pct','pp-city'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=fullCity;});
+  var carte=document.getElementById('carte-city');if(carte)carte.textContent='Epiceries · '+fullCity+' · 5 km';
+  
+  // Hide everything first
+  document.getElementById('landing').style.display='none';
+  document.getElementById('onboarding').style.display='none';
+  document.getElementById('verification').style.display='none';
+  
+  // Show app
+  document.getElementById('app').style.display='block';
+  
+  
+  // Subscribe to MailerLite
+  try {
+    if(typeof ml !== 'undefined') ml('webforms', 'show', 'mypcHz', {email: email, name: name});
+  } catch(e) {}
+
+  updatePlanUI(); renderRewards(); renderC(); renderBCats(); renderWallet(); renderGr(); updatePointsUI(); loadSpecials();
+  showToast('🎉 Bienvenue ' + name + '!', 4000);
+  showToast('🎉 Email vérifié! Bienvenue ' + name + '!', 4000);
+}
+function goTo(p,btn){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
+  document.getElementById(p).classList.add('active');
+  if(btn)btn.classList.add('active');
+  else{const idx=['home','prix','recettes','liste','social','points'].indexOf(p);if(idx>=0)document.querySelectorAll('.nb')[idx].classList.add('active');}
+}
+function goExtra(p){if(p==='profil')setTimeout(loadProfileInputs,100);
+  closePlus();
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
+  document.getElementById(p).classList.add('active');
+  document.querySelectorAll('.nb')[document.querySelectorAll('.nb').length-1].classList.add('active');
+}
+function openPlus(){document.getElementById('plus-overlay').classList.add('open');}
+function closePlus(){document.getElementById('plus-overlay').classList.remove('open');}
+function showToast(msg,dur=3000){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
+function showPaywall(title,msg){document.getElementById('paywall-title').textContent=title;document.getElementById('paywall-msg').textContent=msg;document.getElementById('paywall').classList.add('open');}
+function closePaywall(){document.getElementById('paywall').classList.remove('open');}
+function setLang(lang){document.getElementById('lang-fr').className='lang-btn'+(lang==='fr'?' active':'');document.getElementById('lang-en').className='lang-btn'+(lang==='en'?' active':'');showToast(lang==='fr'?'🇫🇷 Français activé':'🇬🇧 English activated');}
+function sendPrompt(text){
+  // Extract recipe name from text
+  var nom = text.replace('Recette complète de ','').replace(' avec les ingrédients et les étapes','').replace('Recette complète de ','').trim();
+  showRecipeModal(nom, '🍳');
+}
+function activatePremium(){/* Disabled - use Stripe */document.getElementById('paywall').classList.remove('open');goExtra('premium');}
+function downgradeFree(){isPremium=false;updatePlanUI();showToast('ℹ️ Plan gratuit activé');goTo('home',null);}
+function updatePlanUI(){
+  // Update share button state
+  const shareBtn = document.getElementById('share-btn');
+  const sharePremiumMsg = document.getElementById('share-premium-msg');
+  const uploadZone = document.getElementById('upload-zone');
+  const uploadLock = document.getElementById('premium-upload-lock');
+  if(shareBtn) {
+    shareBtn.style.opacity = isPremium ? '1' : '0.4';
+    shareBtn.style.pointerEvents = isPremium ? 'auto' : 'none';
+  }
+  if(sharePremiumMsg) sharePremiumMsg.style.display = isPremium ? 'none' : 'none';
+  if(uploadZone) uploadZone.style.opacity = isPremium ? '1' : '0.6';
+  if(uploadLock) uploadLock.style.display = isPremium ? 'none' : 'block';
+
+  const p=isPremium;
+  [['scan-badge','⭐ Illimité','🆓 5/jour'],['rec-badge','⭐ Illimitées','🆓 3/jour'],['list-badge','⭐ Illimitée','🆓 10 articles'],['plan-badge','⭐ Premium','🆓 Gratuit'],['prof-badge','⭐ Premium Trial','🆓 Gratuit'],['pp-plan','⭐ Premium Trial','🆓 Gratuit']].forEach(([id,pv,fv])=>{const el=document.getElementById(id);if(el){el.textContent=p?pv:fv;el.className='badge '+(p?'bdgold':'bdfree');}});
+  ['scan-limit-bar','rec-limit-bar','list-limit-bar'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=p?'none':'flex';});
+  const tb=document.getElementById('trial-banner');if(tb)tb.style.display='none'; // hidden in beta
+  const hs=document.getElementById('h-scans');if(hs)hs.textContent=p?'∞':(LIMITS.scans-scansToday);
+  const ql=document.getElementById('ql-scan');if(ql)ql.textContent=p?'Illimité ⭐':'5 scans/jour';
+  const ul=document.getElementById('upload-label');if(ul)ul.textContent=p?'Uploader ta vidéo ou photo':'Uploader ta vidéo (Premium ⭐)';
+  updateLimitDots();
+}
+function updateLimitDots(){
+  const sd=document.getElementById('scan-dots');
+  if(sd){sd.innerHTML='';for(let i=0;i<LIMITS.scans;i++){const d=document.createElement('div');d.className='ldot'+(i<scansToday?' used'+(scansToday>=4?' danger':scansToday>=3?' warn':''):'');sd.appendChild(d);}}
+  const sc=document.getElementById('scan-count-text');if(sc)sc.textContent=scansToday+'/'+LIMITS.scans;
+  const rd=document.getElementById('rec-dots');
+  if(rd){rd.innerHTML='';for(let i=0;i<LIMITS.recs;i++){const d=document.createElement('div');d.className='ldot'+(i<recsToday?' used'+(recsToday>=2?' danger':''):'');rd.appendChild(d);}}
+  const rc=document.getElementById('rec-count-text');if(rc)rc.textContent=recsToday+'/'+LIMITS.recs;
+  const lc=document.getElementById('list-count-text');if(lc)lc.textContent=groceries.length+'/'+LIMITS.list;
+}
+function addPoints(n){const mult=isPremium?2:1;points+=n*mult;updatePointsUI();}
+function updatePointsUI(){
+  [['pts-home',points+' pts'],['pts-hero',points],['h-pts',points],['prof-pts',points]].forEach(([id,val])=>{const el=document.getElementById(id);if(el)el.textContent=val;});
+  const pb=document.getElementById('pts-bar');if(pb)pb.style.width=Math.min(points/500*100,100)+'%';
+  const levels=[{name:'Bronze',max:100},{name:'Argent',max:250},{name:'Or',max:500},{name:'Platine',max:Infinity}];
+  let level=levels[0];for(const l of levels){if(points>=l.max)level=l;}
+  const idx=levels.indexOf(level);const next=levels[Math.min(idx+1,levels.length-1)];
+  const lt=document.getElementById('pts-level-text');if(lt)lt.textContent=(next.max===Infinity?'Niveau max!':next.max-points+' pts pour '+next.name);
+  ['h-level','level-hero'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='Niveau '+level.name;});
+}
+async function startCam(){try{camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});document.getElementById('scan-video').srcObject=camStream;document.getElementById('scan-idle').style.display='none';document.getElementById('scan-active').style.display='block';}catch(e){showToast('📷 Caméra non disponible — utilise la recherche manuelle');}}
+function stopCam(){if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}document.getElementById('scan-idle').style.display='block';document.getElementById('scan-active').style.display='none';}
+const fakeBC=[{bc:'0068100896344',prod:'beurre d\'arachide Kraft 1kg'},{bc:'0055742000013',prod:'lait 2% 4L Natrel'},{bc:'0620786000152',prod:'pain tranché Wonder'},{bc:'0025500087168',prod:'café Folgers 920g'},{bc:'0037000119661',prod:'détergent Tide 1.47L'}];
+function fakeScan(){const f=fakeBC[Math.floor(Math.random()*fakeBC.length)];document.getElementById('prod-in').value=f.prod;document.getElementById('px-bc').textContent='Code barre: '+f.bc;searchProd();}
+function simScan(){stopCam();fakeScan();}
+function setProd(n){document.getElementById('prod-in').value=n;searchProd();}
+async function searchProd(){
+  if(!isPremium&&scansToday>=LIMITS.scans){showPaywall('Limite de scans atteinte!','Tu as utilisé tes 5 scans gratuits. Passe à Premium pour scanner sans limite!');return;}
+  const p=document.getElementById('prod-in').value.trim();if(!p)return;
+  currentProd=p;document.getElementById('scan-btn').disabled=true;document.getElementById('px-ld').classList.add('on');document.getElementById('px-res').style.display='none';document.getElementById('bd').classList.remove('on');document.getElementById('fb').style.display='none';document.getElementById('sg').innerHTML='';
+  try{
+    const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer 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'},body:JSON.stringify({model:'llama-3.3-70b-versatile',max_completion_tokens:1000,messages:[{role:'user',content:`Prix réalistes Québec pour "${p}". JSON seulement:\n{"emoji":"🥜","nom":"Nom complet","magasins":[{"nom":"IGA","prix":5.99,"prixRegulier":7.49,"enSpecial":true,"format":"1kg"},{"nom":"Metro","prix":7.29,"prixRegulier":7.29,"enSpecial":false,"format":"1kg"},{"nom":"Maxi","prix":6.49,"prixRegulier":6.99,"enSpecial":true,"format":"1kg"},{"nom":"Walmart","prix":6.19,"prixRegulier":6.19,"enSpecial":false,"format":"1kg"},{"nom":"Costco","prix":14.99,"prixRegulier":14.99,"enSpecial":false,"format":"2.5kg"}],"formats":[{"format":"500g","prix":4.29,"prixAu100g":0.86},{"format":"1kg","prix":5.99,"prixAu100g":0.60},{"format":"2.5kg","prix":14.99,"prixAu100g":0.60}]}`}]})});
+    const data=await res.json();const text=data.choices[0].message.content.replace(/```json|```/g,'').trim();const d=JSON.parse(text);
+    document.getElementById('px-em').textContent=d.emoji;document.getElementById('px-nm').textContent=d.nom;
+    const sorted=[...d.magasins].sort((a,b)=>a.prix-b.prix);const best=sorted[0],worst=sorted[sorted.length-1];
+    document.getElementById('bs').textContent=best.nom;document.getElementById('bp').textContent='$'+best.prix.toFixed(2);document.getElementById('bsv').textContent='Économise jusqu\'à $'+(worst.prix-best.prix).toFixed(2);document.getElementById('bd').classList.add('on');
+    document.getElementById('sg').innerHTML=d.magasins.map(s=>`<div class="sc ${s.enSpecial?'sale':''}"><div style="font-size:11px;font-weight:700;margin-bottom:2px;">${s.nom}</div><div style="font-size:16px;font-weight:700;">$${s.prix.toFixed(2)}</div>${s.enSpecial?`<div style="font-size:9px;color:var(--sub);text-decoration:line-through;">$${s.prixRegulier.toFixed(2)}</div><div class="badge bdg" style="margin-top:2px;font-size:9px;">Spécial!</div>`:''}<div style="font-size:9px;color:var(--sub);margin-top:2px;">${s.format}</div></div>`).join('');
+    if(d.formats&&d.formats.length>1){const bf=[...d.formats].sort((a,b)=>a.prixAu100g-b.prixAu100g)[0];document.getElementById('fr').innerHTML=d.formats.map(f=>`<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--light);font-size:11px;"><span>${f.format}</span><span>$${f.prix.toFixed(2)} · $${f.prixAu100g.toFixed(2)}/100g ${f.format===bf.format?'<span style="color:var(--g);font-weight:700;">✓ meilleur</span>':''}</span></div>`).join('');document.getElementById('fb').style.display='block';}
+    document.getElementById('px-res').style.display='block';
+    scansToday++;totalScans++;const ps=document.getElementById('prof-scans');if(ps)ps.textContent=totalScans;
+    addPoints(10);updateLimitDots();showToast('✅ Scan réussi! +'+(isPremium?20:10)+' pts');
+    if(!isPremium&&scansToday===4)showToast('⚠️ 1 scan gratuit restant aujourd\'hui!');
+  }catch(e){console.error('Scan error:',e);document.getElementById('sg').innerHTML='<div style="color:var(--sub);font-size:12px;">Erreur: '+e.message+'</div>';document.getElementById('px-res').style.display='block';}
+  document.getElementById('px-ld').classList.remove('on');document.getElementById('scan-btn').disabled=false;
+}
+function addScannedToList(){
+  const nm=document.getElementById('px-nm').textContent;const price=parseFloat(document.getElementById('bp').textContent.replace('$',''))||3.99;
+  if(!isPremium&&groceries.length>=LIMITS.list){showPaywall('Liste pleine!','Tu as atteint la limite de 10 articles gratuits. Passe à Premium!');return;}
+  if(nm&&nm.length>1){groceries.push({name:nm,price:price,done:false});renderGr();showToast('✅ "'+nm+'" ajouté à ta liste!');}
+}
+function addIng(){const v=document.getElementById('ing-in').value.trim();if(!v||ings.includes(v.toLowerCase()))return;ings.push(v.toLowerCase());document.getElementById('ing-in').value='';renderTags();document.getElementById('gen-btn').disabled=false;}
+function removeIng(i){ings.splice(i,1);renderTags();/* gen-btn always enabled */}
+function renderTags(){const el=document.getElementById('ing-tags');el.innerHTML=ings.length?ings.map((ing,i)=>`<div class="tag">${ing}<button onclick="removeIng(${i})">×</button></div>`).join(''):'<span style="font-size:11px;color:var(--sub);">Ajoute des ingrédients / Add ingredients...</span>';}
+async function genAll(){
+  if(!isPremium&&recsToday>=LIMITS.recs){showPaywall('Limite de recettes atteinte!','Tu as utilisé tes 3 recettes gratuites. Passe à Premium pour des recettes illimitées!');return;}
+  var ingredientsList = ings.length > 0 ? ings.join(', ') : 'poulet, riz, légumes, tomates, oignons';
+  document.getElementById('rec-ld').classList.add('on');
+  document.getElementById('rec-res').style.display='none';
+  try{
+    var res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer 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'},body:JSON.stringify({model:'llama-3.3-70b-versatile',max_completion_tokens:1400,messages:[{role:'user',content:'Chef cuisinier. Ingrédients: '+ingredientsList+'. Génère 3 recettes + 4 vidéos YouTube populaires. JSON seulement: {"recettes":[{"emoji":"🍳","nom":"Nom recette","temps":"20 min","portions":"2 portions","match":"Utilise les ingrédients","etapes":["Étape 1","Étape 2","Étape 3","Étape 4"]}],"youtubeVideos":[{"query":"recette facile","titre":"Titre viral","channel":"Channel","views":"2.3M vues","duration":"8:42","viral":true}]}'}]})});
+    var data=await res.json();
+    var text=data.choices[0].message.content.replace(/```json|```/g,'').trim();
+    var parsed=JSON.parse(text);
+    curRecs=parsed.recettes;renderRecs(parsed.recettes);renderYT(parsed.youtubeVideos||[]);renderCommVids();
+    document.getElementById('rec-res').style.display='block';
+    recsToday++;addPoints(5);updateLimitDots();showToast('🍳 Recettes générées! +'+(isPremium?10:5)+' pts');
+  }catch(e){
+    console.error('Recipe error:',e);
+    document.getElementById('rg').innerHTML='<div style="color:var(--sub);font-size:12px;padding:1rem;text-align:center;">Erreur de génération — réessaie!</div>';
+    document.getElementById('rec-res').style.display='block';
+  }
+  document.getElementById('rec-ld').classList.remove('on');
+}
+
+function renderRecs(recs){document.getElementById('rg').innerHTML=recs.map((r,i)=>`<div class="rc" id="rc-${i}" onclick="selRec(${i})"><div style="font-size:22px;margin-bottom:4px;">${r.emoji}</div><div style="font-size:12px;font-weight:700;margin-bottom:2px;">${r.nom}</div><div style="font-size:10px;color:var(--sub);">${r.temps} · ${r.portions}</div><div style="font-size:10px;color:var(--g);margin-top:3px;">${r.match}</div></div>`).join('');}
+function selRec(i){
+  document.querySelectorAll('.rc').forEach(c=>c.classList.remove('sel'));
+  document.getElementById('rc-'+i).classList.add('sel');
+  selR=curRecs[i];
+  document.getElementById('de').textContent=selR.emoji;
+  document.getElementById('dn').textContent=selR.nom;
+  document.getElementById('dm').textContent=selR.temps+' · '+selR.portions;
+  document.getElementById('ds').innerHTML=selR.etapes.map((e,j)=>`<li><div class="snum">${j+1}</div><span>${e}</span></li>`).join('');
+  document.getElementById('full-rec-btn').onclick=()=>sendPrompt('Recette complète avec quantités pour '+selR.nom+' avec: '+ings.join(', '));
+  
+  // Add share button
+  var shareBtn = document.getElementById('share-to-community-btn');
+  if(!shareBtn) {
+    shareBtn = document.createElement('button');
+    shareBtn.id = 'share-to-community-btn';
+    shareBtn.className = 'btn bg';
+    shareBtn.style.cssText = 'flex:1;';
+    shareBtn.innerHTML = '<i class="ti ti-users"></i> Partager dans la communauté';
+    document.getElementById('db').querySelector('div:last-child').appendChild(shareBtn);
+  }
+  shareBtn.onclick = function() { shareRecipeToCommunity(selR); };
+  document.getElementById('db').style.display='block';
+}
+
+function shareRecipeToCommunity(rec) {
+  // Check if already shared
+  if(commRecs.find(function(r){ return r.nom === rec.nom && r.auteur !== 'Marie L.' && r.auteur !== 'Jean-F. B.'; })) {
+    showToast('Tu as déjà partagé cette recette!');
+    return;
+  }
+  
+  var userName = document.getElementById('h-name').textContent || 'Moi';
+  var initials = userName.substring(0,2).toUpperCase();
+  
+  commRecs.unshift({
+    id: Date.now(),
+    emoji: rec.emoji,
+    nom: rec.nom,
+    auteur: userName,
+    ini: initials,
+    temps: rec.temps,
+    tags: ings.slice(0,3),
+    likes: 0,
+    viral: false,
+    liked: false,
+    etapes: rec.etapes,
+    portions: rec.portions
+  });
+  
+  filterC();
+  addPoints(25);
+  showToast('🎉 Recette partagée dans la communauté! +' + (isPremium?50:25) + ' pts');
+  
+  // Show confirmation with link to social
+  var btn = document.getElementById('share-to-community-btn');
+  if(btn) {
+    btn.innerHTML = '<i class="ti ti-check"></i> Partagée!';
+    btn.style.background = '#1D9E75';
+    btn.disabled = true;
+  }
+}
+function renderYT(vids){document.getElementById('vg').innerHTML=vids.map(v=>`<div class="vc" onclick="window.open('https://www.youtube.com/results?search_query='+encodeURIComponent('${(v.query||'').replace(/'/g,"\\'")} recette'),'_blank')"><div class="vt"><i class="ti ti-brand-youtube" style="font-size:26px;color:var(--c);"></i><div class="pb"><i class="ti ti-player-play"></i></div>${v.viral?'<div class="vb">🔥 Viral</div>':''}</div><div class="vi"><div class="vtitle">${v.titre}</div><div class="vmeta">${v.channel} · ${v.views} · ${v.duration}</div></div></div>`).join('');}
+function renderCommVids(){
+  var sh=[...commRecs].sort(function(){return Math.random()-0.5;}).slice(0,4);
+  document.getElementById('cg').innerHTML=sh.map(function(v){
+    return '<div class="cv" onclick="openRecipeFromCommunity('+v.id+')">' +
+    '<div class="ct"><span>'+v.emoji+'</span><div class="cpb"><i class="ti ti-player-play"></i></div>' +
+    (v.viral?'<div style="position:absolute;top:5px;left:5px;background:rgba(29,158,117,0.9);color:#fff;font-size:9px;padding:2px 6px;border-radius:999px;font-weight:700;">🔥 Viral</div>':'') +
+    '</div><div class="ci"><div class="ctitle">'+v.nom+'</div>' +
+    '<div class="cmeta"><div class="av">'+v.ini+'</div> '+v.auteur+' · ❤️ '+v.likes+'</div>' +
+    '</div></div>';
+  }).join('');
+}
+
+function openRecipeFromCommunity(id) {
+  var rec = commRecs.find(function(r){ return r.id === id; });
+  if(!rec) return;
+  // Go to Social and filter by this recipe
+  goTo('social', null);
+  document.getElementById('comm-feed').style.display = 'block';
+  document.getElementById('comm-upload').style.display = 'none';
+  var searchEl = document.getElementById('cs');
+  if(searchEl) {
+    searchEl.value = rec.nom.split(' ')[0];
+    filterC();
+  }
+  window.scrollTo(0,0);
+  showToast('🎬 ' + rec.nom);
+}
+
+function switchRT(t,btn,cls){document.querySelectorAll('#recettes .tab').forEach(x=>x.classList.remove('on','onc'));btn.classList.add(cls);['recettes','youtube','community'].forEach(p=>document.getElementById('p-'+p).style.display='none');document.getElementById('p-'+t).style.display='block';}
+function addGr(){
+  const v=document.getElementById('gr-in').value.trim();if(!v)return;
+  if(!isPremium&&groceries.length>=LIMITS.list){showPaywall('Liste pleine!','Tu as atteint la limite de 10 articles. Passe à Premium!');return;}
+  groceries.push({name:v,price:parseFloat((Math.random()*7+1.5).toFixed(2)),done:false});document.getElementById('gr-in').value='';renderGr();
+}
+function toggleGr(i){groceries[i].done=!groceries[i].done;renderGr();}
+function delGr(i){groceries.splice(i,1);renderGr();}
+function getGrList(){return groceries.map(g=>g.name).join(', ');}
+function renderGr(){
+  const toBuy = groceries.filter(g => !g.done);
+  const inCart = groceries.filter(g => g.done);
+  const total = groceries.reduce((s,g) => s + g.price, 0);
+  const ql = document.getElementById('ql-list');
+  
+  if(groceries.length === 0){
+    document.getElementById('gr-items').innerHTML = '<div style="color:var(--sub);font-size:12px;padding:8px 0;">Ta liste est vide / Your list is empty!</div>';
+    document.getElementById('gr-foot').style.display = 'none';
+    if(ql) ql.textContent = '0 article';
+    updateLimitDots();
+    return;
+  }
+
+  let html = '';
+
+  // TO BUY section
+  if(toBuy.length > 0){
+    html += `<div style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:0.05em;padding:6px 0 4px;">À acheter (${toBuy.length})</div>`;
+    html += toBuy.map((g,i) => {
+      const realIdx = groceries.indexOf(g);
+      return `<div class="gi" style="background:#fff;">
+        <div class="gc" onclick="toggleGr(${realIdx})" style="border-color:var(--g);">
+          <i class="ti ti-circle" style="font-size:10px;color:#d1d5db;"></i>
+        </div>
+        <div style="flex:1;font-size:13px;color:var(--text);">${g.name}</div>
+        <div style="font-size:11px;font-weight:700;color:var(--g);">$${g.price.toFixed(2)}</div>
+        <button style="background:none;border:none;cursor:pointer;color:#d1d5db;font-size:16px;padding:0 3px;" onclick="delGr(${realIdx})">×</button>
+      </div>`;
+    }).join('');
+  }
+
+  // IN CART section
+  if(inCart.length > 0){
+    html += `<div style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:0.05em;padding:10px 0 4px;border-top:1px dashed var(--border);margin-top:6px;">Dans le panier 🛒 (${inCart.length})</div>`;
+    html += inCart.map((g,i) => {
+      const realIdx = groceries.indexOf(g);
+      return `<div class="gi" style="background:#f9fafb;opacity:0.75;">
+        <div class="gc done" onclick="toggleGr(${realIdx})">✓</div>
+        <div style="flex:1;font-size:13px;color:var(--sub);text-decoration:line-through;">${g.name}</div>
+        <div style="font-size:11px;font-weight:700;color:var(--sub);">$${g.price.toFixed(2)}</div>
+        <button style="background:none;border:none;cursor:pointer;color:#d1d5db;font-size:16px;padding:0 3px;" onclick="delGr(${realIdx})">×</button>
+      </div>`;
+    }).join('');
+  }
+
+  document.getElementById('gr-items').innerHTML = html;
+  document.getElementById('gr-total').textContent = '$' + total.toFixed(2);
+  document.getElementById('gr-foot').style.display = 'block';
+  if(ql) ql.textContent = toBuy.length + ' article' + (toBuy.length > 1 ? 's' : '') + ' restant' + (toBuy.length > 1 ? 's' : '');
+  updateLimitDots();
+}
+function renderC(){
+  document.getElementById('cl').innerHTML=cFilt.map(function(r){
+    var safeNom = r.nom.replace(/"/g,' ').replace(/'/g,' ');
+    var safeEmoji = r.emoji;
+    return '<div class="feed-card">' +
+    '<div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:8px;">' +
+    '<div style="width:42px;height:42px;border-radius:10px;background:var(--light);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">'+r.emoji+'</div>' +
+    '<div style="flex:1"><div style="font-size:12px;font-weight:700;margin-bottom:2px;">'+r.nom+'</div>' +
+    '<div style="font-size:10px;color:var(--sub);">'+r.auteur+' · '+r.temps+'</div></div>' +
+    (r.viral ? '<div class="badge bdc" style="font-size:9px;">🔥 Viral</div>' : '') +
+    '</div>' +
+    '<div style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:8px;">'+r.tags.map(function(t){return '<span style="background:var(--light);color:var(--sub);font-size:9px;padding:2px 6px;border-radius:999px;">#'+t+'</span>';}).join('')+'</div>' +
+    '<div style="display:flex;gap:5px;align-items:center;border-top:1px solid var(--light);padding-top:8px;">' +
+    '<button style="font-size:11px;color:'+(r.liked?'var(--c)':'var(--sub)')+';background:none;border:none;cursor:pointer;padding:3px 6px;" onclick="likeC('+r.id+')">❤️ '+r.likes+'</button>' +
+    '<button style="margin-left:auto;font-size:10px;color:var(--c);background:none;border:none;cursor:pointer;font-weight:700;" onclick="showRecipeModal(&quot;'+safeNom+'&quot;,&quot;'+safeEmoji+'&quot;)">Voir ↗</button>' +
+    '</div></div>';
+  }).join('');
+}
+function likeC(id){const r=commRecs.find(x=>x.id===id);r.liked=!r.liked;r.likes+=r.liked?1:-1;filterC();}
+function filterC(){const q=document.getElementById('cs').value.toLowerCase();cFilt=q?commRecs.filter(r=>r.nom.toLowerCase().includes(q)||r.tags.some(t=>t.includes(q))):[...commRecs];renderC();}
+function switchCT(t,btn){document.querySelectorAll('#social .tab').forEach(x=>x.classList.remove('on','onc'));btn.classList.add('onc');if(btn.textContent.includes('Partager')){document.getElementById('comm-feed').style.display='none';document.getElementById('comm-upload').style.display='block';}else{document.getElementById('comm-feed').style.display='block';document.getElementById('comm-upload').style.display='none';}}
+function checkUpload(){
+  if(!isPremium){
+    document.getElementById('premium-upload-lock').style.display='block';
+    document.getElementById('upload-zone').style.opacity='0.6';
+    showToast('🔒 Upload réservé aux membres Premium!');
+  } else {
+    document.getElementById('premium-upload-lock').style.display='none';
+    document.getElementById('upload-zone').style.opacity='1';
+  }}
+function submitUp(){
+  if(!isPremium){
+    document.getElementById('share-premium-msg').style.display='block';
+    document.getElementById('share-btn').style.opacity='0.4';
+    document.getElementById('share-btn').style.pointerEvents='none';
+    showToast('🔒 Partage réservé aux membres Premium!');
+    return;
+  }const n=document.getElementById('up-nm').value.trim();const ig=document.getElementById('up-ig').value.trim();if(!n){showToast('⚠️ Ajoute un nom!');return;}addPoints(25);showToast('🎉 Recette partagée! +'+(isPremium?50:25)+' pts');sendPrompt('Génère une recette complète pour "'+n+'" avec: '+ig);}
+function renderRewards(){const el=document.getElementById('rewards-list');if(!el)return;el.innerHTML=rewards.map(r=>`<div style="background:var(--card);border-radius:16px;padding:12px;display:flex;align-items:center;gap:10px;border:1px solid var(--border);margin-bottom:8px;"><div style="font-size:22px;">${r.icon}</div><div style="flex:1"><div style="font-size:12px;font-weight:700;">${r.name}</div><div style="font-size:10px;color:var(--sub);">${r.desc}</div></div><button class="btn bgold" style="padding:5px 10px;font-size:11px;" onclick="claimReward(${r.pts},'${r.name}')">${r.pts} pts</button></div>`).join('');}
+function claimReward(pts,name){
+  if(points>=pts){
+    points-=pts;
+    updatePointsUI();
+    saveData();
+    showToast('🎉 Récompense réclamée! Vérifie ton email dans 24h pour ton code promo!',5000);
+    showToast('🎉 Récompense réclamée! Code promo envoyé par email dans 24h', 5000);
+  } else {
+    showToast('❌ '+pts+' pts requis — tu en as '+points);
+  }
+}
+function addAlert(){const p=document.getElementById('alert-prod').value.trim();const pr=document.getElementById('alert-price').value;const s=document.getElementById('alert-store').value;if(!p){showToast('⚠️ Ajoute un produit!');return;}const emojis=['🛒','🍎','🥦','🍞','🧃','🥩'];const emoji=emojis[Math.floor(Math.random()*emojis.length)];const div=document.createElement('div');div.className='al';div.innerHTML=`<div style="font-size:20px;">${emoji}</div><div style="flex:1"><div style="font-size:13px;font-weight:700;">${p}</div><div style="font-size:11px;color:var(--sub);">Alerte si prix &lt; $${pr||'?'} · ${s}</div></div><label class="atog"><input type="checkbox" checked><div class="ts"></div></label>`;document.getElementById('alerts-list').appendChild(div);document.getElementById('alert-prod').value='';document.getElementById('alert-price').value='';showToast('✅ Alerte créée!');}
+function updBudget(v){['bsv','bmd'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='$'+v;});const pct=Math.round(247/v*100);document.getElementById('bbar').style.width=Math.min(pct,100)+'%';document.getElementById('bpct').textContent=pct+'% utilisé';}
+function renderBCats(){const cats=[{n:'Viandes & poissons',a:89,p:36,c:'#D85A30'},{n:'Fruits & légumes',a:54,p:22,c:'#1D9E75'},{n:'Produits laitiers',a:38,p:15,c:'#378ADD'},{n:'Épicerie sèche',a:42,p:17,c:'#534AB7'},{n:'Autres',a:24,p:10,c:'#C9A227'}];const el=document.getElementById('bcc');if(el)el.innerHTML=cats.map(c=>`<div class="bcat"><div class="bdot" style="background:${c.c};"></div><div style="flex:1;font-size:12px;">${c.n}</div><div class="bcbw"><div class="bcb" style="width:${c.p}%;background:${c.c};"></div></div><div style="font-size:12px;font-weight:700;min-width:30px;text-align:right;">$${c.a}</div></div>`).join('');}
+function genBarcode(container,count=40){container.innerHTML='';for(let i=0;i<count;i++){const bar=document.createElement('div');bar.style.cssText=`background:rgba(255,255,255,0.9);width:${Math.random()>0.5?2:1}px;height:${Math.random()>0.3?40:25}px;border-radius:1px;flex-shrink:0;`;container.appendChild(bar);}}
+function renderWallet(){
+  const isEmpty = walletCards.length === 0;
+  const emptyEl = document.getElementById('w-empty');
+  const activeLabel = document.getElementById('w-active-label');
+  const listLabel = document.getElementById('w-list-label');
+  const activeDisplay = document.getElementById('active-card-display');
+  
+  if(emptyEl) emptyEl.style.display = isEmpty ? 'block' : 'none';
+  if(activeLabel) activeLabel.style.display = isEmpty ? 'none' : 'block';
+  if(listLabel) listLabel.style.display = isEmpty ? 'none' : 'block';
+  if(activeDisplay) activeDisplay.style.display = isEmpty ? 'none' : 'block';
+  
+  if(isEmpty) {
+    const wd = document.getElementById('w-dots'); if(wd) wd.innerHTML = '';
+    const mcl = document.getElementById('mini-cards-list'); if(mcl) mcl.innerHTML = '';
+    ['w-count','w-pts','w-val'].forEach((id,i) => {const el=document.getElementById(id);if(el)el.textContent=['0','0','$0'][i];});
+    const ql=document.getElementById('ql-wallet');if(ql)ql.textContent='0 carte';
+    return;
+  }
+
+  const c=walletCards[activeCard];const display=document.getElementById('active-card-display');if(!display)return;
+  display.style.background=c.gradient;display.style.boxShadow=`0 12px 32px ${c.shadow}`;
+  display.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;"><div><div style="font-size:20px;font-weight:800;color:#fff;">${c.name}</div><div style="font-size:10px;color:rgba(255,255,255,0.8);">${c.type}</div></div><div style="font-size:30px;">${c.icon}</div></div><div style="background:rgba(255,255,255,0.15);border-radius:12px;padding:12px;margin-bottom:10px;text-align:center;"><div style="font-size:12px;font-weight:700;color:#fff;letter-spacing:3px;margin-bottom:8px;">${c.number}</div><div style="display:flex;gap:1.5px;justify-content:center;align-items:center;height:44px;" id="wbc"></div><div style="font-size:10px;color:rgba(255,255,255,0.7);margin-top:6px;">Appuie pour agrandir le code</div></div><div style="display:flex;align-items:center;justify-content:space-between;"><div><div style="font-size:20px;font-weight:700;color:#fff;">${c.pts.toLocaleString()} pts</div><div style="font-size:10px;color:rgba(255,255,255,0.8);">≈ $${(c.pts/100).toFixed(2)} en récompenses</div></div><div style="background:rgba(255,255,255,0.2);color:#fff;font-size:10px;font-weight:700;padding:5px 12px;border-radius:999px;">Niveau Or 🏆</div></div>`;
+  setTimeout(()=>{const wbc=document.getElementById('wbc');if(wbc)genBarcode(wbc);},50);
+  const wd=document.getElementById('w-dots');if(wd)wd.innerHTML=walletCards.map((x,i)=>`<div onclick="setActiveCard(${i})" style="width:${i===activeCard?20:8}px;height:8px;border-radius:999px;background:${i===activeCard?'var(--g)':'#e5e7eb'};cursor:pointer;transition:all 0.2s;"></div>`).join('');
+  const mcl=document.getElementById('mini-cards-list');if(mcl)mcl.innerHTML=walletCards.map((card,i)=>`<div class="mini-card ${i===activeCard?'active-mini':''}" onclick="setActiveCard(${i})"><div style="font-size:24px;">${card.icon}</div><div style="flex:1"><div style="font-size:12px;font-weight:700;">${card.name} — ${card.type}</div><div style="font-size:10px;color:var(--sub);">${card.pts.toLocaleString()} pts · ≈ $${(card.pts/100).toFixed(2)}</div></div><div style="display:flex;align-items:center;gap:8px;"><div style="width:6px;height:6px;border-radius:50%;background:${i===activeCard?'var(--g)':'#e5e7eb'};"></div><button onclick="event.stopPropagation();removeWCard(${i})" style="background:none;border:none;cursor:pointer;color:#9ca3af;font-size:16px;padding:0;">×</button></div></div>`).join('');
+  const totalPts=walletCards.reduce((s,x)=>s+x.pts,0);
+  ['w-count','w-pts','w-val'].forEach((id,i)=>{const el=document.getElementById(id);if(el)el.textContent=[walletCards.length,totalPts.toLocaleString(),'$'+(totalPts/100).toFixed(0)][i];});
+  const ql=document.getElementById('ql-wallet');if(ql)ql.textContent=walletCards.length+' carte'+(walletCards.length>1?'s':'')+' fidélité';
+}
+function setActiveCard(idx){activeCard=idx;renderWallet();}
+function showBc(){const c=walletCards[activeCard];document.getElementById('bf-name').textContent=c.name;document.getElementById('bf-type').textContent=c.type;document.getElementById('bf-number').textContent=c.number;genBarcode(document.getElementById('bf-bars'),60);document.getElementById('bc-full').classList.add('open');}
+function hideBc(){document.getElementById('bc-full').classList.remove('open');}
+function openWalletModal(){document.getElementById('wallet-modal').classList.add('open');}
+function closeWalletModal(){document.getElementById('wallet-modal').classList.remove('open');}
+function addCard(name,icon,gradient){const pts=Math.floor(Math.random()*2000)+100;const num=Array.from({length:4},()=>Math.floor(Math.random()*9000+1000)).join(' ');walletCards.push({name,type:'Carte '+name,icon,gradient,number:num,pts,shadow:'rgba(0,0,0,0.2)'});closeWalletModal();activeCard=walletCards.length-1;renderWallet();showToast('✅ Carte '+name+' ajoutée!');}
+function removeWCard(idx){if(walletCards.length<=1){showToast('⚠️ Garde au moins une carte!');return;}walletCards.splice(idx,1);if(activeCard>=walletCards.length)activeCard=walletCards.length-1;renderWallet();}
+
+
+
+// EmailJS
+(function() {
+  emailjs.init('mFtipR8DIX93iMHC1');
+})();
+
+var sgVerifyCode = '';
+var sgVerifyEmail = '';
+var sgVerifyName = '';
+var sgVerifyData = null;
+
+function generateCode() {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+async function sendVerificationEmail(name, email) {
+  sgVerifyCode = generateCode();
+  sgVerifyEmail = email;
+  sgVerifyName = name;
+  
+  try {
+    await emailjs.send('service_iav6o5t', 'template_n12mgme', {
+      to_name: name,
+      to_email: email,
+      passcode: sgVerifyCode
+    });
+    return true;
+  } catch(e) {
+    console.error('EmailJS error:', e);
+    return false;
+  }
+}
+
+function verifyCode() {
+  var input = document.getElementById('verify-code-input').value.trim();
+  if (!input || input.length < 6) {
+    showToast('Entre le code à 6 chiffres!');
+    return;
+  }
+  if (sgVerifyCode && input === sgVerifyCode) {
+    document.getElementById('verification').style.display = 'none';
+    finishOb_complete();
+  } else {
+    document.getElementById('verify-error').style.display = 'block';
+    setTimeout(function(){ document.getElementById('verify-error').style.display = 'none'; }, 3000);
+  }
+}
+
+async function resendCode() {
+  var btn = document.getElementById('resend-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Envoi...';
+  var ok = await sendVerificationEmail(sgVerifyName, sgVerifyEmail);
+  if (ok) {
+    showToast('📧 Nouveau code envoyé!');
+    btn.textContent = '✅ Code envoyé!';
+  } else {
+    showToast('❌ Erreur — réessaie');
+    btn.disabled = false;
+    btn.textContent = '📤 Renvoyer le code';
+  }
+  setTimeout(function(){
+    btn.disabled = false;
+    btn.textContent = '📤 Renvoyer le code / Resend code';
+  }, 30000);
+}
+
+function closeRecipeModal() {
+  document.getElementById('recipe-modal').style.display = 'none';
+}
+
+async function showRecipeModal(nom, emoji) {
+  // Show modal with loading
+  document.getElementById('recipe-modal').style.display = 'block';
+  document.getElementById('rm-emoji').textContent = emoji || '🍳';
+  document.getElementById('rm-title').textContent = nom;
+  document.getElementById('rm-meta').textContent = 'Génération en cours...';
+  document.getElementById('rm-content').innerHTML = '<div style="text-align:center;padding:2rem;color:#6b7280;"><div style="font-size:32px;margin-bottom:8px;">⏳</div><div style="font-size:14px;">Génération de la recette...</div></div>';
+  
+  try {
+    var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer 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'},
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        max_completion_tokens: 800,
+        messages: [{role:'user',content:'Donne-moi la recette complete de '+nom+'. Liste les ingredients avec quantites, puis les etapes numerotees. En francais.'}]
+      })
+    });
+    var data = await res.json();
+    if(data.choices && data.choices[0] && data.choices[0].message) {
+      var text = data.choices[0].message.content.trim();
+      var html = '<div style="font-size:13px;line-height:1.8;color:#1a1a2e;padding:0.5rem;white-space:pre-wrap;">' + text + '</div>';
+      document.getElementById('rm-content').innerHTML = html;
+      document.getElementById('rm-meta').textContent = 'Recette complète';
+    } else {
+      var errMsg = data.error ? data.error.message : JSON.stringify(data).substring(0,100);
+      document.getElementById('rm-content').innerHTML = '<div style="padding:1rem;color:#ef4444;font-size:12px;">Erreur API: ' + errMsg + '</div>';
+    }
+  } catch(e) {
+    document.getElementById('rm-content').innerHTML = '<div style="padding:1rem;color:#ef4444;font-size:12px;">Erreur réseau: ' + e.message + '</div>';
+  }
+}
+
+// keyboard listeners moved to main init
+
+
+
+
+// ===== WALLET CARD SCANNER =====
+let walletScanDone = false;
+const KNOWN_CARDS = [
+  {name:'PC Optimum', keywords:['628915','622633','PC optimum','loblaws','maxi','pharmaprix'], icon:'💙', gradient:'linear-gradient(135deg,#003087,#0057B8)', shadow:'rgba(0,48,135,0.35)'},
+  {name:'Air Miles', keywords:['airMiles','air miles','626652'], icon:'✈️', gradient:'linear-gradient(135deg,#C62828,#1565C0)', shadow:'rgba(198,40,40,0.35)'},
+  {name:'Méritas IGA', keywords:['IGA','623456','meritas'], icon:'🏪', gradient:'linear-gradient(135deg,#E53935,#B71C1C)', shadow:'rgba(229,57,53,0.35)'},
+  {name:'Metro & Moi', keywords:['metro','624567'], icon:'🛒', gradient:'linear-gradient(135deg,#1565C0,#0D47A1)', shadow:'rgba(21,101,192,0.35)'},
+  {name:'Maxi', keywords:['maxi','625678'], icon:'🏬', gradient:'linear-gradient(135deg,#C62828,#880E4F)', shadow:'rgba(198,40,40,0.35)'},
+  {name:'CAA', keywords:['CAA','626789'], icon:'🚗', gradient:'linear-gradient(135deg,#1B5E20,#2E7D32)', shadow:'rgba(27,94,32,0.35)'},
+  {name:'Petro-Points', keywords:['petro','627890'], icon:'⛽', gradient:'linear-gradient(135deg,#E65100,#F57F17)', shadow:'rgba(230,81,0,0.35)'},
+  {name:'Jean Coutu', keywords:['jean coutu','629012'], icon:'💊', gradient:'linear-gradient(135deg,#2E7D32,#1B5E20)', shadow:'rgba(46,125,50,0.35)'},
+  {name:'Pharmaprix', keywords:['pharmaprix','630123'], icon:'💙', gradient:'linear-gradient(135deg,#1565C0,#283593)', shadow:'rgba(21,101,192,0.35)'},
+  {name:'Costco', keywords:['costco','631234'], icon:'🏭', gradient:'linear-gradient(135deg,#C62828,#1565C0)', shadow:'rgba(0,0,0,0.3)'},
+  {name:'RONA', keywords:['rona','632345'], icon:'🔨', gradient:'linear-gradient(135deg,#E65100,#BF360C)', shadow:'rgba(230,81,0,0.35)'},
+  {name:'Tim Hortons', keywords:['tim hortons','633456'], icon:'☕', gradient:'linear-gradient(135deg,#C62828,#B71C1C)', shadow:'rgba(198,40,40,0.35)'},
+];
+
+let scannedCardCode = '';
+
+
+
+
+
+function cancelCardScan() {
+  document.getElementById('w-name-modal').style.display = 'none';
+  scannedCardCode = '';
+}
+
+function showCardNameModal(code) {
+  document.getElementById('w-scanned-code').textContent = 'Code détecté: ' + code;
+  
+  // Auto-detect card type
+  const suggestions = KNOWN_CARDS.slice(0, 6);
+  const suggestionsEl = document.getElementById('w-card-suggestions');
+  suggestionsEl.innerHTML = suggestions.map(c => 
+    `<div onclick="selectCardName('${c.name}')" style="background:var(--light);border:1px solid var(--border);border-radius:8px;padding:5px 10px;font-size:11px;cursor:pointer;display:flex;align-items:center;gap:4px;">
+      <span>${c.icon}</span><span>${c.name}</span>
+    </div>`
+  ).join('');
+  
+  document.getElementById('w-name-modal').style.display = 'block';
+  document.getElementById('w-card-name').value = '';
+}
+
+function selectCardName(name) {
+  document.getElementById('w-card-name').value = name;
+}
+
+function confirmAddCard() {
+  const name = document.getElementById('w-card-name').value.trim();
+  if (!name) { showToast('⚠️ Entre le nom de la carte!'); return; }
+  
+  // Find matching card config
+  const known = KNOWN_CARDS.find(c => c.name.toLowerCase() === name.toLowerCase());
+  const gradient = known ? known.gradient : 'linear-gradient(135deg,#1D9E75,#0F6E56)';
+  const icon = known ? known.icon : '💳';
+  const shadow = known ? known.shadow : 'rgba(29,158,117,0.35)';
+  
+  walletCards.push({
+    name: name,
+    type: name,
+    icon: icon,
+    gradient: gradient,
+    number: scannedCardCode,
+    pts: 0,
+    shadow: shadow,
+    isReal: true
+  });
+  
+  document.getElementById('w-name-modal').style.display = 'none';
+  scannedCardCode = '';
+  activeCard = walletCards.length - 1;
+  renderWallet();
+  saveData();
+  showToast('✅ Carte ' + name + ' ajoutée!');
+}
+
+
+function saveProfile() {
+  const name = document.getElementById('pp-name-input')?.value?.trim();
+  const email = document.getElementById('pp-email-input')?.value?.trim();
+  const city = document.getElementById('pp-city-input')?.value?.trim();
+  const budget = document.getElementById('pp-budget-input')?.value?.trim();
+  const diet = document.getElementById('pp-diet-input')?.value;
+  
+  if(name) {
+    ['h-name','pnm'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=name;});
+    const pav=document.getElementById('pav');if(pav)pav.textContent=name.substring(0,2).toUpperCase();
+  }
+  if(city) {
+    ['pct','pp-city'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=city;});
+    const carte=document.getElementById('carte-city');if(carte)carte.textContent='Épiceries · '+city+' · 5 km';
+  }
+  if(budget) {
+    const ppb=document.getElementById('pp-budget');if(ppb)ppb.textContent='$'+budget;
+  }
+  if(diet) {
+    const ppd=document.getElementById('pp-diet');if(ppd)ppd.textContent=diet;
+  }
+  saveData();
+}
+
+function loadProfileInputs() {
+  const saved = localStorage.getItem('smartgrocer_data');
+  if(!saved) return;
+  try {
+    const data = JSON.parse(saved);
+    const nameInput = document.getElementById('pp-name-input');
+    const emailInput = document.getElementById('pp-email-input');
+    const cityInput = document.getElementById('pp-city-input');
+    const budgetInput = document.getElementById('pp-budget-input');
+    const dietInput = document.getElementById('pp-diet-input');
+    if(nameInput && data.name) nameInput.value = data.name;
+    if(emailInput && data.email) emailInput.value = data.email;
+    if(cityInput && data.city) cityInput.value = data.city;
+    if(budgetInput && data.budget) budgetInput.value = data.budget.replace('$','');
+    if(dietInput && data.diet) dietInput.value = data.diet;
+  } catch(e) {}
+}
+
+</script>
+
+<script>
+function saveData() {
+  try {
+    const nameEl = document.getElementById('h-name');
+    const emailEl = document.getElementById('pp-email-input');
+    const cityEl = document.getElementById('pct');
+    const data = {
+      name: nameEl ? nameEl.textContent : '',
+      email: emailEl ? emailEl.value : '',
+      city: cityEl ? cityEl.textContent : '',
+      onboardingDone: true, isPremium: true,
+      points: points, totalScans: totalScans,
+      groceries: groceries, walletCards: walletCards
+    };
+    localStorage.setItem('smartgrocer_data', JSON.stringify(data));
+  } catch(e) {}
+}
+
+function loadData() {
+  try {
+    const saved = localStorage.getItem('smartgrocer_data');
+    if(!saved) return false;
+    const data = JSON.parse(saved);
+    if(!data.onboardingDone) return false;
+    isPremium = true;
+    points = data.points || 0;
+    totalScans = data.totalScans || 0;
+    groceries = data.groceries || [];
+    walletCards = data.walletCards || [];
+    if(data.name) {
+      ['h-name','pnm'].forEach(function(id){const el=document.getElementById(id);if(el)el.textContent=data.name;});
+      const pav=document.getElementById('pav');if(pav)pav.textContent=data.name.substring(0,2).toUpperCase();
+    }
+    if(data.city) {
+      ['pct','pp-city'].forEach(function(id){const el=document.getElementById(id);if(el)el.textContent=data.city;});
+      const carte=document.getElementById('carte-city');if(carte)carte.textContent='Epiceries · '+data.city+' · 5 km';
+    }
+    return true;
+  } catch(e) { return false; }
+}
+
+function quickAddCard(name, icon, gradient, shadow) {
+  const existingIdx = walletCards.findIndex(function(c){ return c.name===name; });
+  if(existingIdx >= 0) {
+    activeCard = existingIdx;
+    renderWallet();
+    showToast('Carte ' + name + ' selectionnee!');
+    return;
+  }
+  walletCards.push({name:name,type:name,icon:icon,gradient:gradient,number:'',pts:0,shadow:shadow,isReal:false});
+  activeCard = walletCards.length - 1;
+  renderWallet(); saveData();
+  showToast('Carte ' + name + ' ajoutee!');
+}
+
+function quickAddCustomCard() {
+  const name = prompt('Nom de ta carte:');
+  if(!name || !name.trim()) return;
+  quickAddCard(name.trim(), '💳', 'linear-gradient(135deg,#1D9E75,#0F6E56)', 'rgba(29,158,117,0.35)');
+}
+
+function startCardScan() {}
+function stopCardScan() {}
+
+document.addEventListener('DOMContentLoaded', function() {
+  // Keyboard listeners only
+  [['prod-in',searchProd],['ing-in',addIng],['gr-in',addGr]].forEach(function(pair){
+    var el=document.getElementById(pair[0]);
+    if(el)el.addEventListener('keydown',function(e){if(e.key==='Enter')pair[1]();});
+  });
+});
+
+let quaggaRunning = false;
+
+function startRealScan() {
+  document.getElementById('scan-idle').style.display = 'none';
+  document.getElementById('scan-active').style.display = 'block';
+  document.getElementById('quagga-container').innerHTML = '';
+  if(typeof Quagga === 'undefined') { showToast('Scanner non disponible'); stopRealScan(); return; }
+  Quagga.init({
+    inputStream: { type:'LiveStream', target:document.getElementById('quagga-container'), constraints:{facingMode:'environment',width:{ideal:1280},height:{ideal:720}} },
+    locator: {patchSize:'medium',halfSample:true},
+    numOfWorkers: 2, frequency: 10,
+    decoder: { readers:['ean_reader','ean_8_reader','upc_reader','upc_e_reader','code_128_reader'] },
+    locate: true
+  }, function(err) {
+    if(err){ showToast('Camera non disponible'); stopRealScan(); return; }
+    Quagga.start(); quaggaRunning = true;
+  });
+  var scanDone = false;
+  Quagga.onDetected(function(result) {
+    if(scanDone) return;
+    var code = result.codeResult.code;
+    if(!code || code.length < 4) return;
+    scanDone = true;
+    var status = document.getElementById('scan-status');
+    if(status) status.textContent = 'Code scanne!';
+    setTimeout(function() { stopRealScan(); document.getElementById('prod-in').value=code; lookupBarcode(code); }, 300);
+  });
+}
+
+function stopRealScan() {
+  if(quaggaRunning){ try{Quagga.stop();}catch(e){} quaggaRunning=false; }
+  document.getElementById('scan-idle').style.display='block';
+  document.getElementById('scan-active').style.display='none';
+}
+
+async function lookupBarcode(code) {
+  document.getElementById('scan-btn').disabled = true;
+  document.getElementById('px-ld').classList.add('on');
+  document.getElementById('px-res').style.display = 'none';
+  document.getElementById('bd').classList.remove('on');
+  document.getElementById('sg').innerHTML = '';
+  
+  var productName = '';
+  
+  try {
+    showToast('Recherche du produit...');
+    
+    // Try Open Food Facts
+    try {
+      var r = await fetch('https://world.openfoodfacts.org/api/v2/product/' + code + '.json');
+      var d = await r.json();
+      if (d.status === 1 && d.product) {
+        var p = d.product;
+        var n = p.product_name_fr || p.product_name || p.product_name_en || '';
+        var b = p.brands || '';
+        var q = p.quantity || '';
+        if (b && n && !n.toLowerCase().includes(b.toLowerCase())) n = b + ' ' + n;
+        if (q) n += ' ' + q;
+        if (n.trim()) productName = n.trim();
+      }
+    } catch(e) { console.log('OFF failed:', e); }
+    
+    if (!productName) {
+      // Product not found - show helpful message with manual search
+      document.getElementById('px-ld').classList.remove('on');
+      document.getElementById('scan-btn').disabled = false;
+      
+      // Auto-fill the search box with the code and suggest manual entry
+      document.getElementById('prod-in').value = '';
+      document.getElementById('prod-in').focus();
+      document.getElementById('prod-in').placeholder = 'Code ' + code + ' - Entre le nom manuellement...';
+      
+      showToast('Produit non trouvé — entre le nom ci-dessous!'); document.getElementById('prod-in').focus();
+      return;
+    }
+    
+    // Get prices from Groq
+    showToast('Comparaison des prix...');
+    var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer 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'},
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        max_completion_tokens: 1000,
+        messages: [{role:'user',content:'Prix realistes au Quebec pour "' + productName + '". JSON seulement: {"emoji":"🛒","nom":"' + productName + '","magasins":[{"nom":"IGA","prix":5.99,"prixRegulier":7.49,"enSpecial":true,"format":"1kg"},{"nom":"Metro","prix":7.29,"prixRegulier":7.29,"enSpecial":false,"format":"1kg"},{"nom":"Maxi","prix":6.49,"prixRegulier":6.99,"enSpecial":true,"format":"1kg"},{"nom":"Walmart","prix":6.19,"prixRegulier":6.19,"enSpecial":false,"format":"1kg"},{"nom":"Costco","prix":14.99,"prixRegulier":14.99,"enSpecial":false,"format":"2.5kg"}],"formats":[{"format":"1kg","prix":5.99,"prixAu100g":0.60}]}'}]
+      })
+    });
+    var data = await res.json();
+    var text = data.choices[0].message.content.replace(/```json|```/g, '').trim();
+    var d2 = JSON.parse(text);
+    
+    document.getElementById('px-em').textContent = d2.emoji;
+    document.getElementById('px-nm').textContent = d2.nom;
+    document.getElementById('prod-in').value = d2.nom;
+    document.getElementById('px-bc').textContent = 'Code: ' + code;
+    var sorted = [...d2.magasins].sort(function(a,b){return a.prix-b.prix;});
+    var best = sorted[0], worst = sorted[sorted.length-1];
+    document.getElementById('bs').textContent = best.nom;
+    document.getElementById('bp').textContent = '$'+best.prix.toFixed(2);
+    document.getElementById('bsv').textContent = 'Economise $'+(worst.prix-best.prix).toFixed(2);
+    document.getElementById('bd').classList.add('on');
+    document.getElementById('sg').innerHTML = d2.magasins.map(function(s){
+      return '<div class="sc '+(s.enSpecial?'sale':'')+'"><div style="font-size:11px;font-weight:700;margin-bottom:2px;">'+s.nom+'</div><div style="font-size:16px;font-weight:700;">$'+s.prix.toFixed(2)+'</div>'+(s.enSpecial?'<div style="font-size:9px;color:var(--sub);text-decoration:line-through;">$'+s.prixRegulier.toFixed(2)+'</div><div class="badge bdg" style="margin-top:2px;font-size:9px;">Special!</div>':'')+'<div style="font-size:9px;color:var(--sub);margin-top:2px;">'+s.format+'</div></div>';
+    }).join('');
+    document.getElementById('px-res').style.display = 'block';
+    scansToday++; totalScans++;
+    var ps = document.getElementById('prof-scans'); if(ps) ps.textContent = totalScans;
+    addPoints(10); updateLimitDots(); saveData();
+    showToast(d2.nom + '! +'+(isPremium?20:10)+' pts');
+    
+  } catch(e) {
+    console.error('Barcode error:', e);
+    document.getElementById('prod-in').placeholder = 'Entre le nom du produit...';
+    showToast('Entre le nom du produit manuellement!');
+  }
+  document.getElementById('px-ld').classList.remove('on');
+  document.getElementById('scan-btn').disabled = false;
+}
+
+
+async function loadSpecials() {
+  try {
+    var jours = ['dim','lun','mar','mer','jeu','ven','sam'];
+    var aujourd = new Date();
+    var expiry = jours[(aujourd.getDay()+3)%7] + '.';
+    var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer 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'},
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        max_completion_tokens: 800,
+        messages: [{
+          role: 'user',
+          content: 'Genere 6 specials epiceirie realistes cette semaine au Quebec. JSON seulement:\n[{"emoji":"🥜","nom":"Beurre arachide Kraft 1kg","magasin":"IGA","prix":5.99,"prixReg":7.49,"expire":"dim."},{"emoji":"🥛","nom":"Lait 2% 4L","magasin":"Maxi","prix":5.49,"prixReg":6.29,"expire":"sam."},{"emoji":"🍗","nom":"Poulet entier","magasin":"Metro","prix":7.99,"prixReg":10.49,"expire":"ven."},{"emoji":"🥚","nom":"Oeufs 12","magasin":"Walmart","prix":3.97,"prixReg":5.49,"expire":"jeu."},{"emoji":"🧀","nom":"Cheddar fort 400g","magasin":"IGA","prix":4.99,"prixReg":6.99,"expire":"dim."},{"emoji":"🍞","nom":"Pain baguette","magasin":"Maxi","prix":1.99,"prixReg":2.99,"expire":"sam."}]'
+        }]
+      })
+    });
+    var data = await res.json();
+    var text = data.choices[0].message.content.replace(/```json|```/g,'').trim();
+    var specials = JSON.parse(text);
+    var html = specials.map(function(s) {
+      var pct = Math.round((1 - s.prix/s.prixReg)*100);
+      return '<div class="dc"><div style="font-size:24px;margin-bottom:6px;">'+s.emoji+'</div><div style="font-size:12px;font-weight:700;">'+s.nom+'</div><div style="font-size:10px;color:var(--sub);">'+s.magasin+' · Expire '+s.expire+'</div><div style="display:flex;align-items:baseline;gap:6px;margin-top:6px;"><div style="font-size:16px;font-weight:700;color:var(--g);">$'+s.prix.toFixed(2)+'</div><div style="font-size:11px;color:#9ca3af;text-decoration:line-through;">$'+s.prixReg.toFixed(2)+'</div></div><div class="badge bdg" style="margin-top:4px;">-'+pct+'%</div></div>';
+    }).join('');
+    document.getElementById('specials-scroll').innerHTML = html;
+  } catch(e) {
+    console.log('Specials error:', e);
+    // Fallback to static specials
+    document.getElementById('specials-scroll').innerHTML = '<div class="dc"><div style="font-size:24px;margin-bottom:6px;">🥜</div><div style="font-size:12px;font-weight:700;">Kraft 1kg</div><div style="font-size:10px;color:var(--sub);">IGA</div><div style="font-size:16px;font-weight:700;color:var(--g);margin-top:6px;">$5.99</div><div class="badge bdg" style="margin-top:4px;">-20%</div></div><div class="dc"><div style="font-size:24px;margin-bottom:6px;">🥛</div><div style="font-size:12px;font-weight:700;">Lait 2% 4L</div><div style="font-size:10px;color:var(--sub);">Maxi</div><div style="font-size:16px;font-weight:700;color:var(--g);margin-top:6px;">$5.49</div><div class="badge bdg" style="margin-top:4px;">-13%</div></div>';
+  }
+}
+
+
+function openRecipe(nom, ingredients) {
+  goTo('social', document.querySelectorAll('.nb')[4]);
+  document.getElementById('comm-feed').style.display = 'block';
+  document.getElementById('comm-upload').style.display = 'none';
+  document.querySelectorAll('#social .tab').forEach(function(t){ t.classList.remove('on','onc'); });
+  document.querySelectorAll('#social .tab')[0].classList.add('onc');
+  filterC();
+  window.scrollTo(0,0);
+  showToast('🎬 Vidéos de recettes — ' + nom);
+}
+
+</script>
+
+<script>
+let fbStar = 0;
+function openFeedback(){ document.getElementById('feedback-modal').style.display='block'; document.body.style.overflow='hidden'; }
+function closeFeedback(){ document.getElementById('feedback-modal').style.display='none'; document.body.style.overflow=''; }
+function fbSetStar(n){ fbStar=n; document.querySelectorAll('#fb-stars span').forEach(function(s,i){ s.style.opacity=i<n?'1':'0.3'; }); }
+function submitFeedback(){
+  var manque=document.getElementById('fb-manque').value;
+  var aime=document.getElementById('fb-aime').value;
+  var prix=document.getElementById('fb-prix').value;
+  var code=localStorage.getItem('sg_beta_code')||'?';
+  var subject=encodeURIComponent('Feedback Beta SmartGrocer - Code: '+code);
+  var body=encodeURIComponent('Note: '+fbStar+'/5 | Manque: '+manque+' | Aime: '+aime+' | Prix: '+prix);
+  window.open('mailto:smartgrocer@yahoo.com?subject='+subject+'&body='+body);
+  document.getElementById('feedback-form-container').style.display='none';
+  document.getElementById('feedback-success').style.display='block';
+}
+</script>
+
+<script>
+const BETA_CODES = ["SG-BETA-001","SG-BETA-002","SG-BETA-003","SG-BETA-004","SG-BETA-005","SG-BETA-006","SG-BETA-007","SG-BETA-008","SG-BETA-009","SG-BETA-010","SG-BETA-011","SG-BETA-012","SG-BETA-013","SG-BETA-014","SG-BETA-015","SG-BETA-016","SG-BETA-017","SG-BETA-018","SG-BETA-019","SG-BETA-020"];
+
+function showApp() {
+  document.getElementById('beta-gate').style.display = 'none';
+  document.getElementById('beta-banner').style.display = 'block';
+  document.body.style.overflow = '';
+  document.getElementById('landing').style.display = 'none';
+  var hasData = loadData();
+  console.log('showApp called, hasData:', hasData);
+  if (hasData) {
+    document.getElementById('onboarding').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    isPremium = true;
+    updatePlanUI(); renderRewards(); renderC(); renderBCats(); renderWallet(); renderGr(); updatePointsUI(); loadSpecials();
+    showToast('Bon retour sur SmartGrocer!');
+  } else {
+    document.getElementById('onboarding').style.display = 'block';
+    document.getElementById('app').style.display = 'none';
+    console.log('No data - showing onboarding');
+  }
+}
+
+function checkBetaCode() {
+  var input = document.getElementById('beta-code-input').value.trim().toUpperCase();
+  if (BETA_CODES.includes(input)) {
+    localStorage.setItem('sg_beta_code', input);
+    showApp();
+  } else {
+    document.getElementById('beta-error').style.display = 'block';
+    setTimeout(function(){ document.getElementById('beta-error').style.display = 'none'; }, 3000);
+  }
+}
+
+window.addEventListener('load', function() {
+  var saved = localStorage.getItem('sg_beta_code');
+  if (saved && BETA_CODES.includes(saved)) {
+    showApp();
+  } else {
+    document.getElementById('beta-gate').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+});
+</script>
+
+<!-- BETA ACCESS GATE -->
+<div id="beta-gate" style="position:fixed;top:0;left:0;right:0;bottom:0;background:linear-gradient(160deg,#1D9E75,#0F6E56);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1.5rem;">
+  <div style="background:#fff;border-radius:24px;padding:2rem;width:100%;max-width:380px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+    <div style="font-size:24px;font-weight:800;margin-bottom:4px;"><span style="color:#1D9E75;">Smart</span><span style="color:#C9A227;">Grocer</span></div>
+    <div style="font-size:13px;color:#6b7280;margin-bottom:12px;">Version Bêta — Accès restreint</div>
+    <div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:10px;padding:10px;margin-bottom:1.25rem;font-size:12px;color:#92400e;">Entre ton code d'accès bêta</div>
+    <input type="text" id="beta-code-input" placeholder="Ex: SG-BETA-001" 
+      style="width:100%;padding:12px;border:2px solid #e5e7eb;border-radius:12px;font-size:14px;text-align:center;text-transform:uppercase;letter-spacing:2px;margin-bottom:10px;font-family:monospace;"
+      oninput="this.value=this.value.toUpperCase()"
+      onkeydown="if(event.key==='Enter')checkBetaCode()"/>
+    <button onclick="checkBetaCode()" style="width:100%;background:linear-gradient(135deg,#1D9E75,#0F6E56);color:#fff;border:none;border-radius:12px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px;">Accéder à la version bêta</button>
+    <div id="beta-error" style="display:none;color:#ef4444;font-size:12px;margin-top:6px;">Code invalide — réessaie!</div>
+    <div style="font-size:11px;color:#9ca3af;margin-top:10px;">Pas de code? Contacte <a href="mailto:smartgrocer@yahoo.com" style="color:#1D9E75;">smartgrocer@yahoo.com</a></div>
+  </div>
+</div>
+
+
+
+
+
+<!-- FEEDBACK MODAL -->
+<div id="feedback-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:3000;overflow-y:auto;">
+  <div style="background:#fff;margin:1rem auto;max-width:480px;border-radius:20px;overflow:hidden;">
+    <div style="background:linear-gradient(135deg,#7B0000,#5C0000);padding:1.25rem;display:flex;align-items:center;justify-content:space-between;">
+      <div><div style="font-size:16px;font-weight:700;color:#fff;">📝 Ton feedback</div><div style="font-size:11px;color:rgba(255,255,255,0.85);">Aide-nous à améliorer SmartGrocer!</div></div>
+      <button onclick="closeFeedback()" style="background:rgba(255,255,255,0.2);border:none;color:#fff;border-radius:8px;padding:6px 10px;cursor:pointer;font-size:14px;">✕</button>
+    </div>
+    <div style="padding:1.25rem;" id="feedback-form-container">
+      <div style="margin-bottom:1rem;">
+        <div style="font-size:13px;font-weight:700;margin-bottom:8px;">⭐ Note globale</div>
+        <div style="display:flex;gap:8px;" id="fb-stars">
+          <span style="font-size:28px;cursor:pointer;opacity:0.3;" onclick="fbSetStar(1)">⭐</span>
+          <span style="font-size:28px;cursor:pointer;opacity:0.3;" onclick="fbSetStar(2)">⭐</span>
+          <span style="font-size:28px;cursor:pointer;opacity:0.3;" onclick="fbSetStar(3)">⭐</span>
+          <span style="font-size:28px;cursor:pointer;opacity:0.3;" onclick="fbSetStar(4)">⭐</span>
+          <span style="font-size:28px;cursor:pointer;opacity:0.3;" onclick="fbSetStar(5)">⭐</span>
+        </div>
+      </div>
+      <div style="margin-bottom:1rem;">
+        <div style="font-size:13px;font-weight:700;margin-bottom:6px;">💡 Ce qui manque ou pourrait être amélioré</div>
+        <textarea id="fb-manque" placeholder="Tes suggestions..." style="width:100%;padding:8px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:13px;font-family:inherit;min-height:70px;resize:vertical;"></textarea>
+      </div>
+      <div style="margin-bottom:1rem;">
+        <div style="font-size:13px;font-weight:700;margin-bottom:6px;">❤️ Ce que tu as aimé</div>
+        <textarea id="fb-aime" placeholder="Tes fonctionnalités préférées..." style="width:100%;padding:8px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:13px;font-family:inherit;min-height:70px;resize:vertical;"></textarea>
+      </div>
+      <div style="margin-bottom:1rem;">
+        <div style="font-size:13px;font-weight:700;margin-bottom:6px;">💰 Combien paierais-tu pour Premium?</div>
+        <select id="fb-prix" style="width:100%;padding:8px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:13px;">
+          <option value="">-- Sélectionne --</option>
+          <option value="gratuit">Version gratuite seulement</option>
+          <option value="2-3">$2-3/mois</option>
+          <option value="4-5">$4-5/mois</option>
+          <option value="6-10">$6-10/mois</option>
+        </select>
+      </div>
+      <button onclick="submitFeedback()" style="width:100%;background:linear-gradient(135deg,#7B0000,#5C0000);color:#fff;border:none;border-radius:12px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;">📤 Envoyer mon feedback</button>
+    </div>
+    <div id="feedback-success" style="display:none;padding:2rem;text-align:center;">
+      <div style="font-size:48px;margin-bottom:12px;">🎉</div>
+      <div style="font-size:18px;font-weight:700;color:#166534;margin-bottom:8px;">Merci pour ton feedback!</div>
+      <button onclick="closeFeedback()" style="background:#1D9E75;color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:13px;font-weight:700;cursor:pointer;">Fermer</button>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+<!-- RECIPE MODAL -->
+<div id="recipe-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:2000;overflow-y:auto;">
+  <div style="background:#fff;margin:1rem auto;max-width:480px;border-radius:20px;overflow:hidden;">
+    <div style="background:linear-gradient(135deg,#D85A30,#993C1D);padding:1.25rem;display:flex;align-items:center;justify-content:space-between;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="font-size:28px;" id="rm-emoji">🍳</div>
+        <div><div style="font-size:16px;font-weight:700;color:#fff;" id="rm-title">Recette</div><div style="font-size:11px;color:rgba(255,255,255,0.85);" id="rm-meta"></div></div>
+      </div>
+      <button onclick="closeRecipeModal()" style="background:rgba(255,255,255,0.2);border:none;color:#fff;border-radius:8px;padding:6px 10px;cursor:pointer;font-size:14px;">✕</button>
+    </div>
+    <div style="padding:1.25rem;" id="rm-content">
+      <div style="text-align:center;padding:2rem;color:#6b7280;">
+        <div style="font-size:32px;margin-bottom:8px;">⏳</div>
+        <div style="font-size:14px;">Génération de la recette...</div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
