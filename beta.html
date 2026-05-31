@@ -2004,21 +2004,17 @@ async function loadProductDB() {
 async function saveProductToDB(barcode, name, brand, format) {
   try {
     var userName = document.getElementById('h-name') ? document.getElementById('h-name').textContent : 'Beta User';
-    var payload = {
-      barcode: barcode,
-      name: name,
-      brand: brand || '',
-      format: format || '',
-      added_by: userName,
-      date: new Date().toISOString().split('T')[0]
-    };
     // Save locally immediately
     localProductDB[barcode] = {name: name, brand: brand||'', format: format||''};
-    // Save to Google Sheets
-    await fetch(GSHEET_URL, {
-      method: 'POST',
-      body: JSON.stringify(payload)
-    });
+    // Save to Google Sheets via GET (no CORS issues)
+    var url = GSHEET_URL + '?barcode=' + encodeURIComponent(barcode) +
+      '&name=' + encodeURIComponent(name) +
+      '&brand=' + encodeURIComponent(brand||'') +
+      '&format=' + encodeURIComponent(format||'') +
+      '&added_by=' + encodeURIComponent(userName) +
+      '&date=' + new Date().toISOString().split('T')[0];
+    var img = new Image();
+    img.src = url;
     console.log('Product saved to DB:', name);
   } catch(e) {
     console.log('Could not save to DB:', e);
