@@ -451,17 +451,13 @@ ml('account', '2355363');
         <div style="text-align:center;color:var(--sub);font-size:12px;"><i class="ti ti-refresh" style="font-size:20px;display:block;margin-bottom:4px;"></i>Chargement...</div>
       </div>
     </div>
-    <div class="sl">🍳 Recettes tendances</div>
-    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:1rem;">
-      <div style="background:var(--card);border-radius:16px;padding:12px;display:flex;align-items:center;gap:12px;border:1px solid var(--border);cursor:pointer;" onclick="openRecipe('Pâtes Alfredo au poulet','poulet,pâtes,crème,parmesan')">
-        <div style="width:50px;height:50px;background:linear-gradient(135deg,#D85A30,#B84520);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">🍝</div>
-        <div style="flex:1"><div style="font-size:13px;font-weight:700;">Pâtes Alfredo au poulet</div><div style="font-size:10px;color:var(--sub);margin-top:2px;">Marie L. · 30 min · ❤️ 1 284</div></div>
-        <div class="badge bdc">🔥 Viral</div>
-      </div>
-      <div style="background:var(--card);border-radius:16px;padding:12px;display:flex;align-items:center;gap:12px;border:1px solid var(--border);cursor:pointer;" onclick="openRecipe('Soupe crémeuse aux légumes','carottes,pommes de terre,oignons,crème')">
-        <div style="width:50px;height:50px;background:linear-gradient(135deg,#1D9E75,#0F6E56);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">🥘</div>
-        <div style="flex:1"><div style="font-size:13px;font-weight:700;">Soupe crémeuse légumes</div><div style="font-size:10px;color:var(--sub);margin-top:2px;">Jean-F. B. · 45 min · ❤️ 893</div></div>
-        <div class="badge bdc">🔥 Viral</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <div class="sl" style="margin-bottom:0;">🍳 Recettes tendances</div>
+      <div style="font-size:10px;color:var(--sub);">Générées par IA</div>
+    </div>
+    <div id="trending-recipes" style="display:flex;flex-direction:column;gap:10px;margin-bottom:1rem;">
+      <div style="text-align:center;padding:1rem;color:var(--sub);font-size:12px;">
+        <i class="ti ti-refresh" style="font-size:20px;display:block;margin-bottom:4px;"></i>Chargement...
       </div>
     </div>
   </div>
@@ -1139,7 +1135,7 @@ async function searchProd(){
   try{
     const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{
       method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer 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'},
+      headers:{'Content-Type':'application/json','Authorization':'Bearer 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'},
       body:JSON.stringify({
         model:'llama-3.3-70b-versatile',
         max_completion_tokens:1000,
@@ -1202,7 +1198,7 @@ async function genAll(){
   document.getElementById('rec-ld').classList.add('on');
   document.getElementById('rec-res').style.display='none';
   try{
-    var res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer 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'},body:JSON.stringify({model:'llama-3.3-70b-versatile',max_completion_tokens:1400,messages:[{role:'user',content:'Chef cuisinier. Ingrédients: '+ingredientsList+'. Génère 3 recettes + 4 vidéos YouTube populaires. JSON seulement: {"recettes":[{"emoji":"🍳","nom":"Nom recette","temps":"20 min","portions":"2 portions","match":"Utilise les ingrédients","etapes":["Étape 1","Étape 2","Étape 3","Étape 4"]}],"youtubeVideos":[{"query":"recette facile","titre":"Titre viral","channel":"Channel","views":"2.3M vues","duration":"8:42","viral":true}]}'}]})});
+    var res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer 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'},body:JSON.stringify({model:'llama-3.3-70b-versatile',max_completion_tokens:1400,messages:[{role:'user',content:'Chef cuisinier. Ingrédients: '+ingredientsList+'. Génère 3 recettes + 4 vidéos YouTube populaires. JSON seulement: {"recettes":[{"emoji":"🍳","nom":"Nom recette","temps":"20 min","portions":"2 portions","match":"Utilise les ingrédients","etapes":["Étape 1","Étape 2","Étape 3","Étape 4"]}],"youtubeVideos":[{"query":"recette facile","titre":"Titre viral","channel":"Channel","views":"2.3M vues","duration":"8:42","viral":true}]}'}]})});
     var data=await res.json();
     var text=data.choices[0].message.content.replace(/```json|```/g,'').trim();
     var parsed=JSON.parse(text);
@@ -1587,7 +1583,7 @@ async function showRecipeModal(nom, emoji) {
   try {
     var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
-      headers: {'Content-Type':'application/json','Authorization':'Bearer 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'},
+      headers: {'Content-Type':'application/json','Authorization':'Bearer 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'},
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
         max_completion_tokens: 800,
@@ -1915,7 +1911,7 @@ async function lookupBarcode(code) {
     showToast('Comparaison des prix...');
     var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
-      headers: {'Content-Type':'application/json','Authorization':'Bearer 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'},
+      headers: {'Content-Type':'application/json','Authorization':'Bearer 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'},
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
         max_completion_tokens: 1000,
@@ -1962,7 +1958,7 @@ async function loadSpecials() {
     var expiry = jours[(aujourd.getDay()+3)%7] + '.';
     var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
-      headers: {'Content-Type':'application/json','Authorization':'Bearer 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'},
+      headers: {'Content-Type':'application/json','Authorization':'Bearer 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'},
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
         max_completion_tokens: 800,
@@ -1989,14 +1985,7 @@ async function loadSpecials() {
 
 
 function openRecipe(nom, ingredients) {
-  goTo('social', document.querySelectorAll('.nb')[4]);
-  document.getElementById('comm-feed').style.display = 'block';
-  document.getElementById('comm-upload').style.display = 'none';
-  document.querySelectorAll('#social .tab').forEach(function(t){ t.classList.remove('on','onc'); });
-  document.querySelectorAll('#social .tab')[0].classList.add('onc');
-  filterC();
-  window.scrollTo(0,0);
-  showToast('🎬 Vidéos de recettes — ' + nom);
+  showRecipeModal(nom, '🍳');
 }
 
 </script>
@@ -2181,6 +2170,62 @@ function stopVoice() {
 </script>
 
 <script>
+
+async function loadTrendingRecipes() {
+  try {
+    var colors = [
+      'linear-gradient(135deg,#D85A30,#B84520)',
+      'linear-gradient(135deg,#1D9E75,#0F6E56)',
+      'linear-gradient(135deg,#534AB7,#3C3489)',
+      'linear-gradient(135deg,#C9A227,#9A7A10)',
+      'linear-gradient(135deg,#378ADD,#1A5FA8)'
+    ];
+    var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer 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'},
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        max_completion_tokens: 400,
+        messages: [{role:'user',content:'Génère 3 recettes québécoises tendances et virales différentes à chaque fois. JSON seulement: [{"emoji":"🍝","nom":"Nom recette","auteur":"Prénom N.","temps":"30 min","likes":1284},{"emoji":"🥘","nom":"Nom recette 2","auteur":"Prénom N.","temps":"45 min","likes":893},{"emoji":"🍜","nom":"Nom recette 3","auteur":"Prénom N.","temps":"20 min","likes":654}]'}]
+      })
+    });
+    var data = await res.json();
+    var text = data.choices[0].message.content.replace(/```json|```/g,'').trim();
+    var jsonMatch = text.match(/\[[\s\S]*\]/);
+    if(!jsonMatch) throw new Error('No JSON');
+    var recipes = JSON.parse(jsonMatch[0]);
+    
+    var html = recipes.map(function(r, i) {
+      var color = colors[i % colors.length];
+      var safeNom = r.nom.replace(/'/g,' ');
+      return '<div style="background:var(--card);border-radius:16px;padding:12px;display:flex;align-items:center;gap:12px;border:1px solid var(--border);cursor:pointer;" onclick="showRecipeModal(\"'+safeNom+'\",\"'+r.emoji+'\")">' +
+        '<div style="width:50px;height:50px;background:'+color+';border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">'+r.emoji+'</div>' +
+        '<div style="flex:1"><div style="font-size:13px;font-weight:700;">'+r.nom+'</div>' +
+        '<div style="font-size:10px;color:var(--sub);margin-top:2px;">'+r.auteur+' · '+r.temps+' · ❤️ '+r.likes+'</div></div>' +
+        '<div class="badge bdc">🔥 Viral</div>' +
+        '</div>';
+    }).join('');
+    
+    document.getElementById('trending-recipes').innerHTML = html;
+  } catch(e) {
+    // Fallback static recipes
+    document.getElementById('trending-recipes').innerHTML = 
+      '<div style="background:var(--card);border-radius:16px;padding:12px;display:flex;align-items:center;gap:12px;border:1px solid var(--border);cursor:pointer;" onclick="showRecipeModal(\"Pâtes Alfredo au poulet\",\"🍝\")">' +
+      '<div style="width:50px;height:50px;background:linear-gradient(135deg,#D85A30,#B84520);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">🍝</div>' +
+      '<div style="flex:1"><div style="font-size:13px;font-weight:700;">Pâtes Alfredo au poulet</div>' +
+      '<div style="font-size:10px;color:var(--sub);margin-top:2px;">Marie L. · 30 min · ❤️ 1 284</div></div>' +
+      '<div class="badge bdc">🔥 Viral</div></div>' +
+      '<div style="background:var(--card);border-radius:16px;padding:12px;display:flex;align-items:center;gap:12px;border:1px solid var(--border);cursor:pointer;" onclick="showRecipeModal(\"Soupe crémeuse légumes\",\"🥘\")">' +
+      '<div style="width:50px;height:50px;background:linear-gradient(135deg,#1D9E75,#0F6E56);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">🥘</div>' +
+      '<div style="flex:1"><div style="font-size:13px;font-weight:700;">Soupe crémeuse légumes</div>' +
+      '<div style="font-size:10px;color:var(--sub);margin-top:2px;">Jean-F. B. · 45 min · ❤️ 893</div></div>' +
+      '<div class="badge bdc">🔥 Viral</div></div>';
+  }
+}
+
+</script>
+
+<script>
 const BETA_CODES = ["SG-BETA-001","SG-BETA-002","SG-BETA-003","SG-BETA-004","SG-BETA-005","SG-BETA-006","SG-BETA-007","SG-BETA-008","SG-BETA-009","SG-BETA-010","SG-BETA-011","SG-BETA-012","SG-BETA-013","SG-BETA-014","SG-BETA-015","SG-BETA-016","SG-BETA-017","SG-BETA-018","SG-BETA-019","SG-BETA-020"];
 
 function showApp() {
@@ -2196,6 +2241,7 @@ function showApp() {
     isPremium = true;
     updatePlanUI(); renderRewards(); renderC(); renderBCats(); renderWallet(); renderGr(); updatePointsUI(); loadSpecials();
     loadProductDB();
+    loadTrendingRecipes();
     showToast('Bon retour sur SmartGrocer!');
   } else {
     document.getElementById('onboarding').style.display = 'block';
