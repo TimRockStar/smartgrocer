@@ -665,11 +665,11 @@ ml('account', '2355363');
       <div style="background:rgba(255,255,255,0.9);border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;color:#1A5FA8;">📍 Joliette, QC</div>
     </div>
     <div class="sl">5 épiceries dans un rayon de 5 km</div>
-    <div class="store-item"><div style="font-size:22px;">🏪</div><div style="flex:1"><div style="font-size:13px;font-weight:700;">IGA Joliette</div><div style="font-size:10px;color:var(--sub);">1.2 km · 700 boul. Firestone</div></div><div style="text-align:right;"><div class="badge bdg">Ouvert</div><div style="font-size:10px;color:var(--sub);margin-top:3px;">3 spéciaux</div></div></div>
-    <div class="store-item"><div style="font-size:22px;">🏬</div><div style="flex:1"><div style="font-size:13px;font-weight:700;">Maxi Joliette</div><div style="font-size:10px;color:var(--sub);">2.3 km · 1075 boul. Firestone</div></div><div style="text-align:right;"><div class="badge bdg">Ouvert</div><div style="font-size:10px;color:var(--sub);margin-top:3px;">7 spéciaux</div></div></div>
-    <div class="store-item"><div style="font-size:22px;">🏪</div><div style="flex:1"><div style="font-size:13px;font-weight:700;">Metro Joliette</div><div style="font-size:10px;color:var(--sub);">3.1 km · 900 boul. Base-de-Roc</div></div><div style="text-align:right;"><div class="badge bdg">Ouvert</div><div style="font-size:10px;color:var(--sub);margin-top:3px;">5 spéciaux</div></div></div>
-    <div class="store-item"><div style="font-size:22px;">🏢</div><div style="flex:1"><div style="font-size:13px;font-weight:700;">Walmart Joliette</div><div style="font-size:10px;color:var(--sub);">4.5 km · 1225 boul. Firestone</div></div><div style="text-align:right;"><div class="badge bdg">Ouvert</div><div style="font-size:10px;color:var(--sub);margin-top:3px;">12 spéciaux</div></div></div>
-    <div class="store-item"><div style="font-size:22px;">🏭</div><div style="flex:1"><div style="font-size:13px;font-weight:700;">Costco Terrebonne</div><div style="font-size:10px;color:var(--sub);">28 km · Terrebonne</div></div><div style="text-align:right;"><div class="badge bdg">Ouvert</div><div style="font-size:10px;color:var(--sub);margin-top:3px;">Membres</div></div></div>
+    <div class="store-item" onclick="openStore('IGA Joliette','🏪','1.2 km · 700 boul. Firestone','IGA 700 boulevard Firestone Joliette')"><div style="font-size:22px;">🏪</div><div style="flex:1"><div style="font-size:13px;font-weight:700;">IGA Joliette</div><div style="font-size:10px;color:var(--sub);">1.2 km · 700 boul. Firestone</div></div><div style="text-align:right;"><div class="badge bdg">Ouvert</div><div style="font-size:10px;color:var(--sub);margin-top:3px;">3 spéciaux</div></div></div>
+    <div class="store-item" onclick="openStore('Maxi Joliette','🏬','2.3 km · 1075 boul. Firestone','Maxi 1075 boulevard Firestone Joliette')"><div style="font-size:22px;">🏬</div><div style="flex:1"><div style="font-size:13px;font-weight:700;">Maxi Joliette</div><div style="font-size:10px;color:var(--sub);">2.3 km · 1075 boul. Firestone</div></div><div style="text-align:right;"><div class="badge bdg">Ouvert</div><div style="font-size:10px;color:var(--sub);margin-top:3px;">7 spéciaux</div></div></div>
+    <div class="store-item" onclick="openStore('Metro Joliette','🏪','3.1 km · 900 boul. Base-de-Roc','Metro 900 boulevard Base-de-Roc Joliette')"><div style="font-size:22px;">🏪</div><div style="flex:1"><div style="font-size:13px;font-weight:700;">Metro Joliette</div><div style="font-size:10px;color:var(--sub);">3.1 km · 900 boul. Base-de-Roc</div></div><div style="text-align:right;"><div class="badge bdg">Ouvert</div><div style="font-size:10px;color:var(--sub);margin-top:3px;">5 spéciaux</div></div></div>
+    <div class="store-item" onclick="openStore('Walmart Joliette','🏢','4.5 km · 1225 boul. Firestone','Walmart 1225 boulevard Firestone Joliette')"><div style="font-size:22px;">🏢</div><div style="flex:1"><div style="font-size:13px;font-weight:700;">Walmart Joliette</div><div style="font-size:10px;color:var(--sub);">4.5 km · 1225 boul. Firestone</div></div><div style="text-align:right;"><div class="badge bdg">Ouvert</div><div style="font-size:10px;color:var(--sub);margin-top:3px;">12 spéciaux</div></div></div>
+    <div class="store-item" onclick="openStore('Costco Terrebonne','🏭','28 km · Terrebonne','Costco Terrebonne Quebec')"><div style="font-size:22px;">🏭</div><div style="flex:1"><div style="font-size:13px;font-weight:700;">Costco Terrebonne</div><div style="font-size:10px;color:var(--sub);">28 km · Terrebonne</div></div><div style="text-align:right;"><div class="badge bdg">Ouvert</div><div style="font-size:10px;color:var(--sub);margin-top:3px;">Membres</div></div></div>
   </div>
 </div>
 
@@ -930,6 +930,51 @@ ml('account', '2355363');
 
 
 <script>
+
+function closeStoreModal() {
+  document.getElementById('store-modal').style.display = 'none';
+}
+
+async function openStore(name, icon, address, mapsQuery) {
+  document.getElementById('store-modal').style.display = 'block';
+  document.getElementById('sm-icon').textContent = icon;
+  document.getElementById('sm-name').textContent = name;
+  document.getElementById('sm-addr').textContent = address;
+  document.getElementById('sm-maps-btn').onclick = function() {
+    window.open('https://www.google.com/maps/search/' + encodeURIComponent(mapsQuery), '_blank');
+  };
+  document.getElementById('sm-specials').innerHTML = '<div style="text-align:center;padding:1rem;color:#6b7280;font-size:12px;">⏳ Chargement...</div>';
+  
+  try {
+    var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        max_completion_tokens: 500,
+        messages: [{role:'user',content:'Génère 5 spéciaux réalistes cette semaine chez '+name+' au Québec. JSON seulement: [{"emoji":"🥜","nom":"Produit","prix":5.99,"prixReg":7.49,"rabais":"-20%"}]'}]
+      })
+    });
+    var data = await res.json();
+    var text = data.choices[0].message.content.replace(/```json|```/g,'').trim();
+    var jsonMatch = text.match(/\[[\s\S]*\]/);
+    if(!jsonMatch) throw new Error('No JSON');
+    var specials = JSON.parse(jsonMatch[0]);
+    
+    document.getElementById('sm-specials').innerHTML = specials.map(function(s) {
+      return '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #f3f4f6;">' +
+        '<div style="font-size:22px;">' + s.emoji + '</div>' +
+        '<div style="flex:1"><div style="font-size:13px;font-weight:700;">' + s.nom + '</div>' +
+        '<div style="font-size:11px;color:#9ca3af;text-decoration:line-through;">$' + s.prixReg.toFixed(2) + '</div></div>' +
+        '<div style="text-align:right;"><div style="font-size:16px;font-weight:700;color:#1D9E75;">$' + s.prix.toFixed(2) + '</div>' +
+        '<div style="background:#dcfce7;color:#166534;font-size:10px;font-weight:700;padding:2px 6px;border-radius:999px;">' + s.rabais + '</div></div>' +
+        '</div>';
+    }).join('');
+  } catch(e) {
+    document.getElementById('sm-specials').innerHTML = '<div style="text-align:center;padding:1rem;color:#6b7280;font-size:12px;">Spéciaux non disponibles</div>';
+  }
+}
+
 // Always have fallback trending recipes
 window.trendingRecipes = [
   {emoji:'🍝', nom:'Pâtes Alfredo au poulet'},
@@ -2378,6 +2423,29 @@ window.addEventListener('load', function() {
       <div style="text-align:center;padding:2rem;color:#6b7280;">
         <div style="font-size:32px;margin-bottom:8px;">⏳</div>
         <div style="font-size:14px;">Génération de la recette...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STORE MODAL -->
+<div id="store-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:2000;overflow-y:auto;">
+  <div style="background:#fff;margin:1rem auto;max-width:480px;border-radius:20px;overflow:hidden;">
+    <div style="background:linear-gradient(135deg,#378ADD,#1A5FA8);padding:1.25rem;display:flex;align-items:center;justify-content:space-between;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="font-size:28px;" id="sm-icon">🏪</div>
+        <div><div style="font-size:16px;font-weight:700;color:#fff;" id="sm-name">IGA Joliette</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.85);" id="sm-addr"></div></div>
+      </div>
+      <button onclick="closeStoreModal()" style="background:rgba(255,255,255,0.2);border:none;color:#fff;border-radius:8px;padding:6px 10px;cursor:pointer;font-size:14px;">✕</button>
+    </div>
+    <div style="padding:1rem;">
+      <button id="sm-maps-btn" style="width:100%;background:linear-gradient(135deg,#1D9E75,#0F6E56);color:#fff;border:none;border-radius:12px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:1rem;display:flex;align-items:center;justify-content:center;gap:8px;">
+        📍 Ouvrir dans Google Maps
+      </button>
+      <div style="font-size:13px;font-weight:700;color:#1a1a2e;margin-bottom:10px;">🔥 Spéciaux de la semaine</div>
+      <div id="sm-specials">
+        <div style="text-align:center;padding:1rem;color:#6b7280;font-size:12px;">⏳ Chargement des spéciaux...</div>
       </div>
     </div>
   </div>
