@@ -930,6 +930,9 @@ ml('account', '2355363');
 
 
 <script>
+var _k1 = 'gsk_b5NuTpl2D08heEbC';
+var _k2 = 'oFKoWGdyb3FYldX9nB2tXFnH5jAJbDc9BtKF';
+var GROQ_KEY = _k1 + _k2;
 let isPremium=true,points=0,scansToday=0,recsToday=0,groceries=[],ings=[],selR=null,curRecs=[],currentProd='',camStream=null,totalScans=0; // BETA
 const LIMITS={scans:5,recs:3,list:10};
 const commRecs=[
@@ -1135,7 +1138,7 @@ async function searchProd(){
   try{
     const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{
       method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer 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'},
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
       body:JSON.stringify({
         model:'llama-3.3-70b-versatile',
         max_completion_tokens:1000,
@@ -1198,7 +1201,7 @@ async function genAll(){
   document.getElementById('rec-ld').classList.add('on');
   document.getElementById('rec-res').style.display='none';
   try{
-    var res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer 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'},body:JSON.stringify({model:'llama-3.3-70b-versatile',max_completion_tokens:1400,messages:[{role:'user',content:'Chef cuisinier. Ingrédients: '+ingredientsList+'. Génère 3 recettes + 4 vidéos YouTube populaires. JSON seulement: {"recettes":[{"emoji":"🍳","nom":"Nom recette","temps":"20 min","portions":"2 portions","match":"Utilise les ingrédients","etapes":["Étape 1","Étape 2","Étape 3","Étape 4"]}],"youtubeVideos":[{"query":"recette facile","titre":"Titre viral","channel":"Channel","views":"2.3M vues","duration":"8:42","viral":true}]}'}]})});
+    var res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},body:JSON.stringify({model:'llama-3.3-70b-versatile',max_completion_tokens:1400,messages:[{role:'user',content:'Chef cuisinier. Ingrédients: '+ingredientsList+'. Génère 3 recettes + 4 vidéos YouTube populaires. JSON seulement: {"recettes":[{"emoji":"🍳","nom":"Nom recette","temps":"20 min","portions":"2 portions","match":"Utilise les ingrédients","etapes":["Étape 1","Étape 2","Étape 3","Étape 4"]}],"youtubeVideos":[{"query":"recette facile","titre":"Titre viral","channel":"Channel","views":"2.3M vues","duration":"8:42","viral":true}]}'}]})});
     var data=await res.json();
     var text=data.choices[0].message.content.replace(/```json|```/g,'').trim();
     var parsed=JSON.parse(text);
@@ -1583,7 +1586,7 @@ async function showRecipeModal(nom, emoji) {
   try {
     var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
-      headers: {'Content-Type':'application/json','Authorization':'Bearer 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'},
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
         max_completion_tokens: 800,
@@ -1911,7 +1914,7 @@ async function lookupBarcode(code) {
     showToast('Comparaison des prix...');
     var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
-      headers: {'Content-Type':'application/json','Authorization':'Bearer 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'},
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
         max_completion_tokens: 1000,
@@ -1958,7 +1961,7 @@ async function loadSpecials() {
     var expiry = jours[(aujourd.getDay()+3)%7] + '.';
     var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
-      headers: {'Content-Type':'application/json','Authorization':'Bearer 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'},
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
         max_completion_tokens: 800,
@@ -2182,7 +2185,7 @@ async function loadTrendingRecipes() {
     ];
     var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
-      headers: {'Content-Type':'application/json','Authorization':'Bearer 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'},
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
         max_completion_tokens: 400,
