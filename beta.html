@@ -2175,21 +2175,21 @@ function stopVoice() {
 <script>
 
 async function loadTrendingRecipes() {
+  var colors = [
+    'linear-gradient(135deg,#D85A30,#B84520)',
+    'linear-gradient(135deg,#1D9E75,#0F6E56)',
+    'linear-gradient(135deg,#534AB7,#3C3489)',
+    'linear-gradient(135deg,#C9A227,#9A7A10)',
+    'linear-gradient(135deg,#378ADD,#1A5FA8)'
+  ];
   try {
-    var colors = [
-      'linear-gradient(135deg,#D85A30,#B84520)',
-      'linear-gradient(135deg,#1D9E75,#0F6E56)',
-      'linear-gradient(135deg,#534AB7,#3C3489)',
-      'linear-gradient(135deg,#C9A227,#9A7A10)',
-      'linear-gradient(135deg,#378ADD,#1A5FA8)'
-    ];
     var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
         max_completion_tokens: 400,
-        messages: [{role:'user',content:'Génère 3 recettes québécoises tendances et virales différentes à chaque fois. JSON seulement: [{"emoji":"🍝","nom":"Nom recette","auteur":"Prénom N.","temps":"30 min","likes":1284},{"emoji":"🥘","nom":"Nom recette 2","auteur":"Prénom N.","temps":"45 min","likes":893},{"emoji":"🍜","nom":"Nom recette 3","auteur":"Prénom N.","temps":"20 min","likes":654}]'}]
+        messages: [{role:'user',content:'Génère 3 recettes québécoises tendances différentes. JSON seulement: [{"emoji":"🍝","nom":"Nom recette","auteur":"Prénom N.","temps":"30 min","likes":1284}]'}]
       })
     });
     var data = await res.json();
@@ -2198,31 +2198,42 @@ async function loadTrendingRecipes() {
     if(!jsonMatch) throw new Error('No JSON');
     var recipes = JSON.parse(jsonMatch[0]);
     
+    // Store globally for onclick access
+    window.trendingRecipes = recipes;
+    
     var html = recipes.map(function(r, i) {
-      var color = colors[i % colors.length];
-      var safeNom = r.nom.replace(/'/g,' ');
-      return '<div style="background:var(--card);border-radius:16px;padding:12px;display:flex;align-items:center;gap:12px;border:1px solid var(--border);cursor:pointer;" onclick="showRecipeModal(\"'+safeNom+'\",\"'+r.emoji+'\")">' +
-        '<div style="width:50px;height:50px;background:'+color+';border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">'+r.emoji+'</div>' +
+      return '<div style="background:var(--card);border-radius:16px;padding:12px;display:flex;align-items:center;gap:12px;border:1px solid var(--border);cursor:pointer;" onclick="openTrending('+i+')">' +
+        '<div style="width:50px;height:50px;background:'+colors[i % colors.length]+';border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">'+r.emoji+'</div>' +
         '<div style="flex:1"><div style="font-size:13px;font-weight:700;">'+r.nom+'</div>' +
         '<div style="font-size:10px;color:var(--sub);margin-top:2px;">'+r.auteur+' · '+r.temps+' · ❤️ '+r.likes+'</div></div>' +
-        '<div class="badge bdc">🔥 Viral</div>' +
-        '</div>';
+        '<div class="badge bdc">🔥 Viral</div></div>';
     }).join('');
     
     document.getElementById('trending-recipes').innerHTML = html;
   } catch(e) {
-    // Fallback static recipes
-    document.getElementById('trending-recipes').innerHTML = 
-      '<div style="background:var(--card);border-radius:16px;padding:12px;display:flex;align-items:center;gap:12px;border:1px solid var(--border);cursor:pointer;" onclick="showRecipeModal(\"Pâtes Alfredo au poulet\",\"🍝\")">' +
-      '<div style="width:50px;height:50px;background:linear-gradient(135deg,#D85A30,#B84520);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">🍝</div>' +
+    console.log('Trending error:', e);
+    window.trendingRecipes = [
+      {emoji:'🍝', nom:'Pâtes Alfredo au poulet'},
+      {emoji:'🥘', nom:'Soupe crémeuse légumes'}
+    ];
+    document.getElementById('trending-recipes').innerHTML =
+      '<div style="background:var(--card);border-radius:16px;padding:12px;display:flex;align-items:center;gap:12px;border:1px solid var(--border);cursor:pointer;" onclick="openTrending(0)">' +
+      '<div style="width:50px;height:50px;background:linear-gradient(135deg,#D85A30,#B84520);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;">🍝</div>' +
       '<div style="flex:1"><div style="font-size:13px;font-weight:700;">Pâtes Alfredo au poulet</div>' +
-      '<div style="font-size:10px;color:var(--sub);margin-top:2px;">Marie L. · 30 min · ❤️ 1 284</div></div>' +
+      '<div style="font-size:10px;color:var(--sub);">Marie L. · 30 min · ❤️ 1 284</div></div>' +
       '<div class="badge bdc">🔥 Viral</div></div>' +
-      '<div style="background:var(--card);border-radius:16px;padding:12px;display:flex;align-items:center;gap:12px;border:1px solid var(--border);cursor:pointer;" onclick="showRecipeModal(\"Soupe crémeuse légumes\",\"🥘\")">' +
-      '<div style="width:50px;height:50px;background:linear-gradient(135deg,#1D9E75,#0F6E56);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">🥘</div>' +
+      '<div style="background:var(--card);border-radius:16px;padding:12px;display:flex;align-items:center;gap:12px;border:1px solid var(--border);cursor:pointer;" onclick="openTrending(1)">' +
+      '<div style="width:50px;height:50px;background:linear-gradient(135deg,#1D9E75,#0F6E56);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;">🥘</div>' +
       '<div style="flex:1"><div style="font-size:13px;font-weight:700;">Soupe crémeuse légumes</div>' +
-      '<div style="font-size:10px;color:var(--sub);margin-top:2px;">Jean-F. B. · 45 min · ❤️ 893</div></div>' +
+      '<div style="font-size:10px;color:var(--sub);">Jean-F. B. · 45 min · ❤️ 893</div></div>' +
       '<div class="badge bdc">🔥 Viral</div></div>';
+  }
+}
+
+function openTrending(idx) {
+  var recipes = window.trendingRecipes || [];
+  if(recipes[idx]) {
+    showRecipeModal(recipes[idx].nom, recipes[idx].emoji);
   }
 }
 
