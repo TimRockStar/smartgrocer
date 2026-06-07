@@ -504,7 +504,7 @@ ml('account', '2355363');
       <div class="sg" onclick="setProd('œufs douzaine')">🥚 Œufs</div>
       <div class="sg" onclick="setProd('pain tranché')">🍞 Pain</div>
     </div>
-    <div class="sr"><input type="text" id="prod-in" placeholder="Nom du produit..."/><button class="btn bg" id="voice-prod-in" onclick="startVoice('prod-in')" style="padding:8px 12px;font-size:18px;line-height:1;">🎤</button><button class="btn bb" id="scan-btn" onclick="searchProd()"><i class="ti ti-search"></i></button></div>
+    <div class="sr"><input type="text" id="prod-in" placeholder="Nom du produit..." data-i18n="prix_placeholder"/><button class="btn bg" id="voice-prod-in" onclick="startVoice('prod-in')" style="padding:8px 12px;font-size:18px;line-height:1;">🎤</button><button class="btn bb" id="scan-btn" onclick="searchProd()"><i class="ti ti-search"></i></button></div>
     <div class="ld" id="px-ld"><i class="ti ti-refresh"></i> Comparaison en cours...</div>
     <div id="px-res" style="display:none;">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem;"><span id="px-em" style="font-size:24px;"></span><div><div id="px-nm" style="font-size:14px;font-weight:600;"></div><div id="px-bc" style="font-size:10px;color:var(--sub);"></div></div></div>
@@ -538,7 +538,7 @@ ml('account', '2355363');
   <div class="px">
     <div class="limit-bar" id="rec-limit-bar" style="display:none;"><div style="font-size:11px;flex:1;">Recettes aujourd'hui</div><div class="limit-dots" id="rec-dots"></div><div style="font-size:11px;font-weight:700;" id="rec-count-text">0/3</div></div>
     <div class="sl2">Tes ingrédients</div>
-    <div class="sr"><input type="text" id="ing-in" placeholder="Ex: poulet, riz, tomates..."/><button class="btn bg" id="voice-ing-in" onclick="startVoice('ing-in')" style="padding:8px 12px;font-size:18px;line-height:1;">🎤</button><button class="btn bg" onclick="addIng()"><i class="ti ti-plus"></i></button></div>
+    <div class="sr"><input type="text" id="ing-in" placeholder="Ex: poulet, riz, tomates..." data-i18n="rec_ing_placeholder"/><button class="btn bg" id="voice-ing-in" onclick="startVoice('ing-in')" style="padding:8px 12px;font-size:18px;line-height:1;">🎤</button><button class="btn bg" onclick="addIng()"><i class="ti ti-plus"></i></button></div>
     <div id="ing-tags" style="margin-bottom:1rem;min-height:28px;"><span style="font-size:11px;color:var(--sub);">Ajoute des ingrédients / Add ingredients...</span></div>
     <button class="btn bg bf" id="gen-btn" onclick="genAll()"><i class="ti ti-wand"></i> Générer recettes + vidéos virales</button>
     <div class="ld" id="rec-ld" style="margin-top:1rem;"><i class="ti ti-refresh"></i> Génération en cours...</div>
@@ -567,7 +567,7 @@ ml('account', '2355363');
   </div>
   <div class="px">
     <div class="limit-bar" id="list-limit-bar" style="display:none;"><div style="font-size:11px;flex:1;">Articles (max 10 gratuit)</div><div style="font-size:11px;font-weight:700;" id="list-count-text">0/10</div></div>
-    <div class="sr"><input type="text" id="gr-in" placeholder="Ajouter un article / Add item..."/><button class="btn bg" id="voice-gr-in" onclick="startVoice('gr-in')" style="padding:8px 12px;font-size:18px;line-height:1;">🎤</button><button class="btn bg" onclick="addGr()"><i class="ti ti-plus"></i> Ajouter</button></div>
+    <div class="sr"><input type="text" id="gr-in" placeholder="Ajouter un article / Add item..." data-i18n="liste_placeholder"/><button class="btn bg" id="voice-gr-in" onclick="startVoice('gr-in')" style="padding:8px 12px;font-size:18px;line-height:1;">🎤</button><button class="btn bg" onclick="addGr()"><i class="ti ti-plus"></i> Ajouter</button></div>
     <div class="card"><div id="gr-items"><div style="color:var(--sub);font-size:12px;padding:8px 0;">Ta liste est vide / Your list is empty!</div></div></div>
     <div id="gr-foot" style="display:none;">
       <div class="card"><div style="display:flex;justify-content:space-between;align-items:center;"><div><div style="font-size:12px;color:var(--sub);">Total estimé / Estimated total</div></div><div style="font-size:20px;font-weight:700;" id="gr-total">$0.00</div></div></div>
@@ -591,7 +591,7 @@ ml('account', '2355363');
       <button class="tab" onclick="switchCT('feed',this)">🕐 Récentes</button>
       <button class="tab" onclick="switchCT('upload',this)">📤 Partager</button>
     </div>
-    <div id="comm-feed"><input type="text" placeholder="Rechercher / Search..." id="cs" style="margin-bottom:0.875rem;" oninput="filterC()"/><div id="cl"></div></div>
+    <div id="comm-feed"><input type="text" placeholder="Rechercher / Search..." data-i18n="social_search" id="cs" style="margin-bottom:0.875rem;" oninput="filterC()"/><div id="cl"></div></div>
     <div id="comm-upload" style="display:none;">
       <div class="card">
         <div style="display:flex;flex-direction:column;gap:8px;">
@@ -779,7 +779,7 @@ ml('account', '2355363');
     <div class="sl">Ajouter une alerte</div>
     <div class="card">
       <div style="display:flex;flex-direction:column;gap:8px;">
-        <input type="text" id="alert-prod" placeholder="Nom du produit..."/>
+        <input type="text" id="alert-prod" placeholder="Nom du produit..." data-i18n="prix_placeholder"/>
         <div style="display:flex;gap:8px;"><input type="number" id="alert-price" placeholder="Prix max ($)" style="flex:1;"/><select id="alert-store" style="flex:1;"><option>Toutes les épiceries</option><option>IGA</option><option>Maxi</option><option>Metro</option><option>Walmart</option></select></div>
         <button class="btn bgold bf" onclick="addAlert()"><i class="ti ti-bell-plus"></i> Créer l'alerte</button>
       </div>
@@ -916,12 +916,12 @@ ml('account', '2355363');
 </div><!-- end app -->
 
 <div class="nav">
-  <button class="nb active" onclick="goTo('home',this)"><i class="ti ti-home"></i>Accueil</button>
-  <button class="nb" onclick="goTo('prix',this)"><i class="ti ti-barcode"></i>Prix</button>
-  <button class="nb" onclick="goTo('recettes',this)"><i class="ti ti-salad"></i>Recettes</button>
-  <button class="nb" onclick="goTo('liste',this)"><i class="ti ti-shopping-cart"></i>Liste</button>
-  <button class="nb" onclick="goTo('social',this)"><i class="ti ti-users"></i>Social</button>
-  <button class="nb" onclick="goTo('points',this)"><i class="ti ti-trophy"></i>Points</button>
+  <button class="nb active" onclick="goTo('home',this)" data-i18n-nav="nav_home"><i class="ti ti-home"></i>Accueil</button>
+  <button class="nb" onclick="goTo('prix',this)" data-i18n-nav="nav_prix"><i class="ti ti-barcode"></i>Prix</button>
+  <button class="nb" onclick="goTo('recettes',this)" data-i18n-nav="nav_recettes"><i class="ti ti-salad"></i>Recettes</button>
+  <button class="nb" onclick="goTo('liste',this)" data-i18n-nav="nav_liste"><i class="ti ti-shopping-cart"></i>Liste</button>
+  <button class="nb" onclick="goTo('social',this)" data-i18n-nav="nav_social"><i class="ti ti-users"></i>Social</button>
+  <button class="nb" onclick="goTo('points',this)" data-i18n-nav="nav_points"><i class="ti ti-trophy"></i>Points</button>
   <button class="nb" onclick="openPlus()"><i class="ti ti-dots"></i>Plus</button>
 </div>
 
@@ -971,6 +971,139 @@ async function openStore(name, icon, address, mapsQuery) {
   } catch(e) {
     document.getElementById('sm-specials').innerHTML = '<div style="text-align:center;padding:1rem;color:#6b7280;font-size:12px;">Spéciaux non disponibles</div>';
   }
+}
+
+
+// ===== LANGUAGE SYSTEM =====
+var currentLang = localStorage.getItem('sg_lang') || 'fr';
+
+var translations = {
+  fr: {
+    // Nav
+    nav_home: 'Accueil', nav_prix: 'Prix', nav_recettes: 'Recettes',
+    nav_liste: 'Liste', nav_social: 'Social', nav_points: 'Points', nav_plus: 'Plus',
+    // Home
+    home_quick: 'Accès rapide', home_scanner: 'Scanner prix', home_scanner_sub: 'Illimité ⭐',
+    home_recettes: 'Recettes IA', home_recettes_sub: '+ Vidéos YouTube',
+    home_liste: 'Ma liste', home_wallet: 'Portefeuille',
+    home_specials: '🔥 Spéciaux cette semaine', home_trending: '🍳 Recettes tendances',
+    home_saved: '$38', home_saved_label: 'Économisé', home_scans_label: 'Scans restants', home_pts_label: 'Points',
+    // Prix
+    prix_title: 'Comparateur de prix', prix_scan_btn: '📷 Scanner un produit',
+    prix_stop: '✕ Arrêter le scanner', prix_or: 'ou recherche / or search',
+    prix_placeholder: 'Nom du produit...', prix_best: '🏆 Meilleur prix',
+    prix_add: '➕ Ajouter à ta liste', prix_add_btn: 'Ajouter', prix_see_btn: 'Voir liste',
+    // Recettes
+    rec_title: 'Recettes IA + Vidéos virales', rec_ing_label: 'Tes ingrédients',
+    rec_ing_placeholder: 'Ex: poulet, riz, tomates...', rec_gen_btn: '✨ Générer recettes + vidéos virales',
+    rec_loading: '⏳ Génération en cours...',
+    // Liste
+    liste_title: "Liste d'épicerie", liste_placeholder: 'Ajouter un article...',
+    liste_add_btn: '+ Ajouter', liste_empty: 'Ta liste est vide!',
+    liste_total: 'Total estimé', liste_compare: 'Comparer le total entre épiceries ↗',
+    // Social
+    social_trending: '🔥 Tendances', social_recent: '🕐 Récentes', social_share: '📤 Partager',
+    social_search: 'Rechercher...', social_recipe_name: 'Nom de ta recette',
+    social_ingredients: 'Ingrédients', social_prep: 'Préparation',
+    social_yt: '🎬 Lien YouTube (optionnel)', social_share_btn: '📤 Partager',
+    // Profil
+    prof_title: 'Mon profil', prof_scans: 'Scans', prof_saved: 'Économisé', prof_pts: 'Points',
+    prof_lang: 'Langue', prof_name: 'Prénom', prof_email: 'Email', prof_city: 'Ville',
+    prof_diet: 'Régime', prof_save_btn: '✅ Sauvegarder',
+    // Beta banner
+    beta_label: '🧪 Version Bêta', beta_sub: 'Toutes les fonctionnalités débloquées!',
+    beta_feedback: '📝 Donner mon feedback',
+    // Toast messages
+    toast_welcome: 'Bon retour sur SmartGrocer!',
+    toast_scan_ok: 'Scan réussi!',
+    toast_added: 'ajouté à ta liste!',
+    toast_speak: '🎤 Parle maintenant...',
+  },
+  en: {
+    // Nav
+    nav_home: 'Home', nav_prix: 'Prices', nav_recettes: 'Recipes',
+    nav_liste: 'List', nav_social: 'Social', nav_points: 'Points', nav_plus: 'More',
+    // Home
+    home_quick: 'Quick access', home_scanner: 'Price scanner', home_scanner_sub: 'Unlimited ⭐',
+    home_recettes: 'AI Recipes', home_recettes_sub: '+ YouTube Videos',
+    home_liste: 'My list', home_wallet: 'Wallet',
+    home_specials: '🔥 This week specials', home_trending: '🍳 Trending recipes',
+    home_saved: '$38', home_saved_label: 'Saved', home_scans_label: 'Scans left', home_pts_label: 'Points',
+    // Prix
+    prix_title: 'Price comparison', prix_scan_btn: '📷 Scan a product',
+    prix_stop: '✕ Stop scanner', prix_or: 'or search',
+    prix_placeholder: 'Product name...', prix_best: '🏆 Best price',
+    prix_add: '➕ Add to your list', prix_add_btn: 'Add', prix_see_btn: 'See list',
+    // Recettes
+    rec_title: 'AI Recipes + Viral Videos', rec_ing_label: 'Your ingredients',
+    rec_ing_placeholder: 'Ex: chicken, rice, tomatoes...', rec_gen_btn: '✨ Generate recipes + viral videos',
+    rec_loading: '⏳ Generating...',
+    // Liste
+    liste_title: 'Grocery list', liste_placeholder: 'Add an item...',
+    liste_add_btn: '+ Add', liste_empty: 'Your list is empty!',
+    liste_total: 'Estimated total', liste_compare: 'Compare total between stores ↗',
+    // Social
+    social_trending: '🔥 Trending', social_recent: '🕐 Recent', social_share: '📤 Share',
+    social_search: 'Search...', social_recipe_name: 'Recipe name',
+    social_ingredients: 'Ingredients', social_prep: 'Preparation',
+    social_yt: '🎬 YouTube link (optional)', social_share_btn: '📤 Share',
+    // Profil
+    prof_title: 'My profile', prof_scans: 'Scans', prof_saved: 'Saved', prof_pts: 'Points',
+    prof_lang: 'Language', prof_name: 'First name', prof_email: 'Email', prof_city: 'City',
+    prof_diet: 'Diet', prof_save_btn: '✅ Save',
+    // Beta banner
+    beta_label: '🧪 Beta Version', beta_sub: 'All features unlocked!',
+    beta_feedback: '📝 Give feedback',
+    // Toast messages  
+    toast_welcome: 'Welcome back to SmartGrocer!',
+    toast_scan_ok: 'Scan successful!',
+    toast_added: 'added to your list!',
+    toast_speak: '🎤 Speak now...',
+  }
+};
+
+function t(key) {
+  return (translations[currentLang] && translations[currentLang][key]) || 
+         (translations['fr'] && translations['fr'][key]) || key;
+}
+
+function setLang(lang) {
+  currentLang = lang;
+  localStorage.setItem('sg_lang', lang);
+  
+  // Update lang buttons
+  document.getElementById('lang-fr').className = 'lang-btn' + (lang === 'fr' ? ' active' : '');
+  document.getElementById('lang-en').className = 'lang-btn' + (lang === 'en' ? ' active' : '');
+  
+  // Update all translatable elements
+  applyTranslations();
+  showToast(lang === 'fr' ? '🇫🇷 Français activé' : '🇬🇧 English activated');
+}
+
+function applyTranslations() {
+  var els = document.querySelectorAll('[data-i18n]');
+  els.forEach(function(el) {
+    var key = el.getAttribute('data-i18n');
+    var translated = t(key);
+    if(el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+      el.placeholder = translated;
+    } else {
+      el.textContent = translated;
+    }
+  });
+  
+  // Update Groq prompts language
+  var lang = currentLang === 'en' ? 'English' : 'français';
+  
+  // Update nav labels
+  var navLabels = ['nav_home','nav_prix','nav_recettes','nav_liste','nav_social','nav_points','nav_plus'];
+  document.querySelectorAll('.nb').forEach(function(btn, i) {
+    if(navLabels[i]) {
+      var icon = btn.querySelector('i');
+      btn.textContent = t(navLabels[i]);
+      if(icon) btn.insertBefore(icon, btn.firstChild);
+    }
+  });
 }
 
 // Always have fallback trending recipes
@@ -1251,7 +1384,7 @@ async function genAll(){
   document.getElementById('rec-ld').classList.add('on');
   document.getElementById('rec-res').style.display='none';
   try{
-    var res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},body:JSON.stringify({model:'llama-3.3-70b-versatile',max_completion_tokens:1400,messages:[{role:'user',content:'Chef cuisinier. Ingrédients: '+ingredientsList+'. Génère 3 recettes + 4 vidéos YouTube populaires. JSON seulement: {"recettes":[{"emoji":"🍳","nom":"Nom recette","temps":"20 min","portions":"2 portions","match":"Utilise les ingrédients","etapes":["Étape 1","Étape 2","Étape 3","Étape 4"]}],"youtubeVideos":[{"query":"recette facile","titre":"Titre viral","channel":"Channel","views":"2.3M vues","duration":"8:42","viral":true}]}'}]})});
+    var res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},body:JSON.stringify({model:'llama-3.3-70b-versatile',max_completion_tokens:1400,messages:[{role:'user',content:'Chef cuisinier. Langue de réponse: '+(currentLang==="en"?"English":"français")+'. Ingrédients: '+ingredientsList+'. Génère 3 recettes + 4 vidéos YouTube populaires. JSON seulement: {"recettes":[{"emoji":"🍳","nom":"Nom recette","temps":"20 min","portions":"2 portions","match":"Utilise les ingrédients","etapes":["Étape 1","Étape 2","Étape 3","Étape 4"]}],"youtubeVideos":[{"query":"recette facile","titre":"Titre viral","channel":"Channel","views":"2.3M vues","duration":"8:42","viral":true}]}'}]})});
     var data=await res.json();
     var text=data.choices[0].message.content.replace(/```json|```/g,'').trim();
     var parsed=JSON.parse(text);
@@ -2309,6 +2442,7 @@ function showApp() {
     updatePlanUI(); renderRewards(); renderC(); renderBCats(); renderWallet(); renderGr(); updatePointsUI(); loadSpecials();
     loadProductDB();
     loadTrendingRecipes();
+    applyTranslations();
     showToast('Bon retour sur SmartGrocer!');
   } else {
     document.getElementById('onboarding').style.display = 'block';
