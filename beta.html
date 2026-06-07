@@ -1386,7 +1386,7 @@ function closePlus(){document.getElementById('plus-overlay').classList.remove('o
 function showToast(msg,dur=3000){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
 function showPaywall(title,msg){document.getElementById('paywall-title').textContent=title;document.getElementById('paywall-msg').textContent=msg;document.getElementById('paywall').classList.add('open');}
 function closePaywall(){document.getElementById('paywall').classList.remove('open');}
-function setLang(lang){document.getElementById('lang-fr').className='lang-btn'+(lang==='fr'?' active':'');document.getElementById('lang-en').className='lang-btn'+(lang==='en'?' active':'');showToast(lang==='fr'?'🇫🇷 Français activé':'🇬🇧 English activated');}
+// setLang moved to i18n section
 function sendPrompt(text){
   // Extract recipe name from text
   var nom = text.replace('Recette complète de ','').replace(' avec les ingrédients et les étapes','').replace('Recette complète de ','').trim();
