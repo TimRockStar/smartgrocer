@@ -649,7 +649,7 @@ ml('account', '2355363');
     <div class="hc1"></div>
     <div class="logo-row">
       <svg class="lsvg" viewBox="0 0 680 500"><use href="#logo-icon"/></svg>
-      <div><div class="lt"><span>Smart</span><span style="color:#C9A227;">Grocer</span></div><div class="ls" id="carte-city">Épiceries · Joliette, QC · 5 km</div></div>
+      <div><div class="lt"><span>Smart</span><span style="color:#C9A227;">Grocer</span></div><div class="ls" id="carte-city">Épiceries · {userCity} · 5 km</div></div>
     </div>
   </div>
   <div class="px">
@@ -1106,6 +1106,80 @@ function applyTranslations() {
   });
 }
 
+
+// ===== GEOLOCATION =====
+async function detectLocation() {
+  try {
+    // Try browser geolocation first
+    if(navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(async function(pos) {
+        try {
+          var lat = pos.coords.latitude;
+          var lon = pos.coords.longitude;
+          // Reverse geocode with free API
+          var res = await fetch('https://nominatim.openstreetmap.org/reverse?lat='+lat+'&lon='+lon+'&format=json&accept-language='+(currentLang||'fr'));
+          var data = await res.json();
+          var city = data.address.city || data.address.town || data.address.village || data.address.county || '';
+          var country = data.address.country || '';
+          var state = data.address.state || data.address.province || '';
+          var countryCode = data.address.country_code ? data.address.country_code.toUpperCase() : '';
+          
+          // Fill in onboarding fields
+          var cityEl = document.getElementById('ob-city');
+          if(cityEl && city) cityEl.value = city;
+          
+          // Set province/country
+          var provEl = document.getElementById('ob-province');
+          if(provEl) {
+            // Check if Canadian province
+            if(countryCode === 'CA') {
+              var provinces = {
+                'Quebec': 'Québec', 'Ontario': 'Ontario',
+                'British Columbia': 'Colombie-Britannique',
+                'Alberta': 'Alberta', 'Manitoba': 'Manitoba',
+                'Saskatchewan': 'Saskatchewan',
+                'New Brunswick': 'Nouveau-Brunswick',
+                'Nova Scotia': 'Nouvelle-Écosse'
+              };
+              var prov = provinces[state] || state;
+              // Add option if not exists
+              var exists = false;
+              for(var i=0; i<provEl.options.length; i++) {
+                if(provEl.options[i].value === prov) { provEl.value = prov; exists = true; break; }
+              }
+              if(!exists && prov) {
+                var opt = document.createElement('option');
+                opt.value = prov; opt.text = prov;
+                provEl.add(opt); provEl.value = prov;
+              }
+            } else {
+              // International - add country as option
+              var opt = document.createElement('option');
+              opt.value = country; opt.text = country;
+              provEl.add(opt); provEl.value = country;
+            }
+          }
+          
+          // Update currency and store suggestions based on country
+          window.userCountry = countryCode;
+          window.userCity = city;
+          window.userCurrency = countryCode === 'US' ? 'USD' : 
+                                 countryCode === 'GB' ? 'GBP' :
+                                 ['FR','DE','ES','IT','BE','NL','PT'].includes(countryCode) ? 'EUR' : 'CAD';
+          
+          showToast('📍 ' + city + ', ' + (state || country) + ' détecté!');
+        } catch(e) {
+          console.log('Reverse geocode failed:', e);
+        }
+      }, function(err) {
+        console.log('Geolocation denied:', err);
+      });
+    }
+  } catch(e) {
+    console.log('Geolocation error:', e);
+  }
+}
+
 // Always have fallback trending recipes
 window.trendingRecipes = [
   {emoji:'🍝', nom:'Pâtes Alfredo au poulet'},
@@ -1139,7 +1213,7 @@ let walletCards_DEFAULT=[
 ];
 let activeCard=0;
 
-function startApp(){document.getElementById('landing').style.display='none';document.getElementById('onboarding').style.display='block';}
+function startApp(){document.getElementById('landing').style.display='none';document.getElementById('onboarding').style.display='block';detectLocation();}
 function nextOb(n){document.querySelectorAll('.ob-step').forEach(s=>s.classList.remove('active'));document.getElementById('ob'+n).classList.add('active');}
 function finishOb(){
   // Validate required fields
@@ -2104,7 +2178,7 @@ async function lookupBarcode(code) {
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
         max_completion_tokens: 1000,
-        messages: [{role:'user',content:'Prix realistes au Quebec pour "' + productName + '". JSON seulement: {"emoji":"🛒","nom":"' + productName + '","magasins":[{"nom":"IGA","prix":5.99,"prixRegulier":7.49,"enSpecial":true,"format":"1kg"},{"nom":"Metro","prix":7.29,"prixRegulier":7.29,"enSpecial":false,"format":"1kg"},{"nom":"Maxi","prix":6.49,"prixRegulier":6.99,"enSpecial":true,"format":"1kg"},{"nom":"Walmart","prix":6.19,"prixRegulier":6.19,"enSpecial":false,"format":"1kg"},{"nom":"Costco","prix":14.99,"prixRegulier":14.99,"enSpecial":false,"format":"2.5kg"}],"formats":[{"format":"1kg","prix":5.99,"prixAu100g":0.60}]}'}]
+        messages: [{role:'user',content:'Prix realistes en '+(window.userCity||'Quebec')+', '+(window.userCountry||'CA')+' pour "' + productName + '". JSON seulement: {"emoji":"🛒","nom":"' + productName + '","magasins":[{"nom":"IGA","prix":5.99,"prixRegulier":7.49,"enSpecial":true,"format":"1kg"},{"nom":"Metro","prix":7.29,"prixRegulier":7.29,"enSpecial":false,"format":"1kg"},{"nom":"Maxi","prix":6.49,"prixRegulier":6.99,"enSpecial":true,"format":"1kg"},{"nom":"Walmart","prix":6.19,"prixRegulier":6.19,"enSpecial":false,"format":"1kg"},{"nom":"Costco","prix":14.99,"prixRegulier":14.99,"enSpecial":false,"format":"2.5kg"}],"formats":[{"format":"1kg","prix":5.99,"prixAu100g":0.60}]}'}]
       })
     });
     var data = await res.json();
@@ -2447,6 +2521,7 @@ function showApp() {
   } else {
     document.getElementById('onboarding').style.display = 'block';
     document.getElementById('app').style.display = 'none';
+    detectLocation();
     console.log('No data - showing onboarding');
   }
 }
