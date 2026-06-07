@@ -1075,9 +1075,69 @@ function setLang(lang) {
   document.getElementById('lang-fr').className = 'lang-btn' + (lang === 'fr' ? ' active' : '');
   document.getElementById('lang-en').className = 'lang-btn' + (lang === 'en' ? ' active' : '');
   
-  // Update all translatable elements
-  applyTranslations();
-  showToast(lang === 'fr' ? '🇫🇷 Français activé' : '🇬🇧 English activated');
+  var fr = lang === 'fr';
+  
+  // Nav buttons
+  var nbs = document.querySelectorAll('.nb');
+  var navFR = ['Accueil','Prix','Recettes','Liste','Social','Points','Plus'];
+  var navEN = ['Home','Prices','Recipes','List','Social','Points','More'];
+  nbs.forEach(function(btn, i) {
+    var icon = btn.querySelector('i');
+    var iconHTML = icon ? icon.outerHTML : '';
+    btn.innerHTML = iconHTML + (fr ? navFR[i] : navEN[i]);
+  });
+  
+  // Page subtitles
+  var subMap = {
+    'Comparateur de prix': 'Price comparison',
+    'Price comparison': 'Comparateur de prix',
+    'Recettes IA + Vidéos virales': 'AI Recipes + Viral Videos',
+    'AI Recipes + Viral Videos': 'Recettes IA + Vidéos virales',
+    "Liste d'épicerie": 'Grocery list',
+    'Grocery list': "Liste d'épicerie",
+    'Portefeuille numérique': 'Digital wallet',
+    'Digital wallet': 'Portefeuille numérique',
+  };
+  
+  // Placeholders
+  var prodIn = document.getElementById('prod-in');
+  if(prodIn) prodIn.placeholder = fr ? 'Nom du produit...' : 'Product name...';
+  
+  var ingIn = document.getElementById('ing-in');
+  if(ingIn) ingIn.placeholder = fr ? 'Ex: poulet, riz, tomates...' : 'Ex: chicken, rice, tomatoes...';
+  
+  var grIn = document.getElementById('gr-in');
+  if(grIn) grIn.placeholder = fr ? 'Ajouter un article...' : 'Add an item...';
+  
+  var cs = document.getElementById('cs');
+  if(cs) cs.placeholder = fr ? 'Rechercher...' : 'Search...';
+  
+  // Section labels
+  var homeQuick = document.querySelector('#home .sl');
+  if(homeQuick) homeQuick.textContent = fr ? 'Accès rapide' : 'Quick access';
+  
+  // Quick cards
+  var qcts = document.querySelectorAll('.qc-t');
+  var qcsFR = ['Scanner prix','Recettes IA','Ma liste','Portefeuille'];
+  var qcsEN = ['Price scanner','AI Recipes','My list','Wallet'];
+  qcts.forEach(function(el, i) {
+    el.textContent = fr ? qcsFR[i] : qcsEN[i];
+  });
+  
+  // Gen button
+  var genBtn = document.getElementById('gen-btn');
+  if(genBtn) genBtn.innerHTML = '<i class="ti ti-wand"></i> ' + (fr ? 'Générer recettes + vidéos virales' : 'Generate recipes + viral videos');
+  
+  // Beta banner
+  var betaLabel = document.querySelector('#beta-banner div div:first-child');
+  if(betaLabel) betaLabel.textContent = fr ? '🧪 Version Bêta' : '🧪 Beta Version';
+  var betaSub = document.querySelector('#beta-banner div div:last-child');  
+  if(betaSub && betaSub !== betaLabel) betaSub.textContent = fr ? 'Toutes les fonctionnalités débloquées!' : 'All features unlocked!';
+  
+  // Trending title
+  var trendTitle = document.querySelector('#home .sl:last-of-type');
+  
+  showToast(fr ? '🇫🇷 Français activé' : '🇬🇧 English activated');
 }
 
 function applyTranslations() {
