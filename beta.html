@@ -602,13 +602,11 @@ ml('account', '2355363');
             <textarea id="up-prep" placeholder="Décris les étapes de préparation..." style="width:100%;padding:8px;border:1px solid var(--border);border-radius:10px;font-size:13px;font-family:inherit;min-height:100px;resize:vertical;"></textarea>
             <div style="font-size:10px;color:var(--sub);margin-top:4px;">📝 Recette texte = +25 pts · 🎬 Avec vidéo = +50 pts</div>
           </div>
-          <div id="upload-zone" style="border:2px dashed var(--border);border-radius:12px;padding:1.25rem;text-align:center;color:var(--sub);font-size:12px;cursor:pointer;" onclick="checkUpload()">
-          <i class="ti ti-video-plus" style="font-size:20px;display:block;margin-bottom:4px;"></i>
-          <span id="upload-label">Uploader ta vidéo ou photo (optionnel)</span>
-          <div id="premium-upload-lock" style="display:none;margin-top:6px;">
-            <span style="background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;padding:3px 8px;border-radius:999px;">🔒 Premium requis</span>
+          <div>
+            <div class="sl2">🎬 Lien YouTube (optionnel)</div>
+            <input type="url" id="up-yt" placeholder="https://youtube.com/watch?v=..."/>
+            <div style="font-size:10px;color:var(--sub);margin-top:4px;">📝 Sans vidéo = +5 pts · 🎬 Avec vidéo YouTube = +10 pts</div>
           </div>
-        </div>
           <button class="btn bc bf" id="share-btn" onclick="submitUp()">📤 Partager / Share</button>
           <div id="share-premium-msg" style="display:none;background:#fef3c7;border:1px solid #fcd34d;border-radius:10px;padding:8px;text-align:center;margin-top:6px;">
             <div style="font-size:12px;font-weight:700;color:#92400e;">🔒 Partage réservé aux membres Premium</div>
@@ -1461,7 +1459,8 @@ function submitUp(){
   var n = document.getElementById('up-nm').value.trim();
   var ig = document.getElementById('up-ig').value.trim();
   var prep = document.getElementById('up-prep').value.trim();
-  var hasVideo = document.getElementById('upload-label').textContent.includes('chargée') || false;
+  var yt = document.getElementById('up-yt').value.trim();
+  var hasVideo = yt.length > 0;
   if(!n){showToast('⚠️ Ajoute un nom de recette!');return;}
   if(!prep && !ig){showToast('⚠️ Ajoute les ingrédients ou la préparation!');return;}
   // Check 1 share per day limit
@@ -1491,7 +1490,8 @@ function submitUp(){
     likes: 0,
     viral: false,
     liked: false,
-    prep: prep
+    prep: prep,
+    youtube: yt
   });
   filterC();
   addPoints(pts);
@@ -1500,6 +1500,7 @@ function submitUp(){
   document.getElementById('up-nm').value='';
   document.getElementById('up-ig').value='';
   document.getElementById('up-prep').value='';
+  document.getElementById('up-yt').value='';
 }
 function renderRewards(){const el=document.getElementById('rewards-list');if(!el)return;el.innerHTML=rewards.map(r=>`<div style="background:var(--card);border-radius:16px;padding:12px;display:flex;align-items:center;gap:10px;border:1px solid var(--border);margin-bottom:8px;"><div style="font-size:22px;">${r.icon}</div><div style="flex:1"><div style="font-size:12px;font-weight:700;">${r.name}</div><div style="font-size:10px;color:var(--sub);">${r.desc}</div></div><button class="btn bgold" style="padding:5px 10px;font-size:11px;" onclick="claimReward(${r.pts},'${r.name}')">${r.pts} pts</button></div>`).join('');}
 function claimReward(pts,name){
