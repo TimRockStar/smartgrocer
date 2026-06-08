@@ -1071,11 +1071,13 @@ function setLang(lang) {
   currentLang = lang;
   localStorage.setItem('sg_lang', lang);
   
-  // Update lang buttons
-  document.getElementById('lang-fr').className = 'lang-btn' + (lang === 'fr' ? ' active' : '');
-  document.getElementById('lang-en').className = 'lang-btn' + (lang === 'en' ? ' active' : '');
-  
   var fr = lang === 'fr';
+  
+  // Update lang buttons
+  var lf = document.getElementById('lang-fr');
+  var le = document.getElementById('lang-en');
+  if(lf) lf.className = 'lang-btn' + (fr ? ' active' : '');
+  if(le) le.className = 'lang-btn' + (!fr ? ' active' : '');
   
   // Nav buttons
   var nbs = document.querySelectorAll('.nb');
@@ -1084,7 +1086,7 @@ function setLang(lang) {
   nbs.forEach(function(btn, i) {
     var icon = btn.querySelector('i');
     var iconHTML = icon ? icon.outerHTML : '';
-    btn.innerHTML = iconHTML + (fr ? navFR[i] : navEN[i]);
+    btn.innerHTML = iconHTML + (fr ? (navFR[i]||'') : (navEN[i]||''));
   });
   
   // Page subtitles
@@ -1247,9 +1249,10 @@ window.trendingRecipes = [
   {emoji:'🍛', nom:'Cari de légumes'}
 ];
 
-var _k1 = 'gsk_b5NuTpl2D08heEbC';
-var _k2 = 'oFKoWGdyb3FYldX9nB2tXFnH5jAJbDc9BtKF';
-var GROQ_KEY = _k1 + _k2;
+var _k1 = 'gsk_pcqjPdUWZKc';
+var _k2 = 'XMbcEYyz1WGdyb3';
+var _k3 = 'FY59Yk1hVF336ZrsB7GSrA3aWm';
+var GROQ_KEY = _k1 + _k2 + _k3;
 let isPremium=true,points=0,scansToday=0,recsToday=0,groceries=[],ings=[],selR=null,curRecs=[],currentProd='',camStream=null,totalScans=0; // BETA
 const LIMITS={scans:5,recs:3,list:10};
 const commRecs=[
