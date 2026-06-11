@@ -1301,6 +1301,86 @@ function renderFavorites() {
   el.innerHTML = html;
 }
 
+
+var _pendingGroceryItem = '';
+
+function closePricePicker() {
+  document.getElementById('price-picker-modal').style.display = 'none';
+  _pendingGroceryItem = '';
+}
+
+function addWithoutPrice() {
+  if(_pendingGroceryItem) {
+    groceries.push({name: _pendingGroceryItem, price: 0, done: false, store: ''});
+    renderGr();
+    saveData();
+    showToast('✅ "' + _pendingGroceryItem + '" ajouté!');
+  }
+  closePricePicker();
+}
+
+function addWithPrice(price, storeEl) {
+  var store = typeof storeEl === "string" ? storeEl : storeEl;
+  if(_pendingGroceryItem) {
+    groceries.push({name: _pendingGroceryItem, price: price, done: false, store: store});
+    renderGr();
+    saveData();
+    showToast('✅ "' + _pendingGroceryItem + '" — ' + store + ' $' + price.toFixed(2));
+  }
+  closePricePicker();
+}
+
+async function showPricePicker(productName) {
+  _pendingGroceryItem = productName;
+  document.getElementById('pp-product-name').textContent = productName;
+  document.getElementById('pp-prices-list').innerHTML = '<div style="text-align:center;padding:1rem;color:var(--sub);font-size:12px;">⏳ Recherche des prix...</div>';
+  document.getElementById('price-picker-modal').style.display = 'flex';
+  
+  try {
+    var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        max_completion_tokens: 600,
+        messages: [{role:'user',content:'Prix realistes au Quebec pour "'+productName+'". JSON seulement: [{"store":"IGA","price":5.99,"special":true},{"store":"Maxi","price":5.49,"special":false},{"store":"Metro","price":5.99,"special":false},{"store":"Walmart","price":5.97,"special":false},{"store":"Costco","price":12.99,"special":false}]'}]
+      })
+    });
+    var data = await res.json();
+    var text = data.choices[0].message.content.replace(/```json|```/g,'').trim();
+    var jsonMatch = text.match(/\[[\s\S]*\]/);
+    if(!jsonMatch) throw new Error('No JSON');
+    var prices = JSON.parse(jsonMatch[0]);
+    
+    // Sort by price
+    prices.sort(function(a,b){ return a.price - b.price; });
+    
+    var icons = {'IGA':'🏪','Maxi':'🏬','Metro':'🛒','Walmart':'🏢','Costco':'🏭'};
+    
+        var html = '';
+    for(var pi=0; pi<prices.length; pi++) {
+      var p = prices[pi];
+      var icon = icons[p.store] || '🏪';
+      var isBest = pi === 0;
+      var bg = isBest ? '#dcfce7' : 'var(--light)';
+      var border = isBest ? '#86efac' : 'transparent';
+      var color = isBest ? '#166534' : 'var(--text)';
+      html += '<div onclick="addWithPrice(' + p.price + ',this.dataset.store)" data-store="' + p.store + '" style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:14px;cursor:pointer;margin-bottom:8px;background:' + bg + ';border:2px solid ' + border + '">';
+      html += '<div style="font-size:24px;">' + icon + '</div>';
+      html += '<div style="flex:1;"><div style="font-size:14px;font-weight:700;">' + p.store + '</div>';
+      html += (p.special ? '<div style="font-size:10px;color:#166534;font-weight:700;">🔥 En spécial!</div>' : '');
+      html += '</div>';
+      html += (isBest ? '<div class="badge bdg" style="margin-right:8px;">Meilleur</div>' : '');
+      html += '<div style="font-size:20px;font-weight:700;color:' + color + ';">$' + p.price.toFixed(2) + '</div>';
+      html += '</div>';
+    }
+    document.getElementById('pp-prices-list').innerHTML = html;
+    
+  } catch(e) {
+    document.getElementById('pp-prices-list').innerHTML = '<div style="text-align:center;padding:1rem;color:var(--sub);font-size:12px;">Prix non disponibles</div>';
+  }
+}
+
 // Always have fallback trending recipes
 window.trendingRecipes = [
   {emoji:'🍝', nom:'Pâtes Alfredo au poulet'},
@@ -1690,7 +1770,8 @@ function switchRT(t,btn,cls){document.querySelectorAll('#recettes .tab').forEach
 function addGr(){
   const v=document.getElementById('gr-in').value.trim();if(!v)return;
   if(!isPremium&&groceries.length>=LIMITS.list){showPaywall('Liste pleine!','Tu as atteint la limite de 10 articles. Passe à Premium!');return;}
-  groceries.push({name:v,price:parseFloat((Math.random()*7+1.5).toFixed(2)),done:false});document.getElementById('gr-in').value='';renderGr();saveData();
+  document.getElementById('gr-in').value='';
+  showPricePicker(v);
 }
 function toggleGr(i){groceries[i].done=!groceries[i].done;renderGr();saveData();}
 function delGr(i){groceries.splice(i,1);renderGr();saveData();}
@@ -2821,6 +2902,23 @@ window.addEventListener('load', function() {
         <div style="text-align:center;padding:1rem;color:#6b7280;font-size:12px;">⏳ Chargement des spéciaux...</div>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- PRICE PICKER MODAL -->
+<div id="price-picker-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:2000;align-items:flex-end;justify-content:center;display:none;">
+  <div style="background:#fff;border-radius:24px 24px 0 0;padding:1.5rem;width:100%;max-width:480px;animation:slideUp 0.3s ease;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+      <div>
+        <div style="font-size:16px;font-weight:700;" id="pp-product-name">Produit</div>
+        <div style="font-size:11px;color:var(--sub);">Choisis ton épicerie</div>
+      </div>
+      <button onclick="closePricePicker()" style="background:var(--light);border:none;border-radius:8px;padding:6px 10px;cursor:pointer;font-size:14px;">✕</button>
+    </div>
+    <div id="pp-prices-list" style="margin-bottom:1rem;"></div>
+    <button onclick="addWithoutPrice()" class="btn bo bf" style="margin-top:4px;">
+      + Ajouter sans comparer les prix
+    </button>
   </div>
 </div>
 </body>
