@@ -1336,6 +1336,15 @@ async function showCompareModal(query) {
   }
 }
 
+
+function openLocalStore(idx) {
+  var stores = window._localStores || [];
+  var s = stores[idx];
+  if(!s) return;
+  var city = window.userCity || 'Joliette';
+  openStore(s.nom, s.icone, s.adresse, s.nom + ' ' + city);
+}
+
 function closePricePicker() {
   document.getElementById('price-picker-modal').style.display = 'none';
   _pendingGroceryItem = '';
@@ -1410,6 +1419,56 @@ async function showPricePicker(productName) {
     
   } catch(e) {
     document.getElementById('pp-prices-list').innerHTML = '<div style="text-align:center;padding:1rem;color:var(--sub);font-size:12px;">Prix non disponibles</div>';
+  }
+}
+
+
+async function loadLocalStores() {
+  var city = window.userCity || 'Joliette';
+  var country = window.userCountry || 'CA';
+  var currency = window.userCurrency || 'CAD';
+  
+  // Update map label
+  var carteCity = document.getElementById('carte-city');
+  if(carteCity) carteCity.textContent = 'Épiceries · ' + city + ' · 5 km';
+  
+  // Update map pin label
+  var mapLabel = document.querySelector('.map-ph div:last-child');
+  if(mapLabel) mapLabel.textContent = '📍 ' + city;
+  
+  // Generate local stores with Groq
+  try {
+    var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        max_completion_tokens: 600,
+        messages: [{role:'user',content:'Liste 5 vraies épiceries/supermarchés près de '+city+', '+country+'. JSON seulement: [{"nom":"Carrefour","icone":"🏪","distance":"1.2 km","adresse":"123 rue Example","specials":3,"ouvert":true},{"nom":"Leclerc","icone":"🏬","distance":"2.1 km","adresse":"456 rue Example","specials":7,"ouvert":true}]'}]
+      })
+    });
+    var data = await res.json();
+    var text = data.choices[0].message.content.replace(/```json|```/g,'').trim();
+    var jsonMatch = text.match(/\[[\s\S]*\]/);
+    if(!jsonMatch) throw new Error('No JSON');
+    var stores = JSON.parse(jsonMatch[0]);
+    
+    // Update stores list
+    var storesList = document.querySelector('#carte .px');
+    if(!storesList) return;
+    
+    var storesHTML = '<div class="sl">' + stores.length + ' épiceries dans un rayon de 5 km</div>';
+    
+    
+    // Replace existing stores
+    var existingTitle = storesList.querySelector('.sl');
+    var existingStores = storesList.querySelectorAll('.store-item');
+    if(existingTitle) existingTitle.remove();
+    existingStores.forEach(function(s){ s.remove(); });
+    storesList.insertAdjacentHTML('beforeend', storesHTML);
+    
+  } catch(e) {
+    console.log('Could not load local stores:', e);
   }
 }
 
@@ -1548,7 +1607,7 @@ function goTo(p,btn){
   if(btn)btn.classList.add('active');
   else{const idx=['home','prix','recettes','liste','social','points'].indexOf(p);if(idx>=0)document.querySelectorAll('.nb')[idx].classList.add('active');}
 }
-function goExtra(p){if(p==='profil')setTimeout(loadProfileInputs,100);
+function goExtra(p){if(p==='profil')setTimeout(loadProfileInputs,100);if(p==='carte')setTimeout(loadLocalStores,100);
   closePlus();
   document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
   document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
@@ -2794,6 +2853,7 @@ function showApp() {
     loadTrendingRecipes();
     loadFavorites();
     renderFavorites();
+    loadLocalStores();
     applyTranslations();
     showToast('Bon retour sur SmartGrocer!');
   } else {
