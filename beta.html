@@ -2649,7 +2649,9 @@ function removeFavorite(idx) {
 function openTrending(idx) {
   var recipes = window.trendingRecipes || [];
   if(recipes[idx]) {
-    showRecipeModal(recipes[idx].nom, recipes[idx].emoji, recipes[idx]);
+    var r = recipes[idx];
+    window._currentModalRecipe = {nom: r.nom, emoji: r.emoji||'🍳', temps: r.temps||'', auteur: r.auteur||''};
+    showRecipeModal(r.nom, r.emoji||'🍳', window._currentModalRecipe);
   }
 }
 
