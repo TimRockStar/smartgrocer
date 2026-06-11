@@ -1304,6 +1304,38 @@ function renderFavorites() {
 
 var _pendingGroceryItem = '';
 
+
+async function showCompareModal(query) {
+  // Show a simple modal with comparison info
+  var list = groceries.map(function(g){ return g.name; }).join(', ');
+  if(!list) { showToast('Ta liste est vide!'); return; }
+  
+  // Show recipe modal repurposed for comparison
+  document.getElementById('recipe-modal').style.display = 'block';
+  document.getElementById('rm-emoji').textContent = '🛒';
+  document.getElementById('rm-title').textContent = 'Comparaison des prix';
+  document.getElementById('rm-meta').textContent = 'Chargement...';
+  document.getElementById('rm-content').innerHTML = '<div style="text-align:center;padding:1rem;color:var(--sub);">⏳ Comparaison en cours...</div>';
+  
+  try {
+    var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        max_completion_tokens: 600,
+        messages: [{role:'user',content:'Compare le coût total de cette liste entre IGA, Maxi, Metro et Walmart au Québec. Liste: '+list+'. Donne les totaux estimés pour chaque magasin et recommande le moins cher. Réponds en français, format simple et clair.'}]
+      })
+    });
+    var data = await res.json();
+    var text = data.choices[0].message.content.trim();
+    document.getElementById('rm-content').innerHTML = '<div style="font-size:13px;line-height:1.8;color:#1a1a2e;white-space:pre-wrap;padding:0.5rem;">' + text + '</div>';
+    document.getElementById('rm-meta').textContent = 'Résultat de la comparaison';
+  } catch(e) {
+    document.getElementById('rm-content').innerHTML = '<div style="padding:1rem;color:#ef4444;">Erreur — réessaie!</div>';
+  }
+}
+
 function closePricePicker() {
   document.getElementById('price-picker-modal').style.display = 'none';
   _pendingGroceryItem = '';
@@ -1530,8 +1562,13 @@ function showPaywall(title,msg){document.getElementById('paywall-title').textCon
 function closePaywall(){document.getElementById('paywall').classList.remove('open');}
 // setLang moved to i18n section
 function sendPrompt(text){
-  // Extract recipe name from text
-  var nom = text.replace('Recette complète de ','').replace(' avec les ingrédients et les étapes','').replace('Recette complète de ','').trim();
+  // Handle compare list request
+  if(text.indexOf('Compare le') === 0 || text.indexOf('Conseils') === 0) {
+    showCompareModal(text);
+    return;
+  }
+  // Extract recipe name
+  var nom = text.replace('Recette complète de ','').replace(' avec les ingrédients et les étapes','').trim();
   showRecipeModal(nom, '🍳');
 }
 function activatePremium(){/* Disabled - use Stripe */document.getElementById('paywall').classList.remove('open');goExtra('premium');}
@@ -2906,7 +2943,7 @@ window.addEventListener('load', function() {
 </div>
 
 <!-- PRICE PICKER MODAL -->
-<div id="price-picker-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:2000;align-items:flex-end;justify-content:center;display:none;">
+<div id="price-picker-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:2000;align-items:flex-end;justify-content:center;">
   <div style="background:#fff;border-radius:24px 24px 0 0;padding:1.5rem;width:100%;max-width:480px;animation:slideUp 0.3s ease;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
       <div>
