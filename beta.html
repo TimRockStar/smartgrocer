@@ -2625,6 +2625,15 @@ function renderTrendingRecipes(recipes, colors) {
 
 
 
+
+function toggleFavFromModal() {
+  var rec = window._currentModalRecipe;
+  if(!rec) return;
+  toggleFavorite(rec);
+  var btn = document.getElementById('rm-fav-btn');
+  if(btn) btn.textContent = isFavorite(rec.nom) ? '⭐' : '☆';
+}
+
 function openFavorite(idx) {
   var r = favoriteRecipes[idx];
   if(r) showRecipeModal(r.nom, r.emoji||'🍳', r);
@@ -2776,7 +2785,10 @@ window.addEventListener('load', function() {
         <div style="font-size:28px;" id="rm-emoji">🍳</div>
         <div><div style="font-size:16px;font-weight:700;color:#fff;" id="rm-title">Recette</div><div style="font-size:11px;color:rgba(255,255,255,0.85);" id="rm-meta"></div></div>
       </div>
-      <button onclick="closeRecipeModal()" style="background:rgba(255,255,255,0.2);border:none;color:#fff;border-radius:8px;padding:6px 10px;cursor:pointer;font-size:14px;">✕</button>
+      <div style="display:flex;gap:8px;">
+        <button id="rm-fav-btn" onclick="toggleFavFromModal()" style="background:rgba(255,255,255,0.2);border:none;color:#fff;border-radius:8px;padding:6px 10px;cursor:pointer;font-size:18px;">☆</button>
+        <button onclick="closeRecipeModal()" style="background:rgba(255,255,255,0.2);border:none;color:#fff;border-radius:8px;padding:6px 10px;cursor:pointer;font-size:14px;">✕</button>
+      </div>
     </div>
     <div style="padding:1.25rem;" id="rm-content">
       <div style="text-align:center;padding:2rem;color:#6b7280;">
