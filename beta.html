@@ -547,6 +547,10 @@ ml('account', '2355363');
         <button class="tab on" id="tr" onclick="switchRT('recettes',this,'on')"><i class="ti ti-chef-hat"></i> Recettes</button>
         <button class="tab" id="ty" onclick="switchRT('youtube',this,'onc')"><i class="ti ti-brand-youtube"></i> YouTube</button>
         <button class="tab" id="tc" onclick="switchRT('community',this,'on')"><i class="ti ti-users"></i> Communauté</button>
+        <button class="tab" id="tf" onclick="switchRT('favoris',this,'on')">⭐ Favoris</button>
+      </div>
+      <div id="p-favoris" style="display:none;">
+        <div id="favorites-list"></div>
       </div>
       <div id="p-recettes"><div class="rg" id="rg"></div><div id="db" style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1rem;margin-bottom:1rem;display:none;"><div style="display:flex;align-items:center;gap:10px;margin-bottom:0.875rem;"><div id="de" style="font-size:28px;"></div><div><div id="dn" style="font-size:14px;font-weight:700;"></div><div id="dm" style="font-size:11px;color:var(--sub);"></div></div></div><ol class="steps" id="ds"></ol><div style="display:flex;gap:8px;margin-top:0.875rem;"><button class="btn bo" style="flex:1;" id="full-rec-btn">Recette complète ↗</button><button class="btn bc" style="flex:1;" onclick="switchRT('youtube',document.getElementById('ty'),'onc')"><i class="ti ti-brand-youtube"></i> Vidéos</button></div></div></div>
       <div id="p-youtube" style="display:none;"><div class="vg" id="vg"></div></div>
@@ -1242,6 +1246,61 @@ async function detectLocation() {
   }
 }
 
+
+var favoriteRecipes = [];
+
+function loadFavorites() {
+  try {
+    var saved = localStorage.getItem('sg_favorites');
+    if(saved) favoriteRecipes = JSON.parse(saved);
+  } catch(e) { favoriteRecipes = []; }
+}
+
+function saveFavorites() {
+  localStorage.setItem('sg_favorites', JSON.stringify(favoriteRecipes));
+}
+
+function toggleFavorite(recipe) {
+  var idx = favoriteRecipes.findIndex(function(r){ return r.nom === recipe.nom; });
+  if(idx >= 0) {
+    favoriteRecipes.splice(idx, 1);
+    showToast('💔 Retiré des favoris');
+  } else {
+    favoriteRecipes.unshift(recipe);
+    showToast('⭐ Ajouté aux favoris!');
+  }
+  saveFavorites();
+  renderFavorites();
+}
+
+function isFavorite(nom) {
+  return favoriteRecipes.some(function(r){ return r.nom === nom; });
+}
+
+function renderFavorites() {
+  var el = document.getElementById('favorites-list');
+  if(!el) return;
+  if(favoriteRecipes.length === 0) {
+    el.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--sub);"><div style="font-size:40px;margin-bottom:8px;">⭐</div><div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px;">Aucun favori</div><div style="font-size:12px;">Appuie sur ⭐ sur une recette pour la sauvegarder!</div></div>';
+    return;
+  }
+  var html = '';
+  for(var i=0; i<favoriteRecipes.length; i++) {
+    var r = favoriteRecipes[i];
+    var em = r.emoji || '🍳';
+    var nm = r.nom || '';
+    var tm = r.temps || '';
+    html += '<div style="background:var(--card);border-radius:16px;padding:12px;display:flex;align-items:center;gap:12px;border:1px solid var(--border);margin-bottom:8px;">';
+    html += '<div onclick="openFavorite('+i+')" style="display:flex;align-items:center;gap:12px;flex:1;cursor:pointer;">';
+    html += '<div style="width:50px;height:50px;background:linear-gradient(135deg,#D85A30,#B84520);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">'+em+'</div>';
+    html += '<div><div style="font-size:13px;font-weight:700;">'+nm+'</div>';
+    html += '<div style="font-size:10px;color:var(--sub);margin-top:2px;">'+tm+'</div></div></div>';
+    html += '<button onclick="removeFavorite('+i+')" style="background:none;border:none;font-size:20px;cursor:pointer;">⭐</button>';
+    html += '</div>';
+  }
+  el.innerHTML = html;
+}
+
 // Always have fallback trending recipes
 window.trendingRecipes = [
   {emoji:'🍝', nom:'Pâtes Alfredo au poulet'},
@@ -1536,7 +1595,7 @@ async function genAll(){
   document.getElementById('rec-ld').classList.remove('on');
 }
 
-function renderRecs(recs){document.getElementById('rg').innerHTML=recs.map((r,i)=>`<div class="rc" id="rc-${i}" onclick="selRec(${i})"><div style="font-size:22px;margin-bottom:4px;">${r.emoji}</div><div style="font-size:12px;font-weight:700;margin-bottom:2px;">${r.nom}</div><div style="font-size:10px;color:var(--sub);">${r.temps} · ${r.portions}</div><div style="font-size:10px;color:var(--g);margin-top:3px;">${r.match}</div></div>`).join('');}
+function renderRecs(recs){document.getElementById('rg').innerHTML=recs.map((r,i)=>`<div class="rc" id="rc-${i}" onclick="selRec(${i})"><div style="display:flex;justify-content:space-between;align-items:start;"><div style="font-size:22px;margin-bottom:4px;">${r.emoji}</div><button onclick="event.stopPropagation();toggleFavorite(curRecs[${i}])" style="background:none;border:none;font-size:16px;cursor:pointer;">${isFavorite(r.nom)?'⭐':'☆'}</button></div><div style="font-size:12px;font-weight:700;margin-bottom:2px;">${r.nom}</div><div style="font-size:10px;color:var(--sub);">${r.temps} · ${r.portions}</div><div style="font-size:10px;color:var(--g);margin-top:3px;">${r.match}</div></div>`).join('');}
 function selRec(i){
   document.querySelectorAll('.rc').forEach(c=>c.classList.remove('sel'));
   document.getElementById('rc-'+i).classList.add('sel');
@@ -1627,7 +1686,7 @@ function openRecipeFromCommunity(id) {
   showToast('🎬 ' + rec.nom);
 }
 
-function switchRT(t,btn,cls){document.querySelectorAll('#recettes .tab').forEach(x=>x.classList.remove('on','onc'));btn.classList.add(cls);['recettes','youtube','community'].forEach(p=>document.getElementById('p-'+p).style.display='none');document.getElementById('p-'+t).style.display='block';}
+function switchRT(t,btn,cls){document.querySelectorAll('#recettes .tab').forEach(x=>x.classList.remove('on','onc'));btn.classList.add(cls);['recettes','youtube','community','favoris'].forEach(p=>document.getElementById('p-'+p).style.display='none');document.getElementById('p-'+t).style.display='block';if(t==='favoris')renderFavorites();}
 function addGr(){
   const v=document.getElementById('gr-in').value.trim();if(!v)return;
   if(!isPremium&&groceries.length>=LIMITS.list){showPaywall('Liste pleine!','Tu as atteint la limite de 10 articles. Passe à Premium!');return;}
@@ -1898,7 +1957,7 @@ function closeRecipeModal() {
   document.getElementById('recipe-modal').style.display = 'none';
 }
 
-async function showRecipeModal(nom, emoji) {
+async function showRecipeModal(nom, emoji, recipeObj) {
   // Show modal with loading
   document.getElementById('recipe-modal').style.display = 'block';
   document.getElementById('rm-emoji').textContent = emoji || '🍳';
@@ -2505,6 +2564,21 @@ async function loadTrendingRecipes() {
     'linear-gradient(135deg,#C9A227,#9A7A10)',
     'linear-gradient(135deg,#378ADD,#1A5FA8)'
   ];
+  
+  // Check cache - refresh only once per day
+  var today = new Date().toISOString().split('T')[0];
+  var cached = localStorage.getItem('sg_trending');
+  if(cached) {
+    try {
+      var cacheData = JSON.parse(cached);
+      if(cacheData.date === today && cacheData.recipes) {
+        window.trendingRecipes = cacheData.recipes;
+        renderTrendingRecipes(cacheData.recipes, colors);
+        return;
+      }
+    } catch(e) {}
+  }
+  
   try {
     var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
@@ -2512,7 +2586,7 @@ async function loadTrendingRecipes() {
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
         max_completion_tokens: 400,
-        messages: [{role:'user',content:'Génère 3 recettes québécoises tendances différentes. JSON seulement: [{"emoji":"🍝","nom":"Nom recette","auteur":"Prénom N.","temps":"30 min","likes":1284}]'}]
+        messages: [{role:'user',content:'Génère 3 recettes québécoises tendances et virales différentes. JSON seulement: [{"emoji":"🍝","nom":"Nom recette","auteur":"Prénom N.","temps":"30 min","likes":1284},{"emoji":"🥘","nom":"Nom recette 2","auteur":"Prénom N.","temps":"45 min","likes":893},{"emoji":"🍜","nom":"Nom recette 3","auteur":"Prénom N.","temps":"20 min","likes":654}]'}]
       })
     });
     var data = await res.json();
@@ -2521,42 +2595,52 @@ async function loadTrendingRecipes() {
     if(!jsonMatch) throw new Error('No JSON');
     var recipes = JSON.parse(jsonMatch[0]);
     
-    // Store globally for onclick access
+    // Save to cache
+    localStorage.setItem('sg_trending', JSON.stringify({date: today, recipes: recipes}));
     window.trendingRecipes = recipes;
+    renderTrendingRecipes(recipes, colors);
     
-    var html = recipes.map(function(r, i) {
-      return '<div style="background:var(--card);border-radius:16px;padding:12px;display:flex;align-items:center;gap:12px;border:1px solid var(--border);cursor:pointer;" onclick="openTrending('+i+')">' +
-        '<div style="width:50px;height:50px;background:'+colors[i % colors.length]+';border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">'+r.emoji+'</div>' +
-        '<div style="flex:1"><div style="font-size:13px;font-weight:700;">'+r.nom+'</div>' +
-        '<div style="font-size:10px;color:var(--sub);margin-top:2px;">'+r.auteur+' · '+r.temps+' · ❤️ '+r.likes+'</div></div>' +
-        '<div class="badge bdc">🔥 Viral</div></div>';
-    }).join('');
-    
-    document.getElementById('trending-recipes').innerHTML = html;
   } catch(e) {
     console.log('Trending error:', e);
-    window.trendingRecipes = [
-      {emoji:'🍝', nom:'Pâtes Alfredo au poulet'},
-      {emoji:'🥘', nom:'Soupe crémeuse légumes'}
+    var fallback = [
+      {emoji:'🍝', nom:'Pâtes Alfredo au poulet', auteur:'Marie L.', temps:'30 min', likes:1284},
+      {emoji:'🥘', nom:'Soupe crémeuse légumes', auteur:'Jean-F. B.', temps:'45 min', likes:893},
+      {emoji:'🍛', nom:'Cari de légumes', auteur:'Sophie T.', temps:'25 min', likes:654}
     ];
-    document.getElementById('trending-recipes').innerHTML =
-      '<div style="background:var(--card);border-radius:16px;padding:12px;display:flex;align-items:center;gap:12px;border:1px solid var(--border);cursor:pointer;" onclick="openTrending(0)">' +
-      '<div style="width:50px;height:50px;background:linear-gradient(135deg,#D85A30,#B84520);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;">🍝</div>' +
-      '<div style="flex:1"><div style="font-size:13px;font-weight:700;">Pâtes Alfredo au poulet</div>' +
-      '<div style="font-size:10px;color:var(--sub);">Marie L. · 30 min · ❤️ 1 284</div></div>' +
-      '<div class="badge bdc">🔥 Viral</div></div>' +
-      '<div style="background:var(--card);border-radius:16px;padding:12px;display:flex;align-items:center;gap:12px;border:1px solid var(--border);cursor:pointer;" onclick="openTrending(1)">' +
-      '<div style="width:50px;height:50px;background:linear-gradient(135deg,#1D9E75,#0F6E56);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;">🥘</div>' +
-      '<div style="flex:1"><div style="font-size:13px;font-weight:700;">Soupe crémeuse légumes</div>' +
-      '<div style="font-size:10px;color:var(--sub);">Jean-F. B. · 45 min · ❤️ 893</div></div>' +
-      '<div class="badge bdc">🔥 Viral</div></div>';
+    window.trendingRecipes = fallback;
+    renderTrendingRecipes(fallback, colors);
   }
+}
+
+function renderTrendingRecipes(recipes, colors) {
+  var html = recipes.map(function(r, i) {
+    return '<div style="background:var(--card);border-radius:16px;padding:12px;display:flex;align-items:center;gap:12px;border:1px solid var(--border);cursor:pointer;" onclick="openTrending('+i+')">' +
+      '<div style="width:50px;height:50px;background:'+colors[i % colors.length]+';border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">'+r.emoji+'</div>' +
+      '<div style="flex:1"><div style="font-size:13px;font-weight:700;">'+r.nom+'</div>' +
+      '<div style="font-size:10px;color:var(--sub);margin-top:2px;">'+r.auteur+' · '+r.temps+' · ❤️ '+r.likes+'</div></div>' +
+      '<div class="badge bdc">🔥 Viral</div></div>';
+  }).join('');
+  document.getElementById('trending-recipes').innerHTML = html;
+}
+
+
+
+function openFavorite(idx) {
+  var r = favoriteRecipes[idx];
+  if(r) showRecipeModal(r.nom, r.emoji||'🍳', r);
+}
+
+function removeFavorite(idx) {
+  favoriteRecipes.splice(idx, 1);
+  saveFavorites();
+  renderFavorites();
+  showToast('💔 Retiré des favoris');
 }
 
 function openTrending(idx) {
   var recipes = window.trendingRecipes || [];
   if(recipes[idx]) {
-    showRecipeModal(recipes[idx].nom, recipes[idx].emoji);
+    showRecipeModal(recipes[idx].nom, recipes[idx].emoji, recipes[idx]);
   }
 }
 
@@ -2579,6 +2663,8 @@ function showApp() {
     updatePlanUI(); renderRewards(); renderC(); renderBCats(); renderWallet(); renderGr(); updatePointsUI(); loadSpecials();
     loadProductDB();
     loadTrendingRecipes();
+    loadFavorites();
+    renderFavorites();
     applyTranslations();
     showToast('Bon retour sur SmartGrocer!');
   } else {
