@@ -1756,7 +1756,7 @@ async function genAll(){
   document.getElementById('rec-ld').classList.add('on');
   document.getElementById('rec-res').style.display='none';
   try{
-    var res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},body:JSON.stringify({model:'llama-3.3-70b-versatile',max_completion_tokens:1400,messages:[{role:'user',content:'Chef cuisinier. Langue de réponse: '+(currentLang==="en"?"English":"français")+'. Ingrédients: '+ingredientsList+'. Génère 3 recettes + 4 vidéos YouTube populaires. JSON seulement: {"recettes":[{"emoji":"🍳","nom":"Nom recette","temps":"20 min","portions":"2 portions","match":"Utilise les ingrédients","etapes":["Étape 1","Étape 2","Étape 3","Étape 4"]}],"youtubeVideos":[{"query":"recette facile","titre":"Titre viral","channel":"Channel","views":"2.3M vues","duration":"8:42","viral":true}]}'}]})});
+    var res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},body:JSON.stringify({model:'llama-3.3-70b-versatile',max_completion_tokens:1400,messages:[{role:'user',content:'Chef cuisinier. Langue de réponse: '+(currentLang==="en"?"English":"français")+'. Ingrédients: '+ingredientsList+'. Génère 3 recettes + 4 vidéos YouTube. Utilise mesures nord-américaines (tasse, c. à thé, c. à soupe). JSON seulement: {"recettes":[{"emoji":"🍳","nom":"Nom recette","temps":"20 min","portions":"2 portions","match":"Utilise les ingrédients","etapes":["Étape 1","Étape 2","Étape 3","Étape 4"]}],"youtubeVideos":[{"query":"recette facile","titre":"Titre viral","channel":"Channel","views":"2.3M vues","duration":"8:42","viral":true}]}'}]})});
     var data=await res.json();
     var text=data.choices[0].message.content.replace(/```json|```/g,'').trim();
     var parsed=JSON.parse(text);
@@ -2149,7 +2149,7 @@ async function showRecipeModal(nom, emoji, recipeObj) {
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
         max_completion_tokens: 800,
-        messages: [{role:'user',content:'Donne-moi la recette complete de '+nom+'. Liste les ingredients avec quantites, puis les etapes numerotees. En francais.'}]
+        messages: [{role:'user',content:'Donne-moi la recette complete de '+nom+'. Utilise des mesures nord-americaines (tasse, c. a the, c. a soupe, oz, lb) jamais de grammes. Liste les ingredients avec quantites, puis les etapes numerotees. En francais.'}]
       })
     });
     var data = await res.json();
