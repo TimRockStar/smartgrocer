@@ -1352,7 +1352,8 @@ function closePricePicker() {
 
 function addWithoutPrice() {
   if(_pendingGroceryItem) {
-    groceries.push({name: _pendingGroceryItem, price: 0, done: false, store: ''});
+    var cat = window._pendingCategory || guessCategory(_pendingGroceryItem);
+    groceries.push({name: _pendingGroceryItem, price: 0, done: false, store: '', category: cat});
     renderGr();
     saveData();
     showToast('✅ "' + _pendingGroceryItem + '" ajouté!');
@@ -1363,7 +1364,8 @@ function addWithoutPrice() {
 function addWithPrice(price, storeEl) {
   var store = typeof storeEl === "string" ? storeEl : storeEl;
   if(_pendingGroceryItem) {
-    groceries.push({name: _pendingGroceryItem, price: price, done: false, store: store});
+    var cat = window._pendingCategory || guessCategory(_pendingGroceryItem);
+    groceries.push({name: _pendingGroceryItem, price: price, done: false, store: store, category: cat});
     renderGr();
     saveData();
     showToast('✅ "' + _pendingGroceryItem + '" — ' + store + ' $' + price.toFixed(2));
@@ -1470,6 +1472,32 @@ async function loadLocalStores() {
   } catch(e) {
     console.log('Could not load local stores:', e);
   }
+}
+
+
+var GROCERY_CATEGORIES = {
+  'Fruits et légumes': {icon: '🥦', color: '#1D9E75'},
+  'Viandes et poissons': {icon: '🍗', color: '#D85A30'},
+  'Produits laitiers': {icon: '🥛', color: '#378ADD'},
+  'Boulangerie': {icon: '🍞', color: '#C9A227'},
+  'Épicerie sèche': {icon: '🥫', color: '#534AB7'},
+  'Surgelés': {icon: '🧊', color: '#0EA5E9'},
+  'Boissons': {icon: '🧃', color: '#EC4899'},
+  'Collations': {icon: '🍪', color: '#F59E0B'},
+  'Autres': {icon: '🛒', color: '#6b7280'}
+};
+
+function guessCategory(productName) {
+  var n = productName.toLowerCase();
+  if(/pomme|banane|carotte|brocoli|laitue|légume|fruit|tomate|oignon|poivron|concombre|fraise|orange|citron|raisin|patate|pomme de terre/.test(n)) return 'Fruits et légumes';
+  if(/poulet|boeuf|porc|poisson|saumon|viande|steak|jambon|bacon|dinde|crevette|thon/.test(n)) return 'Viandes et poissons';
+  if(/lait|fromage|yogourt|yaourt|beurre|crème|oeuf|œuf/.test(n)) return 'Produits laitiers';
+  if(/pain|bagel|croissant|baguette|brioche|muffin/.test(n)) return 'Boulangerie';
+  if(/surgelé|congelé|glace|crème glacée/.test(n)) return 'Surgelés';
+  if(/jus|boisson|soda|eau|café|thé|bière|vin/.test(n)) return 'Boissons';
+  if(/chips|biscuit|chocolat|bonbon|croustille|collation|cookie/.test(n)) return 'Collations';
+  if(/riz|pâte|pates|farine|sucre|sel|huile|conserve|sauce|céréale/.test(n)) return 'Épicerie sèche';
+  return 'Autres';
 }
 
 // Always have fallback trending recipes
@@ -1745,7 +1773,7 @@ async function searchProd(){
 function addScannedToList(){
   const nm=document.getElementById('px-nm').textContent;const price=parseFloat(document.getElementById('bp').textContent.replace('$',''))||3.99;
   if(!isPremium&&groceries.length>=LIMITS.list){showPaywall('Liste pleine!','Tu as atteint la limite de 10 articles gratuits. Passe à Premium!');return;}
-  if(nm&&nm.length>1){groceries.push({name:nm,price:price,done:false});renderGr();saveData();showToast('✅ "'+nm+'" ajouté à ta liste!');}
+  if(nm&&nm.length>1){var cat=guessCategory(nm);groceries.push({name:nm,price:price,done:false,category:cat});renderGr();saveData();showToast('✅ "'+nm+'" ajouté à ta liste!');}
 }
 function addIng(){const v=document.getElementById('ing-in').value.trim();if(!v||ings.includes(v.toLowerCase()))return;ings.push(v.toLowerCase());document.getElementById('ing-in').value='';renderTags();document.getElementById('gen-btn').disabled=false;}
 function removeIng(i){ings.splice(i,1);renderTags();/* gen-btn always enabled */}
@@ -1867,6 +1895,7 @@ function addGr(){
   const v=document.getElementById('gr-in').value.trim();if(!v)return;
   if(!isPremium&&groceries.length>=LIMITS.list){showPaywall('Liste pleine!','Tu as atteint la limite de 10 articles. Passe à Premium!');return;}
   document.getElementById('gr-in').value='';
+  window._pendingCategory = guessCategory(v);
   showPricePicker(v);
 }
 function toggleGr(i){groceries[i].done=!groceries[i].done;renderGr();saveData();}
@@ -1888,34 +1917,53 @@ function renderGr(){
 
   let html = '';
 
-  // TO BUY section
+  // Group toBuy items by category
   if(toBuy.length > 0){
-    html += `<div style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:0.05em;padding:6px 0 4px;">À acheter (${toBuy.length})</div>`;
-    html += toBuy.map((g,i) => {
-      const realIdx = groceries.indexOf(g);
-      return `<div class="gi" style="background:#fff;">
-        <div class="gc" onclick="toggleGr(${realIdx})" style="border-color:var(--g);">
-          <i class="ti ti-circle" style="font-size:10px;color:#d1d5db;"></i>
-        </div>
-        <div style="flex:1;font-size:13px;color:var(--text);">${g.name}</div>
-        <div style="font-size:11px;font-weight:700;color:var(--g);">$${g.price.toFixed(2)}</div>
-        <button style="background:none;border:none;cursor:pointer;color:#d1d5db;font-size:16px;padding:0 3px;" onclick="delGr(${realIdx})">×</button>
-      </div>`;
-    }).join('');
+    html += '<div style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:0.05em;padding:6px 0 4px;">À acheter (' + toBuy.length + ')</div>';
+    
+    var grouped = {};
+    toBuy.forEach(function(g) {
+      var cat = g.category || 'Autres';
+      if(!grouped[cat]) grouped[cat] = [];
+      grouped[cat].push(g);
+    });
+    
+    var catOrder = Object.keys(GROCERY_CATEGORIES);
+    catOrder.forEach(function(catName) {
+      if(!grouped[catName] || grouped[catName].length === 0) return;
+      var catInfo = GROCERY_CATEGORIES[catName];
+      html += '<div style="display:flex;align-items:center;gap:6px;padding:8px 0 4px;margin-top:4px;">' +
+        '<span style="font-size:14px;">' + catInfo.icon + '</span>' +
+        '<span style="font-size:11px;font-weight:700;color:' + catInfo.color + ';">' + catName + '</span>' +
+        '</div>';
+      
+      grouped[catName].forEach(function(g) {
+        var realIdx = groceries.indexOf(g);
+        html += '<div class="gi" style="background:#fff;">' +
+          '<div class="gc" onclick="toggleGr(' + realIdx + ')" style="border-color:var(--g);">' +
+          '<i class="ti ti-circle" style="font-size:10px;color:#d1d5db;"></i></div>' +
+          '<div style="flex:1;"><div style="font-size:13px;color:var(--text);">' + g.name + '</div>' +
+          (g.store ? '<div style="font-size:10px;color:var(--sub);">' + ({'IGA':'🏪','Maxi':'🏬','Metro':'🛒','Walmart':'🏢','Costco':'🏭'}[g.store]||'🏪') + ' ' + g.store + '</div>' : '') +
+          '</div>' +
+          '<div style="font-size:11px;font-weight:700;color:var(--g);">$' + g.price.toFixed(2) + '</div>' +
+          '<button style="background:none;border:none;cursor:pointer;color:#d1d5db;font-size:16px;padding:0 3px;" onclick="delGr(' + realIdx + ')">×</button>' +
+          '</div>';
+      });
+    });
   }
 
   // IN CART section
   if(inCart.length > 0){
-    html += `<div style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:0.05em;padding:10px 0 4px;border-top:1px dashed var(--border);margin-top:6px;">Dans le panier 🛒 (${inCart.length})</div>`;
-    html += inCart.map((g,i) => {
-      const realIdx = groceries.indexOf(g);
-      return `<div class="gi" style="background:#f9fafb;opacity:0.75;">
-        <div class="gc done" onclick="toggleGr(${realIdx})">✓</div>
-        <div style="flex:1;font-size:13px;color:var(--sub);text-decoration:line-through;">${g.name}</div>
-        <div style="font-size:11px;font-weight:700;color:var(--sub);">$${g.price.toFixed(2)}</div>
-        <button style="background:none;border:none;cursor:pointer;color:#d1d5db;font-size:16px;padding:0 3px;" onclick="delGr(${realIdx})">×</button>
-      </div>`;
-    }).join('');
+    html += '<div style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:0.05em;padding:10px 0 4px;border-top:1px dashed var(--border);margin-top:6px;">Dans le panier 🛒 (' + inCart.length + ')</div>';
+    inCart.forEach(function(g) {
+      var realIdx = groceries.indexOf(g);
+      html += '<div class="gi" style="background:#f9fafb;opacity:0.75;">' +
+        '<div class="gc done" onclick="toggleGr(' + realIdx + ')">✓</div>' +
+        '<div style="flex:1;font-size:13px;color:var(--sub);text-decoration:line-through;">' + g.name + '</div>' +
+        '<div style="font-size:11px;font-weight:700;color:var(--sub);">$' + g.price.toFixed(2) + '</div>' +
+        '<button style="background:none;border:none;cursor:pointer;color:#d1d5db;font-size:16px;padding:0 3px;" onclick="delGr(' + realIdx + ')">×</button>' +
+        '</div>';
+    });
   }
 
   document.getElementById('gr-items').innerHTML = html;
@@ -1924,6 +1972,8 @@ function renderGr(){
   if(ql) ql.textContent = toBuy.length + ' article' + (toBuy.length > 1 ? 's' : '') + ' restant' + (toBuy.length > 1 ? 's' : '');
   updateLimitDots();
 }
+
+
 function renderC(){
   document.getElementById('cl').innerHTML=cFilt.map(function(r){
     var safeNom = r.nom.replace(/"/g,' ').replace(/'/g,' ');
@@ -2456,10 +2506,11 @@ async function lookupBarcode(code) {
       document.getElementById('prod-in').placeholder = 'Entre le nom du produit...';
       document.getElementById('prod-in').focus();
       // Show add to DB option
-      document.getElementById('sg').innerHTML = '<div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:12px;padding:1rem;text-align:center;">' +
-        '<div style="font-size:13px;font-weight:700;color:#92400e;margin-bottom:8px;">🔍 Produit non trouvé</div>' +
-        '<div style="font-size:12px;color:#78350f;margin-bottom:10px;">Entre le nom ci-dessous et clique Rechercher.<br>Le produit sera ajouté à notre banque de données!</div>' +
-        
+      document.getElementById('sg').innerHTML = '<div style="background:#f3f4f6;border:1px solid #e5e7eb;border-radius:14px;padding:1.25rem;text-align:center;">' +
+        '<div style="font-size:28px;margin-bottom:8px;">📷</div>' +
+        '<div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:6px;">Code barre non reconnu</div>' +
+        '<div style="font-size:12px;color:#6b7280;margin-bottom:10px;line-height:1.6;">Le scanner web peut mal lire les codes barres.<br>Entre le nom du produit ci-dessous!</div>' +
+        '<div style="background:#fff;border-radius:8px;padding:8px;font-size:11px;color:#6b7280;">💡 Bon éclairage · Téléphone à 15-20 cm · Angle droit</div>' +
         '</div>';
       document.getElementById('px-res').style.display = 'block';
       window._lastScannedCode = code;
