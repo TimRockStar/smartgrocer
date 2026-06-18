@@ -1562,13 +1562,19 @@ function renderPlannerDays() {
     html += '<div class="card" style="margin-bottom:8px;">';
     html += '<div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:6px;">' + day + '</div>';
     if(meal) {
-      html += '<div onclick="openDayPicker(\''+key+'\',\''+day+'\')" style="display:flex;align-items:center;gap:10px;cursor:pointer;">';
-      html += '<div style="width:40px;height:40px;background:linear-gradient(135deg,#D85A30,#B84520);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">'+meal.emoji+'</div>';
-      html += '<div style="flex:1;font-size:13px;font-weight:600;">'+meal.nom+'</div>';
-      html += '<button onclick="event.stopPropagation();clearDayMeal(\''+key+'\')" style="background:none;border:none;color:#d1d5db;font-size:16px;cursor:pointer;">×</button>';
+      var safeNom = meal.nom.replace(/"/g,' ').replace(/'/g,' ');
+      var safeEmoji = meal.emoji || '🍳';
+      html += '<div style="display:flex;align-items:center;gap:8px;">';
+      html += '<div onclick="openPlannerMeal(' + i + ')" style="display:flex;align-items:center;gap:10px;flex:1;cursor:pointer;">';
+      html += '<div style="width:40px;height:40px;background:linear-gradient(135deg,#D85A30,#B84520);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">' + safeEmoji + '</div>';
+      html += '<div style="flex:1;"><div style="font-size:13px;font-weight:600;">' + safeNom + '</div>';
+      html += '<div style="font-size:10px;color:var(--sub);">Appuie pour voir la recette 👆</div></div>';
+      html += '</div>';
+      html += '<button onclick="openDayPicker(\"' + key + '\",\"' + day + '\")" style="background:var(--light);border:none;border-radius:8px;padding:4px 8px;font-size:10px;cursor:pointer;color:var(--sub);">Changer</button>';
+      html += '<button onclick="clearDayMeal(\"' + key + '\")" style="background:none;border:none;color:#d1d5db;font-size:16px;cursor:pointer;">×</button>';
       html += '</div>';
     } else {
-      html += '<div onclick="openDayPicker(\''+key+'\',\''+day+'\')" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border:2px dashed var(--border);border-radius:10px;cursor:pointer;color:var(--sub);font-size:12px;">';
+      html += '<div onclick="openDayPicker(\"' + key + '\",\"' + day + '\")" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border:2px dashed var(--border);border-radius:10px;cursor:pointer;color:var(--sub);font-size:12px;">';
       html += '<i class="ti ti-plus"></i> Choisir un repas';
       html += '</div>';
     }
@@ -1576,6 +1582,14 @@ function renderPlannerDays() {
   }
   el.innerHTML = html;
 }
+
+function openPlannerMeal(dayIdx) {
+  var day = DAYS_FR[dayIdx];
+  var key = day + '-souper';
+  var meal = mealPlan[key];
+  if(meal) showRecipeModal(meal.nom, meal.emoji || '🍳', meal);
+}
+
 
 function openDayPicker(slotKey, dayLabel) {
   _pendingPlannerSlot = slotKey;
@@ -1626,6 +1640,12 @@ function clearDayMeal(slotKey) {
 async function generateNewRecipeForDay() {
   if(!_pendingPlannerSlot) return;
   showToast('⏳ Génération en cours...');
+  
+  // Get already planned meals to avoid repetition
+  var plannedMeals = Object.values(mealPlan).map(function(m){ return m.nom; }).join(', ');
+  var avoidText = plannedMeals ? 'Évite ces plats déjà au menu: ' + plannedMeals + '.' : '';
+  var day = _pendingPlannerSlot.split('-')[0];
+  
   try {
     var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
@@ -1633,7 +1653,7 @@ async function generateNewRecipeForDay() {
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
         max_completion_tokens: 300,
-        messages: [{role:'user',content:'Génère 1 recette de souper simple et savoureuse pour une famille québécoise. Utilise mesures nord-américaines. JSON seulement: {"emoji":"🍝","nom":"Nom recette","ingredients":"poulet, riz, tomates, oignons"}'}]
+        messages: [{role:'user',content:'Génère 1 recette de souper différente et variée pour ' + day + ' pour une famille québécoise. ' + avoidText + ' Utilise mesures nord-américaines (tasse, c. à thé, c. à soupe). JSON seulement: {"emoji":"🍝","nom":"Nom recette","ingredients":"poulet, riz, tomates, oignons"}'}]
       })
     });
     var data = await res.json();
@@ -1665,17 +1685,24 @@ function generatePlannerList() {
     if(meal.ingredients) {
       var ings = meal.ingredients.split(',').map(function(i){ return i.trim(); });
       ings.forEach(function(ing) {
-        if(ing && allIngredients.indexOf(ing) === -1) allIngredients.push(ing);
+        // Remove quantities and measurements - keep only ingredient name
+        var clean = ing
+          .replace(/^\d+[\d\/\.\s]*\s*/,'')
+          .replace(/^(tasse|c\.\s*à\s*(thé|soupe)|oz|lb|kg|g|ml|pincée|gousse|tranche|filet)s?\s+(de\s+|d')?/i,'')
+          .replace(/^(une?|deux|trois|quatre|cinq)\s+/i,'')
+          .replace(/^\s+|\s+$/g,'');
+        if(clean && clean.length > 2 && allIngredients.indexOf(clean) === -1) {
+          allIngredients.push(clean);
+        }
       });
     }
   });
   
   if(allIngredients.length === 0) {
-    showToast('⚠️ Aucun ingrédient trouvé dans ton plan!');
+    showToast('⚠️ Aucun ingrédient trouvé!');
     return;
   }
   
-  // Add each ingredient to grocery list with category, no price picker (batch add)
   var addedCount = 0;
   allIngredients.forEach(function(ing) {
     var alreadyInList = groceries.some(function(g){ return g.name.toLowerCase() === ing.toLowerCase(); });
