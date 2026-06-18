@@ -280,6 +280,7 @@ ml('account', '2355363');
       <div class="plus-item" onclick="goExtra('budget')"><i class="ti ti-chart-pie" style="color:var(--p);"></i><div class="plus-item-label">Budget</div></div>
       <div class="plus-item" onclick="goExtra('profil')"><i class="ti ti-user" style="color:var(--p);"></i><div class="plus-item-label">Profil</div></div>
       <div class="plus-item" onclick="goExtra('premium')"><i class="ti ti-star" style="color:var(--gold);"></i><div class="plus-item-label">Premium</div></div>
+      <div class="plus-item" onclick="goExtra('planner')"><i class="ti ti-calendar" style="color:var(--g);"></i><div class="plus-item-label">Planificateur</div></div>
     </div>
   </div>
 </div>
@@ -913,6 +914,39 @@ ml('account', '2355363');
   </div>
 </div>
 
+<!-- PLANIFICATEUR -->
+<div id="planner" class="page">
+  <div class="hero" style="background:linear-gradient(160deg,#1D9E75,#0F6E56);">
+    <div class="hc1"></div>
+    <div class="logo-row">
+      <svg class="lsvg" viewBox="0 0 680 500"><use href="#logo-icon"/></svg>
+      <div><div class="lt"><span>Smart</span><span style="color:#C9A227;">Grocer</span></div><div class="ls">📅 Planificateur de repas</div></div>
+    </div>
+  </div>
+  <div class="px">
+    <div class="sl">Cette semaine</div>
+    <div id="planner-days"></div>
+    <button class="btn bg bf" onclick="generatePlannerList()" style="margin-top:1rem;">
+      <i class="ti ti-shopping-cart"></i> Générer ma liste d'épicerie
+    </button>
+  </div>
+</div>
+
+<!-- DAY RECIPE PICKER MODAL -->
+<div id="day-picker-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:2000;align-items:flex-end;justify-content:center;">
+  <div style="background:#fff;border-radius:24px 24px 0 0;padding:1.5rem;width:100%;max-width:480px;max-height:80vh;overflow-y:auto;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+      <div style="font-size:16px;font-weight:700;" id="dp-day-title">Lundi - Souper</div>
+      <button onclick="closeDayPicker()" style="background:var(--light);border:none;border-radius:8px;padding:6px 10px;cursor:pointer;font-size:14px;">✕</button>
+    </div>
+    <button class="btn bg bf" onclick="generateNewRecipeForDay()" style="margin-bottom:1rem;">
+      <i class="ti ti-wand"></i> Générer une nouvelle recette IA
+    </button>
+    <div class="sl2">Ou choisis dans tes favoris</div>
+    <div id="dp-favorites-list"></div>
+  </div>
+</div>
+
 <!-- NAV BOTTOM -->
 
 
@@ -1500,6 +1534,164 @@ function guessCategory(productName) {
   return 'Autres';
 }
 
+
+// ===== MEAL PLANNER =====
+var DAYS_FR = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
+var mealPlan = {}; // key: "Lundi-souper" -> {nom, emoji, ingredients}
+var _pendingPlannerSlot = null;
+
+function loadMealPlan() {
+  try {
+    var saved = localStorage.getItem('sg_meal_plan');
+    if(saved) mealPlan = JSON.parse(saved);
+  } catch(e) { mealPlan = {}; }
+}
+
+function saveMealPlan() {
+  localStorage.setItem('sg_meal_plan', JSON.stringify(mealPlan));
+}
+
+function renderPlannerDays() {
+  var el = document.getElementById('planner-days');
+  if(!el) return;
+  var html = '';
+  for(var i=0; i<DAYS_FR.length; i++) {
+    var day = DAYS_FR[i];
+    var key = day + '-souper';
+    var meal = mealPlan[key];
+    html += '<div class="card" style="margin-bottom:8px;">';
+    html += '<div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:6px;">' + day + '</div>';
+    if(meal) {
+      html += '<div onclick="openDayPicker(\''+key+'\',\''+day+'\')" style="display:flex;align-items:center;gap:10px;cursor:pointer;">';
+      html += '<div style="width:40px;height:40px;background:linear-gradient(135deg,#D85A30,#B84520);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">'+meal.emoji+'</div>';
+      html += '<div style="flex:1;font-size:13px;font-weight:600;">'+meal.nom+'</div>';
+      html += '<button onclick="event.stopPropagation();clearDayMeal(\''+key+'\')" style="background:none;border:none;color:#d1d5db;font-size:16px;cursor:pointer;">×</button>';
+      html += '</div>';
+    } else {
+      html += '<div onclick="openDayPicker(\''+key+'\',\''+day+'\')" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border:2px dashed var(--border);border-radius:10px;cursor:pointer;color:var(--sub);font-size:12px;">';
+      html += '<i class="ti ti-plus"></i> Choisir un repas';
+      html += '</div>';
+    }
+    html += '</div>';
+  }
+  el.innerHTML = html;
+}
+
+function openDayPicker(slotKey, dayLabel) {
+  _pendingPlannerSlot = slotKey;
+  document.getElementById('dp-day-title').textContent = dayLabel + ' - Souper';
+  document.getElementById('day-picker-modal').style.display = 'flex';
+  renderDayPickerFavorites();
+}
+
+function closeDayPicker() {
+  document.getElementById('day-picker-modal').style.display = 'none';
+  _pendingPlannerSlot = null;
+}
+
+function renderDayPickerFavorites() {
+  var el = document.getElementById('dp-favorites-list');
+  if(!el) return;
+  if(favoriteRecipes.length === 0) {
+    el.innerHTML = '<div style="text-align:center;padding:1rem;color:var(--sub);font-size:12px;">Aucun favori encore.<br>Génère une recette IA ou ajoute des favoris!</div>';
+    return;
+  }
+  var html = '';
+  for(var i=0; i<favoriteRecipes.length; i++) {
+    var r = favoriteRecipes[i];
+    html += '<div onclick="assignFavoriteToDay(' + i + ')" style="display:flex;align-items:center;gap:10px;padding:10px;border:1px solid var(--border);border-radius:12px;margin-bottom:8px;cursor:pointer;">';
+    html += '<div style="width:40px;height:40px;background:linear-gradient(135deg,#D85A30,#B84520);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">' + (r.emoji||'🍳') + '</div>';
+    html += '<div style="flex:1;font-size:13px;font-weight:600;">' + r.nom + '</div>';
+    html += '</div>';
+  }
+  el.innerHTML = html;
+}
+
+function assignFavoriteToDay(favIdx) {
+  if(!_pendingPlannerSlot) return;
+  var r = favoriteRecipes[favIdx];
+  mealPlan[_pendingPlannerSlot] = {nom: r.nom, emoji: r.emoji||'🍳', ingredients: r.ingredients || ''};
+  saveMealPlan();
+  renderPlannerDays();
+  closeDayPicker();
+  showToast('✅ ' + r.nom + ' ajouté!');
+}
+
+function clearDayMeal(slotKey) {
+  delete mealPlan[slotKey];
+  saveMealPlan();
+  renderPlannerDays();
+}
+
+async function generateNewRecipeForDay() {
+  if(!_pendingPlannerSlot) return;
+  showToast('⏳ Génération en cours...');
+  try {
+    var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        max_completion_tokens: 300,
+        messages: [{role:'user',content:'Génère 1 recette de souper simple et savoureuse pour une famille québécoise. Utilise mesures nord-américaines. JSON seulement: {"emoji":"🍝","nom":"Nom recette","ingredients":"poulet, riz, tomates, oignons"}'}]
+      })
+    });
+    var data = await res.json();
+    var text = data.choices[0].message.content.replace(/```json|```/g,'').trim();
+    var jsonMatch = text.match(/\{[\s\S]*\}/);
+    if(!jsonMatch) throw new Error('No JSON');
+    var recipe = JSON.parse(jsonMatch[0]);
+    
+    mealPlan[_pendingPlannerSlot] = recipe;
+    saveMealPlan();
+    renderPlannerDays();
+    closeDayPicker();
+    showToast('🍳 ' + recipe.nom + ' ajouté!');
+  } catch(e) {
+    showToast('⚠️ Erreur — réessaie!');
+  }
+}
+
+function generatePlannerList() {
+  var keys = Object.keys(mealPlan);
+  if(keys.length === 0) {
+    showToast('⚠️ Ajoute au moins un repas à ton plan!');
+    return;
+  }
+  
+  var allIngredients = [];
+  keys.forEach(function(k) {
+    var meal = mealPlan[k];
+    if(meal.ingredients) {
+      var ings = meal.ingredients.split(',').map(function(i){ return i.trim(); });
+      ings.forEach(function(ing) {
+        if(ing && allIngredients.indexOf(ing) === -1) allIngredients.push(ing);
+      });
+    }
+  });
+  
+  if(allIngredients.length === 0) {
+    showToast('⚠️ Aucun ingrédient trouvé dans ton plan!');
+    return;
+  }
+  
+  // Add each ingredient to grocery list with category, no price picker (batch add)
+  var addedCount = 0;
+  allIngredients.forEach(function(ing) {
+    var alreadyInList = groceries.some(function(g){ return g.name.toLowerCase() === ing.toLowerCase(); });
+    if(!alreadyInList) {
+      var cat = guessCategory(ing);
+      groceries.push({name: ing, price: parseFloat((Math.random()*5+1.5).toFixed(2)), done: false, category: cat});
+      addedCount++;
+    }
+  });
+  
+  renderGr();
+  saveData();
+  showToast('🛒 ' + addedCount + ' ingrédients ajoutés à ta liste!');
+  goTo('liste', null);
+}
+
 // Always have fallback trending recipes
 window.trendingRecipes = [
   {emoji:'🍝', nom:'Pâtes Alfredo au poulet'},
@@ -1635,7 +1827,7 @@ function goTo(p,btn){
   if(btn)btn.classList.add('active');
   else{const idx=['home','prix','recettes','liste','social','points'].indexOf(p);if(idx>=0)document.querySelectorAll('.nb')[idx].classList.add('active');}
 }
-function goExtra(p){if(p==='profil')setTimeout(loadProfileInputs,100);if(p==='carte')setTimeout(loadLocalStores,100);
+function goExtra(p){if(p==='profil')setTimeout(loadProfileInputs,100);if(p==='carte')setTimeout(loadLocalStores,100);if(p==='planner')setTimeout(renderPlannerDays,100);
   closePlus();
   document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
   document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
@@ -2905,6 +3097,8 @@ function showApp() {
     loadFavorites();
     renderFavorites();
     loadLocalStores();
+    loadMealPlan();
+    renderPlannerDays();
     applyTranslations();
     showToast('Bon retour sur SmartGrocer!');
   } else {
