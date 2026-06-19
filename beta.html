@@ -2417,35 +2417,70 @@ function closeRecipeModal() {
 }
 
 async function showRecipeModal(nom, emoji, recipeObj) {
-  // Show modal with loading
   document.getElementById('recipe-modal').style.display = 'block';
   document.getElementById('rm-emoji').textContent = emoji || '🍳';
   document.getElementById('rm-title').textContent = nom;
   document.getElementById('rm-meta').textContent = 'Génération en cours...';
   document.getElementById('rm-content').innerHTML = '<div style="text-align:center;padding:2rem;color:#6b7280;"><div style="font-size:32px;margin-bottom:8px;">⏳</div><div style="font-size:14px;">Génération de la recette...</div></div>';
   
+  // Update fav button
+  window._currentModalRecipe = recipeObj || {nom: nom, emoji: emoji||'🍳'};
+  var favBtn = document.getElementById('rm-fav-btn');
+  if(favBtn) favBtn.textContent = isFavorite(nom) ? '⭐' : '☆';
+
   try {
     var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
-        max_completion_tokens: 800,
-        messages: [{role:'user',content:'Donne-moi la recette complete de '+nom+'. Utilise des mesures nord-americaines (tasse, c. a the, c. a soupe, oz, lb) jamais de grammes. Liste les ingredients avec quantites, puis les etapes numerotees. En francais.'}]
+        max_completion_tokens: 1000,
+        messages: [{role:'user',content:'Donne-moi la recette complète de '+nom+'. Utilise des mesures nord-américaines (tasse, c. à thé, c. à soupe). Génère aussi 3 recherches YouTube pour trouver des vidéos virales de cette recette. JSON seulement: {"recette":"texte complet de la recette avec ingrédients et étapes","videos":[{"query":"'+nom+' recette facile","titre":"Titre vidéo viral","views":"1.2M vues"},{"query":"'+nom+' rapide","titre":"Titre 2","views":"890K vues"},{"query":"'+nom+' maison","titre":"Titre 3","views":"650K vues"}]}'}]
       })
     });
     var data = await res.json();
-    if(data.choices && data.choices[0] && data.choices[0].message) {
-      var text = data.choices[0].message.content.trim();
-      var html = '<div style="font-size:13px;line-height:1.8;color:#1a1a2e;padding:0.5rem;white-space:pre-wrap;">' + text + '</div>';
-      document.getElementById('rm-content').innerHTML = html;
-      document.getElementById('rm-meta').textContent = 'Recette complète';
+    var text = data.choices[0].message.content.replace(/```json|```/g,'').trim();
+    var jsonMatch = text.match(/\{[\s\S]*\}/);
+    
+    var recipeText = '';
+    var videos = [];
+    
+    if(jsonMatch) {
+      try {
+        var parsed = JSON.parse(jsonMatch[0]);
+        recipeText = parsed.recette || text;
+        videos = parsed.videos || [];
+      } catch(e) {
+        recipeText = text;
+      }
     } else {
-      var errMsg = data.error ? data.error.message : JSON.stringify(data).substring(0,100);
-      document.getElementById('rm-content').innerHTML = '<div style="padding:1rem;color:#ef4444;font-size:12px;">Erreur API: ' + errMsg + '</div>';
+      recipeText = text;
     }
+
+    // Build content
+    var html = '<div style="font-size:13px;line-height:1.8;color:#1a1a2e;white-space:pre-wrap;padding:0.5rem;">' + recipeText + '</div>';
+    
+    // Add YouTube videos section
+    if(videos.length > 0) {
+      html += '<div style="margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--border);">';
+      html += '<div style="font-size:13px;font-weight:700;margin-bottom:10px;">🎬 Vidéos virales sur YouTube</div>';
+      html += videos.map(function(v) {
+        var ytUrl = 'https://www.youtube.com/results?search_query=' + encodeURIComponent(v.query);
+        return '<a href="' + ytUrl + '" target="_blank" style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--light);border-radius:12px;margin-bottom:8px;text-decoration:none;">' +
+          '<div style="width:36px;height:36px;background:#FF0000;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">' +
+          '<i class="ti ti-brand-youtube" style="color:#fff;font-size:18px;"></i></div>' +
+          '<div style="flex:1;"><div style="font-size:12px;font-weight:700;color:var(--text);">' + v.titre + '</div>' +
+          '<div style="font-size:10px;color:var(--sub);">' + v.views + ' · YouTube</div></div>' +
+          '<i class="ti ti-external-link" style="color:var(--sub);font-size:14px;"></i>' +
+          '</a>';
+      }).join('');
+      html += '</div>';
+    }
+
+    document.getElementById('rm-content').innerHTML = html;
+    document.getElementById('rm-meta').textContent = 'Recette complète';
   } catch(e) {
-    document.getElementById('rm-content').innerHTML = '<div style="padding:1rem;color:#ef4444;font-size:12px;">Erreur réseau: ' + e.message + '</div>';
+    document.getElementById('rm-content').innerHTML = '<div style="padding:1rem;color:#ef4444;font-size:12px;">Erreur: ' + e.message + '</div>';
   }
 }
 
@@ -3126,7 +3161,6 @@ function showApp() {
   document.body.style.overflow = '';
   document.getElementById('landing').style.display = 'none';
   var hasData = loadData();
-  console.log('showApp called, hasData:', hasData);
   if (hasData) {
     document.getElementById('onboarding').style.display = 'none';
     document.getElementById('app').style.display = 'block';
