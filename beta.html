@@ -1210,9 +1210,12 @@ function applyTranslations() {
 // ===== GEOLOCATION =====
 async function detectLocation() {
   try {
-    // Try browser geolocation first
-    if(navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(async function(pos) {
+    if(!navigator.geolocation) {
+      showToast('⚠️ Géolocalisation non supportée sur ce navigateur');
+      return;
+    }
+    showToast('📍 Demande de localisation...', 2000);
+    navigator.geolocation.getCurrentPosition(async function(pos) {
         try {
           var lat = pos.coords.latitude;
           var lon = pos.coords.longitude;
@@ -1272,10 +1275,15 @@ async function detectLocation() {
           console.log('Reverse geocode failed:', e);
         }
       }, function(err) {
+        var msg = 'Erreur inconnue';
+        if(err.code === 1) msg = 'Permission refusée';
+        if(err.code === 2) msg = 'Position non disponible';
+        if(err.code === 3) msg = 'Délai dépassé';
+        showToast('📍 ' + msg + ' — entre ta ville manuellement');
         console.log('Geolocation denied:', err);
-      });
-    }
+      }, {timeout: 10000, enableHighAccuracy: false});
   } catch(e) {
+    showToast('⚠️ Erreur de géolocalisation');
     console.log('Geolocation error:', e);
   }
 }
@@ -1858,7 +1866,7 @@ function finishOb_complete() {
   } catch(e) {}
 
   updatePlanUI(); renderRewards(); renderC(); renderBCats(); renderWallet(); renderGr(); updatePointsUI(); loadSpecials();
-  showToast('🎉 Bienvenue ' + name + '!', 4000);
+  loadProductDB(); loadTrendingRecipes(); loadFavorites(); renderFavorites(); loadLocalStores(); loadMealPlan(); renderPlannerDays();
   showToast('🎉 Email vérifié! Bienvenue ' + name + '!', 4000);
 }
 function goTo(p,btn){
