@@ -343,16 +343,17 @@ ml('account', '2355363');
     </div>
     <div>
       <label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:4px;">Province</label>
-      <select id="ob-province">
-        <option>Québec</option>
-        <option>Ontario</option>
-        <option>Colombie-Britannique</option>
-        <option>Alberta</option>
-        <option>Manitoba</option>
-        <option>Saskatchewan</option>
-        <option>Nouveau-Brunswick</option>
-        <option>Nouvelle-Écosse</option>
-      </select>
+      <input type="text" id="ob-province" placeholder="Ex: Québec, Ontario, Texas..." list="province-list"/>
+      <datalist id="province-list">
+        <option value="Québec">
+        <option value="Ontario">
+        <option value="Colombie-Britannique">
+        <option value="Alberta">
+        <option value="Manitoba">
+        <option value="Saskatchewan">
+        <option value="Nouveau-Brunswick">
+        <option value="Nouvelle-Écosse">
+      </datalist>
     </div>
     <div>
       <label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:4px;">Code postal / Postal code</label>
@@ -1834,6 +1835,22 @@ function finishOb(){
   const postal = document.getElementById('ob-postal')?.value?.trim() || '';
   const budget = document.getElementById('ob-budget')?.value || '400';
   const fullCity = city + ', ' + province + (postal ? ' ' + postal : '');
+  
+  // Use manually entered city if geolocation didn't already set a different city
+  if(!window.userCity || window.userCity === city) {
+    window.userCity = city;
+  }
+  if(!window.userCountry) {
+    // Try to guess country from province field if it's not a Canadian province
+    var canadianProvinces = ['Québec','Ontario','Colombie-Britannique','Alberta','Manitoba','Saskatchewan','Nouveau-Brunswick','Nouvelle-Écosse'];
+    if(canadianProvinces.indexOf(province) === -1) {
+      window.userCountry = province; // treat as country name
+      window.userCurrency = province === 'México' || province === 'Mexico' ? 'MXN' : 'USD';
+    } else {
+      window.userCountry = 'CA';
+      window.userCurrency = 'CAD';
+    }
+  }
 
   // Update UI with user info
   ['h-name','pnm'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=name;});
