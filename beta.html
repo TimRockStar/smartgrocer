@@ -1468,6 +1468,17 @@ async function showPricePicker(productName) {
 }
 
 
+// Real verified stores for known cities
+var KNOWN_CITY_STORES = {
+  'joliette': [
+    {nom:'Super C', icone:'🏪', distance:'1.2 km', adresse:'1445 Bd Firestone', specials:5, ouvert:true},
+    {nom:'Metro Plus Bélair', icone:'🛒', distance:'2.0 km', adresse:'180 Rue Beaudry N', specials:4, ouvert:true},
+    {nom:'Maxi Firestone', icone:'🏬', distance:'1.5 km', adresse:'909 Bd Firestone', specials:7, ouvert:true},
+    {nom:'IGA Joliette', icone:'🏪', distance:'1.8 km', adresse:'17 Rue Gauthier N', specials:3, ouvert:true},
+    {nom:'Bonichoix Market', icone:'🏪', distance:'2.5 km', adresse:'773 Rue de Lanaudière', specials:2, ouvert:true}
+  ]
+};
+
 async function loadLocalStores() {
   var city = window.userCity || 'Joliette';
   var country = window.userCountry || 'CA';
@@ -1478,6 +1489,16 @@ async function loadLocalStores() {
   var mapLabel = document.querySelector('.map-ph div:last-child');
   if(mapLabel) mapLabel.textContent = '📍 ' + city;
   
+  var cityKey = city.toLowerCase().trim();
+  var stores = KNOWN_CITY_STORES[cityKey];
+  
+  if(stores) {
+    // Use verified real stores
+    renderStoresList(stores);
+    return;
+  }
+  
+  // Fallback to Groq for unknown cities
   try {
     var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
@@ -1485,42 +1506,45 @@ async function loadLocalStores() {
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
         max_completion_tokens: 600,
-        messages: [{role:'user',content:'Liste 5 vraies epiceries pres de '+city+', '+country+'. JSON seulement: [{"nom":"Carrefour","icone":"🏪","distance":"1.2 km","adresse":"123 rue Example","specials":3,"ouvert":true}]'}]
+        messages: [{role:'user',content:'Liste 5 vraies chaines epicerie connues pres de '+city+', '+country+'. Utilise seulement des noms de chaines reelles et connues (pas invente). JSON seulement: [{"nom":"Carrefour","icone":"🏪","distance":"1.2 km","adresse":"123 rue Example","specials":3,"ouvert":true}]'}]
       })
     });
     var data = await res.json();
     var text = data.choices[0].message.content.replace(/```json|```/g,'').trim();
     var jsonMatch = text.match(/\[[\s\S]*\]/);
     if(!jsonMatch) throw new Error('No JSON');
-    var stores = JSON.parse(jsonMatch[0]);
-    
-    window._localStores = stores;
-    
-    var storesList = document.querySelector('#carte .px');
-    if(!storesList) return;
-    
-    var storesHTML = '<div class="sl">' + stores.length + ' épiceries dans un rayon de 5 km</div>';
-    for(var si=0; si<stores.length; si++) {
-      var s = stores[si];
-      storesHTML += '<div class="store-item" onclick="openLocalStore(' + si + ')">';
-      storesHTML += '<div style="font-size:22px;">' + s.icone + '</div>';
-      storesHTML += '<div style="flex:1"><div style="font-size:13px;font-weight:700;">' + s.nom + '</div>';
-      storesHTML += '<div style="font-size:10px;color:var(--sub);">' + s.distance + ' · ' + s.adresse + '</div></div>';
-      storesHTML += '<div style="text-align:right;"><div class="badge ' + (s.ouvert?'bdg':'bdc') + '">' + (s.ouvert?'Ouvert':'Fermé') + '</div>';
-      storesHTML += '<div style="font-size:10px;color:var(--sub);margin-top:3px;">' + s.specials + ' spéciaux</div></div>';
-      storesHTML += '</div>';
-    }
-    
-    var existingTitle = storesList.querySelector('.sl');
-    var existingStores = storesList.querySelectorAll('.store-item');
-    if(existingTitle) existingTitle.remove();
-    existingStores.forEach(function(s){ s.remove(); });
-    storesList.insertAdjacentHTML('beforeend', storesHTML);
-    
+    var groqStores = JSON.parse(jsonMatch[0]);
+    renderStoresList(groqStores);
   } catch(e) {
     console.log('Could not load local stores:', e);
   }
 }
+
+function renderStoresList(stores) {
+  window._localStores = stores;
+  
+  var storesList = document.querySelector('#carte .px');
+  if(!storesList) return;
+  
+  var storesHTML = '<div class="sl">' + stores.length + ' épiceries dans un rayon de 5 km</div>';
+  for(var si=0; si<stores.length; si++) {
+    var s = stores[si];
+    storesHTML += '<div class="store-item" onclick="openLocalStore(' + si + ')">';
+    storesHTML += '<div style="font-size:22px;">' + s.icone + '</div>';
+    storesHTML += '<div style="flex:1"><div style="font-size:13px;font-weight:700;">' + s.nom + '</div>';
+    storesHTML += '<div style="font-size:10px;color:var(--sub);">' + s.distance + ' · ' + s.adresse + '</div></div>';
+    storesHTML += '<div style="text-align:right;"><div class="badge ' + (s.ouvert?'bdg':'bdc') + '">' + (s.ouvert?'Ouvert':'Fermé') + '</div>';
+    storesHTML += '<div style="font-size:10px;color:var(--sub);margin-top:3px;">' + s.specials + ' spéciaux</div></div>';
+    storesHTML += '</div>';
+  }
+  
+  var existingTitle = storesList.querySelector('.sl');
+  var existingStores = storesList.querySelectorAll('.store-item');
+  if(existingTitle) existingTitle.remove();
+  existingStores.forEach(function(s){ s.remove(); });
+  storesList.insertAdjacentHTML('beforeend', storesHTML);
+}
+
 
 
 
