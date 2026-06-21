@@ -1271,6 +1271,7 @@ async function detectLocation() {
                                  ['FR','DE','ES','IT','BE','NL','PT'].includes(countryCode) ? 'EUR' : 'CAD';
           
           showToast('📍 ' + city + ', ' + (state || country) + ' détecté!');
+          loadLocalStores();
         } catch(e) {
           console.log('Reverse geocode failed:', e);
         }
@@ -1470,17 +1471,13 @@ async function showPricePicker(productName) {
 async function loadLocalStores() {
   var city = window.userCity || 'Joliette';
   var country = window.userCountry || 'CA';
-  var currency = window.userCurrency || 'CAD';
   
-  // Update map label
   var carteCity = document.getElementById('carte-city');
   if(carteCity) carteCity.textContent = 'Épiceries · ' + city + ' · 5 km';
   
-  // Update map pin label
   var mapLabel = document.querySelector('.map-ph div:last-child');
   if(mapLabel) mapLabel.textContent = '📍 ' + city;
   
-  // Generate local stores with Groq
   try {
     var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
@@ -1488,7 +1485,7 @@ async function loadLocalStores() {
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
         max_completion_tokens: 600,
-        messages: [{role:'user',content:'Liste 5 vraies épiceries/supermarchés près de '+city+', '+country+'. JSON seulement: [{"nom":"Carrefour","icone":"🏪","distance":"1.2 km","adresse":"123 rue Example","specials":3,"ouvert":true},{"nom":"Leclerc","icone":"🏬","distance":"2.1 km","adresse":"456 rue Example","specials":7,"ouvert":true}]'}]
+        messages: [{role:'user',content:'Liste 5 vraies epiceries pres de '+city+', '+country+'. JSON seulement: [{"nom":"Carrefour","icone":"🏪","distance":"1.2 km","adresse":"123 rue Example","specials":3,"ouvert":true}]'}]
       })
     });
     var data = await res.json();
@@ -1497,14 +1494,23 @@ async function loadLocalStores() {
     if(!jsonMatch) throw new Error('No JSON');
     var stores = JSON.parse(jsonMatch[0]);
     
-    // Update stores list
+    window._localStores = stores;
+    
     var storesList = document.querySelector('#carte .px');
     if(!storesList) return;
     
     var storesHTML = '<div class="sl">' + stores.length + ' épiceries dans un rayon de 5 km</div>';
+    for(var si=0; si<stores.length; si++) {
+      var s = stores[si];
+      storesHTML += '<div class="store-item" onclick="openLocalStore(' + si + ')">';
+      storesHTML += '<div style="font-size:22px;">' + s.icone + '</div>';
+      storesHTML += '<div style="flex:1"><div style="font-size:13px;font-weight:700;">' + s.nom + '</div>';
+      storesHTML += '<div style="font-size:10px;color:var(--sub);">' + s.distance + ' · ' + s.adresse + '</div></div>';
+      storesHTML += '<div style="text-align:right;"><div class="badge ' + (s.ouvert?'bdg':'bdc') + '">' + (s.ouvert?'Ouvert':'Fermé') + '</div>';
+      storesHTML += '<div style="font-size:10px;color:var(--sub);margin-top:3px;">' + s.specials + ' spéciaux</div></div>';
+      storesHTML += '</div>';
+    }
     
-    
-    // Replace existing stores
     var existingTitle = storesList.querySelector('.sl');
     var existingStores = storesList.querySelectorAll('.store-item');
     if(existingTitle) existingTitle.remove();
@@ -1515,6 +1521,7 @@ async function loadLocalStores() {
     console.log('Could not load local stores:', e);
   }
 }
+
 
 
 var GROCERY_CATEGORIES = {
