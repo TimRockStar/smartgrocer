@@ -1739,9 +1739,11 @@ async function generatePlannerList() {
       var ings = meal.ingredients.split(',').map(function(i){ return i.trim(); });
       ings.forEach(function(ing) {
         var clean = ing
-          .replace(/^[0-9][0-9\/\.\s]*/,'')
-          .replace(/^(tasse|c\. a (the|soupe)|oz|lb|kg|g|ml|pincee|gousse|tranche|filet)s? (de |d )?/i,'')
-          .replace(/^(une?|deux|trois|quatre|cinq) /i,'')
+          .replace(/^[\d\/\.\s]+/,'')
+          .replace(/^(cuillère(s)?|cuillere(s)?|c\.\s*à\s*(thé|soupe|café)|tasse(s)?|oz|lb|kg|g|ml|litre(s)?|pincée(s)?|gousse(s)?|tranche(s)?|filet|portion(s)?)\s+(de\s+|d')?/gi,'')
+          .replace(/^(une?|deux|trois|quatre|cinq|six)\s+/i,'')
+          .replace(/^(de |d')/i,'')
+          .replace(/\s*\([^)]*\)/g,'')
           .trim();
         if(clean && clean.length > 2 && allIngredients.indexOf(clean) === -1) {
           allIngredients.push(clean);
