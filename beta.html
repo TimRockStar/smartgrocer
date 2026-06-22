@@ -1765,7 +1765,7 @@ async function generatePlannerList() {
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
         max_completion_tokens: 800,
-        messages: [{role:'user',content:'Pour chaque ingredient, donne le meilleur prix realiste au Quebec. Utilise SEULEMENT ces epiceries: IGA, Maxi, Metro, Walmart, Costco. Ingrédients: '+allIngredients.join(', ')+'. JSON seulement: [{"nom":"poulet","prix":8.99,"store":"Maxi"},{"nom":"riz","prix":3.49,"store":"Walmart"}]'}]
+        messages: [{role:'user',content:(function(){ var localStores = window._localStores ? window._localStores.map(function(s){return s.nom;}).join(', ') : 'IGA, Maxi, Metro, Walmart'; return 'Pour chaque ingredient, donne le meilleur prix realiste. Utilise SEULEMENT ces epiceries locales: '+localStores+'. Ingredients: '+allIngredients.join(', ')+'. JSON seulement: [{"nom":"poulet","prix":8.99,"store":"Maxi"},{"nom":"riz","prix":3.49,"store":"IGA"}]'; })()}]
       })
     });
     var data = await res.json();
