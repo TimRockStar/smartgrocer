@@ -2564,18 +2564,29 @@ async function showRecipeModal(nom, emoji, recipeObj) {
     var recipeText = '';
     var videos = [];
     
-    if(jsonMatch) {
-      try {
+    // Try to parse JSON response
+    try {
+      var cleaned = text.replace(/```json|```/g,'').trim();
+      // Try parsing as JSON object
+      var jsonMatch = cleaned.match(/\{[\s\S]*\}/);
+      if(jsonMatch) {
         var parsed = JSON.parse(jsonMatch[0]);
-        recipeText = parsed.recette || text;
+        recipeText = (parsed.recette || parsed.recipe || '').trim();
         videos = parsed.videos || [];
-      } catch(e) {
-        recipeText = text;
       }
-    } else {
-      recipeText = text;
-    }
-
+    } catch(e) {}
+    
+    // If still no recipe text, use raw text
+    if(!recipeText) recipeText = text.trim();
+    
+    // Final cleanup - remove any remaining JSON artifacts
+    recipeText = recipeText
+      .replace(/^[\s]*\{[\s\S]*?"recette"[\s]*:[\s]*"/,'')
+      .replace(/"[\s]*,[\s]*"videos"[\s\S]*$/,'')
+      .replace(/\\n/g,'\n')
+      .replace(/^"|"$/g,'')
+      .trim();
+    
     // Build content
     var html = '<div style="font-size:13px;line-height:1.8;color:#1a1a2e;white-space:pre-wrap;padding:0.5rem;">' + recipeText + '</div>';
     
