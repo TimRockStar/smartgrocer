@@ -1765,7 +1765,7 @@ async function generatePlannerList() {
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
         max_completion_tokens: 800,
-        messages: [{role:'user',content:'Pour chaque ingredient, donne le meilleur prix et l epicerie la moins chere au Quebec. Ingrédients: '+allIngredients.join(', ')+'. JSON seulement: [{"nom":"poulet","prix":8.99,"store":"Maxi"},{"nom":"riz","prix":3.49,"store":"Walmart"}]'}]
+        messages: [{role:'user',content:'Pour chaque ingredient, donne le meilleur prix realiste au Quebec. Utilise SEULEMENT ces epiceries: IGA, Maxi, Metro, Walmart, Costco. Ingrédients: '+allIngredients.join(', ')+'. JSON seulement: [{"nom":"poulet","prix":8.99,"store":"Maxi"},{"nom":"riz","prix":3.49,"store":"Walmart"}]'}]
       })
     });
     var data = await res.json();
