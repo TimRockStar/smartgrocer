@@ -1694,36 +1694,64 @@ async function generateNewRecipeForDay() {
   if(!_pendingPlannerSlot) return;
   showToast('⏳ Génération en cours...');
   
-  // Get already planned meals to avoid repetition
   var plannedMeals = Object.values(mealPlan).map(function(m){ return m.nom; }).join(', ');
-  var avoidText = plannedMeals ? 'Évite ces plats déjà au menu: ' + plannedMeals + '.' : '';
+  var avoidText = plannedMeals ? 'Evite absolument: ' + plannedMeals + '.' : '';
   var day = _pendingPlannerSlot.split('-')[0];
   
-  try {
-    var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
-      body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
-        max_completion_tokens: 300,
-        messages: [{role:'user',content:'Génère 1 recette de souper ÉCONOMIQUE et DIFFÉRENTE pour ' + day + '. ' + avoidText + ' Choisis ALÉATOIREMENT parmi: soupe, mijotée, sauté, gratin, omelette, riz frit, quesadilla, pâtes, tacos, curry léger, frittata, chili, pâté chinois, souvlaki, pad thai simplifié. Protéines variées: boeuf haché, oeufs, légumineuses, porc, thon, tofu, saucisses. Budget max 15$ pour 4 personnes. Mesures nord-américaines. JSON: {"emoji":"🍝","nom":"Nom recette unique","ingredients":"ingredient1, ingredient2, ingredient3"}'}]
-      })
-    });
-    var data = await res.json();
-    var text = data.choices[0].message.content.replace(/```json|```/g,'').trim();
-    var jsonMatch = text.match(/\{[\s\S]*\}/);
-    if(!jsonMatch) throw new Error('No JSON');
-    var recipe = JSON.parse(jsonMatch[0]);
-    
-    mealPlan[_pendingPlannerSlot] = recipe;
-    saveMealPlan();
-    renderPlannerDays();
-    closeDayPicker();
-    showToast('🍳 ' + recipe.nom + ' ajouté!');
-  } catch(e) {
-    showToast('⚠️ Erreur — réessaie!');
+  var types = ['soupe','mijotée','sauté','gratin','omelette','riz frit','quesadilla','pâtes','tacos','chili','pâté chinois','frittata'];
+  var proteins = ['boeuf haché','oeufs','légumineuses','porc','thon en conserve','tofu','saucisses','jambon'];
+  var randomType = types[Math.floor(Math.random() * types.length)];
+  var randomProtein = proteins[Math.floor(Math.random() * proteins.length)];
+  
+  // Try up to 2 times
+  for(var attempt = 0; attempt < 2; attempt++) {
+    try {
+      var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
+        body: JSON.stringify({
+          model: 'llama-3.3-70b-versatile',
+          max_completion_tokens: 200,
+          messages: [{role:'user',content:'Reponds UNIQUEMENT en JSON valide sans texte avant ou apres. Recette economique de ' + randomType + ' avec ' + randomProtein + ' pour ' + day + '. ' + avoidText + ' JSON: {"emoji":"🍝","nom":"Nom court","ingredients":"ingredient1, ingredient2, ingredient3, ingredient4"}'}]
+        })
+      });
+      var data = await res.json();
+      if(!data.choices || !data.choices[0]) throw new Error('No response');
+      var text = data.choices[0].message.content.replace(/```json|```/g,'').trim();
+      var jsonMatch = text.match(/\{[\s\S]*\}/);
+      if(!jsonMatch) throw new Error('No JSON');
+      var recipe = JSON.parse(jsonMatch[0]);
+      if(!recipe.nom || !recipe.ingredients) throw new Error('Invalid recipe');
+      
+      mealPlan[_pendingPlannerSlot] = recipe;
+      saveMealPlan();
+      renderPlannerDays();
+      closeDayPicker();
+      showToast('🍳 ' + recipe.nom + ' ajouté!');
+      return;
+      
+    } catch(e) {
+      console.log('Attempt ' + (attempt+1) + ' failed:', e);
+      if(attempt === 0) showToast('⏳ Nouvelle tentative...', 2000);
+    }
   }
+  
+  // Final fallback - use a default recipe
+  var fallbackRecipes = [
+    {emoji:'🍝', nom:'Pâtes bolognaise', ingredients:'boeuf haché, pâtes, sauce tomate, oignons, ail'},
+    {emoji:'🍳', nom:'Omelette aux légumes', ingredients:'oeufs, poivron, oignons, fromage, sel, poivre'},
+    {emoji:'🍛', nom:'Riz au poulet économique', ingredients:'riz, bouillon de poulet, carottes, céleri, oignons'},
+    {emoji:'🌮', nom:'Tacos au boeuf', ingredients:'boeuf haché, tortillas, laitue, tomates, fromage râpé'},
+    {emoji:'🥘', nom:'Chili con carne', ingredients:'boeuf haché, haricots rouges, tomates, oignons, épices'}
+  ];
+  var fallback = fallbackRecipes[Math.floor(Math.random() * fallbackRecipes.length)];
+  mealPlan[_pendingPlannerSlot] = fallback;
+  saveMealPlan();
+  renderPlannerDays();
+  closeDayPicker();
+  showToast('🍳 ' + fallback.nom + ' ajouté!');
 }
+
 
 async function generatePlannerList() {
   var keys = Object.keys(mealPlan);
