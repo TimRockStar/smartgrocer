@@ -1706,7 +1706,7 @@ async function generateNewRecipeForDay() {
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
         max_completion_tokens: 300,
-        messages: [{role:'user',content:'Génère 1 recette de souper ÉCONOMIQUE et simple pour ' + day + ' pour une famille québécoise. Budget max 15$ pour 4 personnes. ' + avoidText + ' Varie les protéines (pas toujours du poulet) - utilise aussi: pâtes, légumineuses, oeufs, porc, boeuf haché, poisson. Utilise mesures nord-américaines. JSON seulement: {"emoji":"🍝","nom":"Nom recette","ingredients":"boeuf haché, pâtes, tomates, oignons"}'}]
+        messages: [{role:'user',content:'Génère 1 recette de souper ÉCONOMIQUE et DIFFÉRENTE pour ' + day + '. ' + avoidText + ' Choisis ALÉATOIREMENT parmi: soupe, mijotée, sauté, gratin, omelette, riz frit, quesadilla, pâtes, tacos, curry léger, frittata, chili, pâté chinois, souvlaki, pad thai simplifié. Protéines variées: boeuf haché, oeufs, légumineuses, porc, thon, tofu, saucisses. Budget max 15$ pour 4 personnes. Mesures nord-américaines. JSON: {"emoji":"🍝","nom":"Nom recette unique","ingredients":"ingredient1, ingredient2, ingredient3"}'}]
       })
     });
     var data = await res.json();
