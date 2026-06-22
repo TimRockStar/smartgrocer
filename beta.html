@@ -1706,7 +1706,7 @@ async function generateNewRecipeForDay() {
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
         max_completion_tokens: 300,
-        messages: [{role:'user',content:'Génère 1 recette de souper différente et variée pour ' + day + ' pour une famille québécoise. ' + avoidText + ' Utilise mesures nord-américaines (tasse, c. à thé, c. à soupe). JSON seulement: {"emoji":"🍝","nom":"Nom recette","ingredients":"poulet, riz, tomates, oignons"}'}]
+        messages: [{role:'user',content:'Génère 1 recette de souper ÉCONOMIQUE et simple pour ' + day + ' pour une famille québécoise. Budget max 15$ pour 4 personnes. ' + avoidText + ' Varie les protéines (pas toujours du poulet) - utilise aussi: pâtes, légumineuses, oeufs, porc, boeuf haché, poisson. Utilise mesures nord-américaines. JSON seulement: {"emoji":"🍝","nom":"Nom recette","ingredients":"boeuf haché, pâtes, tomates, oignons"}'}]
       })
     });
     var data = await res.json();
