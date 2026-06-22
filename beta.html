@@ -1725,7 +1725,7 @@ async function generateNewRecipeForDay() {
   }
 }
 
-function generatePlannerList() {
+async function generatePlannerList() {
   var keys = Object.keys(mealPlan);
   if(keys.length === 0) {
     showToast('⚠️ Ajoute au moins un repas à ton plan!');
@@ -1738,7 +1738,6 @@ function generatePlannerList() {
     if(meal.ingredients) {
       var ings = meal.ingredients.split(',').map(function(i){ return i.trim(); });
       ings.forEach(function(ing) {
-        // Remove quantities and measurements - keep only ingredient name
         var clean = ing
           .replace(/^\d+[\d\/\.\s]*\s*/,'')
           .replace(/^(tasse|c\.\s*à\s*(thé|soupe)|oz|lb|kg|g|ml|pincée|gousse|tranche|filet)s?\s+(de\s+|d')?/i,'')
@@ -1756,21 +1755,59 @@ function generatePlannerList() {
     return;
   }
   
-  var addedCount = 0;
-  allIngredients.forEach(function(ing) {
-    var alreadyInList = groceries.some(function(g){ return g.name.toLowerCase() === ing.toLowerCase(); });
-    if(!alreadyInList) {
-      var cat = guessCategory(ing);
-      groceries.push({name: ing, price: parseFloat((Math.random()*5+1.5).toFixed(2)), done: false, category: cat});
-      addedCount++;
-    }
-  });
+  showToast('⏳ Comparaison des prix en cours...', 5000);
   
-  renderGr();
-  saveData();
-  showToast('🛒 ' + addedCount + ' ingrédients ajoutés à ta liste!');
-  goTo('liste', null);
+  try {
+    // Ask Groq for best price and store for all ingredients at once
+    var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        max_completion_tokens: 800,
+        messages: [{role:'user',content:'Pour chaque ingredient, donne le meilleur prix et l epicerie la moins chere au Quebec. Ingrédients: '+allIngredients.join(', ')+'. JSON seulement: [{"nom":"poulet","prix":8.99,"store":"Maxi"},{"nom":"riz","prix":3.49,"store":"Walmart"}]'}]
+      })
+    });
+    var data = await res.json();
+    var text = data.choices[0].message.content.replace(/```json|```/g,'').trim();
+    var jsonMatch = text.match(/\[[\s\S]*\]/);
+    
+    if(jsonMatch) {
+      var priceData = JSON.parse(jsonMatch[0]);
+      var addedCount = 0;
+      priceData.forEach(function(item) {
+        var alreadyInList = groceries.some(function(g){ return g.name.toLowerCase() === item.nom.toLowerCase(); });
+        if(!alreadyInList) {
+          var cat = guessCategory(item.nom);
+          groceries.push({name: item.nom, price: item.prix, done: false, category: cat, store: item.store});
+          addedCount++;
+        }
+      });
+      renderGr();
+      saveData();
+      showToast('🛒 ' + addedCount + ' ingrédients ajoutés avec les meilleurs prix!');
+      goTo('liste', null);
+    } else {
+      throw new Error('No JSON');
+    }
+  } catch(e) {
+    // Fallback without prices
+    var addedCount = 0;
+    allIngredients.forEach(function(ing) {
+      var alreadyInList = groceries.some(function(g){ return g.name.toLowerCase() === ing.toLowerCase(); });
+      if(!alreadyInList) {
+        var cat = guessCategory(ing);
+        groceries.push({name: ing, price: 0, done: false, category: cat, store: ''});
+        addedCount++;
+      }
+    });
+    renderGr();
+    saveData();
+    showToast('🛒 ' + addedCount + ' ingrédients ajoutés!');
+    goTo('liste', null);
+  }
 }
+
 
 // Always have fallback trending recipes
 window.trendingRecipes = [
