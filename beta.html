@@ -1915,6 +1915,50 @@ async function genRecipesFromSpecials() {
   document.getElementById('rec-ld').classList.remove('on');
 }
 
+
+async function getHealthScore(productName) {
+  try {
+    var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        max_completion_tokens: 150,
+        messages: [{role:'user',content:'Score sante pour "'+productName+'". JSON seulement: {"score":75,"niveau":"bon","couleur":"vert","conseil":"Bonne source de proteines"}. Niveau: excellent(90-100,vert), bon(70-89,vert), moyen(50-69,jaune), mediocre(30-49,orange), mauvais(0-29,rouge).'}]
+      })
+    });
+    var data = await res.json();
+    var text = data.choices[0].message.content.replace(/```json|```/g,'').trim();
+    var jsonMatch = text.match(/\{[\s\S]*\}/);
+    if(!jsonMatch) return null;
+    return JSON.parse(jsonMatch[0]);
+  } catch(e) { return null; }
+}
+
+function renderHealthScore(score) {
+  if(!score) return '';
+  var colors = {
+    'vert': {bg:'#dcfce7', color:'#166534', bar:'#22c55e'},
+    'jaune': {bg:'#fef9c3', color:'#854d0e', bar:'#eab308'},
+    'orange': {bg:'#ffedd5', color:'#9a3412', bar:'#f97316'},
+    'rouge': {bg:'#fee2e2', color:'#991b1b', bar:'#ef4444'}
+  };
+  var c = colors[score.couleur] || colors['jaune'];
+  var emojis = {'vert':'🟢','jaune':'🟡','orange':'🟠','rouge':'🔴'};
+  var emoji = emojis[score.couleur] || '🟡';
+  
+  return '<div style="background:'+c.bg+';border-radius:14px;padding:12px;margin-bottom:1rem;">' +
+    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">' +
+    '<div style="font-size:13px;font-weight:700;color:'+c.color+';">' + emoji + ' Score santé</div>' +
+    '<div style="font-size:22px;font-weight:700;color:'+c.color+';">' + score.score + '/100</div>' +
+    '</div>' +
+    '<div style="background:rgba(255,255,255,0.5);border-radius:999px;height:8px;margin-bottom:6px;overflow:hidden;">' +
+    '<div style="background:'+c.bar+';height:100%;width:'+score.score+'%;border-radius:999px;transition:width 0.5s;"></div>' +
+    '</div>' +
+    '<div style="font-size:11px;color:'+c.color+';">💡 ' + score.conseil + '</div>' +
+    '</div>';
+}
+
 // Always have fallback trending recipes
 window.trendingRecipes = [
   {emoji:'🍝', nom:'Pâtes Alfredo au poulet'},
