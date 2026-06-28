@@ -2070,6 +2070,62 @@ function checkExpiryAlerts() {
   }
 }
 
+
+// ===== PRICE HISTORY =====
+var priceHistory = {};
+
+function loadPriceHistory() {
+  try {
+    var saved = localStorage.getItem('sg_price_history');
+    if(saved) priceHistory = JSON.parse(saved);
+  } catch(e) { priceHistory = {}; }
+}
+
+function savePriceToHistory(productName, price, store) {
+  var key = productName.toLowerCase().trim();
+  if(!priceHistory[key]) priceHistory[key] = [];
+  priceHistory[key].push({
+    price: price,
+    store: store,
+    date: new Date().toISOString().split('T')[0]
+  });
+  // Keep only last 10 entries
+  if(priceHistory[key].length > 10) {
+    priceHistory[key] = priceHistory[key].slice(-10);
+  }
+  localStorage.setItem('sg_price_history', JSON.stringify(priceHistory));
+}
+
+function getPriceHistoryHTML(productName, currentPrice) {
+  var key = productName.toLowerCase().trim();
+  var history = priceHistory[key];
+  if(!history || history.length < 2) return '';
+  
+  var lastEntry = history[history.length - 2]; // Previous price
+  var lastPrice = lastEntry.price;
+  var diff = currentPrice - lastPrice;
+  var pct = Math.round((diff / lastPrice) * 100);
+  
+  var color, arrow, msg;
+  if(diff > 0.05) {
+    color = '#ef4444'; arrow = '📈'; 
+    msg = '+$' + diff.toFixed(2) + ' (' + pct + '%) depuis ' + lastEntry.date;
+  } else if(diff < -0.05) {
+    color = '#22c55e'; arrow = '📉';
+    msg = '-$' + Math.abs(diff).toFixed(2) + ' (' + Math.abs(pct) + '%) depuis ' + lastEntry.date;
+  } else {
+    color = '#6b7280'; arrow = '➡️';
+    msg = 'Prix stable depuis ' + lastEntry.date;
+  }
+  
+  return '<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:10px;margin-bottom:1rem;display:flex;align-items:center;gap:10px;">' +
+    '<div style="font-size:22px;">' + arrow + '</div>' +
+    '<div style="flex:1;">' +
+    '<div style="font-size:12px;font-weight:700;color:' + color + ';">' + msg + '</div>' +
+    '<div style="font-size:10px;color:#6b7280;margin-top:2px;">Historique des prix SmartGrocer</div>' +
+    '</div></div>';
+}
+
 // Always have fallback trending recipes
 window.trendingRecipes = [
   {emoji:'🍝', nom:'Pâtes Alfredo au poulet'},
@@ -3584,6 +3640,7 @@ function showApp() {
     loadProductDB();
     loadTrendingRecipes();
     checkExpiryAlerts();
+    loadPriceHistory();
     loadFavorites();
     renderFavorites();
     loadLocalStores();
