@@ -1916,6 +1916,22 @@ async function genRecipesFromSpecials() {
 }
 
 
+
+function showHealthScoreInResults(productName) {
+  var existing = document.getElementById('health-score-section');
+  if(existing) existing.remove();
+  getHealthScore(productName).then(function(score) {
+    var healthHTML = renderHealthScore(score);
+    if(healthHTML) {
+      var div = document.createElement('div');
+      div.id = 'health-score-section';
+      div.innerHTML = healthHTML;
+      var pxRes = document.getElementById('px-res');
+      if(pxRes) pxRes.insertBefore(div, pxRes.firstChild);
+    }
+  });
+}
+
 async function getHealthScore(productName) {
   try {
     var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
