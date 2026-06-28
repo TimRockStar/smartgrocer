@@ -281,7 +281,6 @@ ml('account', '2355363');
       <div class="plus-item" onclick="goExtra('profil')"><i class="ti ti-user" style="color:var(--p);"></i><div class="plus-item-label">Profil</div></div>
       <div class="plus-item" onclick="goExtra('premium')"><i class="ti ti-star" style="color:var(--gold);"></i><div class="plus-item-label">Premium</div></div>
       <div class="plus-item" onclick="goExtra('planner')"><i class="ti ti-calendar" style="color:var(--g);"></i><div class="plus-item-label">Planificateur</div></div>
-      <div class="plus-item" onclick="openReceiptScanner()"><i class="ti ti-receipt" style="color:var(--c);"></i><div class="plus-item-label">Scanner reçu</div></div>
     </div>
   </div>
 </div>
@@ -2157,157 +2156,14 @@ function getPriceHistoryHTML(productName, currentPrice) {
 }
 
 
-var _receiptItems = [];
-
-function openReceiptScanner() {
-  closePlus();
-  document.getElementById('receipt-modal').style.display = 'block';
-  document.getElementById('receipt-upload-section').style.display = 'block';
-  document.getElementById('receipt-loading').style.display = 'none';
-  document.getElementById('receipt-results').style.display = 'none';
-  document.getElementById('receipt-file-input').value = '';
-}
-
-function closeReceiptScanner() {
-  document.getElementById('receipt-modal').style.display = 'none';
-  _receiptItems = [];
-}
-
-async function analyzeReceipt(input) {
-  var file = input.files[0];
-  if(!file) return;
-  
-  document.getElementById('receipt-upload-section').style.display = 'none';
-  document.getElementById('receipt-loading').style.display = 'block';
-  
-  try {
-    // Convert image to base64
-    var base64 = await new Promise(function(resolve, reject) {
-      var reader = new FileReader();
-      reader.onload = function(e) { resolve(e.target.result.split(',')[1]); };
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-    
-    // Send to Groq Vision
-    var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
-      body: JSON.stringify({
-        model: 'meta-llama/llama-4-scout-17b-16e-instruct',
-        max_tokens: 1000,
-        messages: [{
-          role: 'user',
-          content: [
-            {
-              type: 'image_url',
-              image_url: {url: 'data:image/jpeg;base64,' + base64}
-            },
-            {
-              type: 'text',
-              text: 'Analyse ce reçu d épicerie. Extrait tous les produits avec leurs prix. JSON seulement: [{"nom":"Lait 2% 4L","prix":5.99,"quantite":1},{"nom":"Pain tranché","prix":3.49,"quantite":2}]'
-            }
-          ]
-        }]
-      })
-    });
-    
-    var data = await res.json();
-    if(!data.choices || !data.choices[0]) throw new Error('No response');
-    var text = data.choices[0].message.content.replace(/```json|```/g,'').trim();
-    var jsonMatch = text.match(/\[[\s\S]*\]/);
-    if(!jsonMatch) throw new Error('No JSON');
-    _receiptItems = JSON.parse(jsonMatch[0]);
-    
-    // Show results
-    document.getElementById('receipt-loading').style.display = 'none';
-    document.getElementById('receipt-results').style.display = 'block';
-    
-    var totalPaid = _receiptItems.reduce(function(s,i){ return s + (i.prix * (i.quantite||1)); }, 0);
-    
-    document.getElementById('receipt-items-list').innerHTML = 
-      _receiptItems.map(function(item) {
-        return '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--light);">' +
-          '<div style="flex:1;font-size:13px;">' + item.nom + (item.quantite > 1 ? ' x'+item.quantite : '') + '</div>' +
-          '<div style="font-size:13px;font-weight:700;color:var(--g);">$' + (item.prix * (item.quantite||1)).toFixed(2) + '</div>' +
-          '</div>';
-      }).join('') +
-      '<div style="display:flex;justify-content:space-between;padding:10px 0;font-size:14px;font-weight:700;border-top:2px solid var(--border);">' +
-      '<span>Total payé</span><span>$' + totalPaid.toFixed(2) + '</span></div>';
-    
-    // Calculate potential savings with Groq
-    calculateReceiptSavings(totalPaid);
-    
-  } catch(e) {
-    document.getElementById('receipt-loading').style.display = 'none';
-    document.getElementById('receipt-upload-section').style.display = 'block';
-    showToast('⚠️ Erreur analyse — réessaie avec une meilleure photo!');
-    console.log('Receipt error:', e);
-  }
-}
-
-function addAllReceiptItems() {
-  // Add all items directly without price comparison
-  // User can tap each item in list to compare prices
-  var addedCount = 0;
-  _receiptItems.forEach(function(item) {
-    var alreadyInList = groceries.some(function(g){ 
-      return g.name.toLowerCase() === item.nom.toLowerCase(); 
-    });
-    if(!alreadyInList) {
-      var cat = guessCategory(item.nom);
-      groceries.push({
-        name: item.nom, 
-        price: item.prix || 0, 
-        done: false, 
-        category: cat, 
-        store: ''
-      });
-      addedCount++;
-    }
-  });
-  renderGr();
-  saveData();
-  closeReceiptScanner();
-  showToast('🛒 ' + addedCount + ' produits ajoutés! Appuie sur chaque article pour comparer les prix.');
-  goTo('liste', null);
-}
 
 
-async function calculateReceiptSavings(totalPaid) {
-  try {
-    var localStores = window._localStores 
-      ? window._localStores.map(function(s){return s.nom;}).join(', ') 
-      : 'IGA, Maxi, Metro, Walmart';
-    var productNames = _receiptItems.slice(0,8).map(function(i){ return i.nom; }).join(', ');
-    
-    var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
-      body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
-        max_completion_tokens: 600,
-        messages: [{role:'user',content:'Pour ces produits au Quebec, donne le meilleur prix total si on achetait chaque produit a l epicerie la moins chere parmi: '+localStores+'. Produits: '+productNames+'. JSON seulement: {"totalOptimal":45.67,"economies":8.32,"meilleureMagasin":"Maxi","details":"Poulet chez Maxi, lait chez Walmart..."}'}]
-      })
-    });
-    var data = await res.json();
-    var text = data.choices[0].message.content.replace(/```json|```/g,'').trim();
-    var jsonMatch = text.match(/\{[\s\S]*\}/);
-    if(!jsonMatch) return;
-    var result = JSON.parse(jsonMatch[0]);
-    
-    var savings = totalPaid - result.totalOptimal;
-    if(savings > 0.50) {
-      document.getElementById('receipt-savings').style.display = 'block';
-      document.getElementById('receipt-savings-amount').textContent = '$' + savings.toFixed(2);
-      document.getElementById('receipt-savings-detail').textContent = 
-        'Tu aurais pu économiser $' + savings.toFixed(2) + ' en magasinant chez ' + result.meilleureMagasin;
-    }
-  } catch(e) {
-    console.log('Savings calculation error:', e);
-  }
-}
 
+
+async 
+
+
+async 
 // Always have fallback trending recipes
 window.trendingRecipes = [
   {emoji:'🍝', nom:'Pâtes Alfredo au poulet'},
@@ -2944,7 +2800,7 @@ function removeWCard(idx){if(walletCards.length<=1){showToast('⚠️ Garde au m
 
 // EmailJS
 (function() {
-  emailjs.init('mFtipR8DIX93iMHC1');
+  emailjs.init('2cNfgyonkmXqvbV-N');
 })();
 
 var sgVerifyCode = '';
@@ -2962,7 +2818,7 @@ async function sendVerificationEmail(name, email) {
   sgVerifyName = name;
   
   try {
-    await emailjs.send('service_iav6o5t', 'template_n12mgme', {
+    await emailjs.send('service_lleoy3h', 'template_4eslcmi', {
       to_name: name,
       to_email: email,
       passcode: sgVerifyCode
