@@ -1394,11 +1394,11 @@ function openLocalStore(idx) {
 }
 
 
-function comparePriceForItem(idx) {
-  var item = groceries[idx];
+function comparePriceForItem(uid) {
+  var item = groceries.find(function(g){ return g.uid == uid; });
   if(!item) return;
-  // Set update index BEFORE opening picker
-  window._updatingItemIdx = idx;
+  window._updatingItemUID = uid;
+  window._updatingItemIdx = null;
   window._pendingCategory = item.category;
   _pendingGroceryItem = item.name;
   showPricePicker(item.name);
@@ -1408,12 +1408,13 @@ function closePricePicker() {
   document.getElementById('price-picker-modal').style.display = 'none';
   _pendingGroceryItem = '';
   window._updatingItemIdx = null;
+  window._updatingItemUID = null;
 }
 
 function addWithoutPrice() {
   if(_pendingGroceryItem) {
     var cat = window._pendingCategory || guessCategory(_pendingGroceryItem);
-    groceries.push({name: _pendingGroceryItem, price: 0, done: false, store: '', category: cat});
+    groceries.push({name: _pendingGroceryItem, price: 0, done: false, store: '', category: cat, uid: Date.now()+Math.random()});
     renderGr();
     saveData();
     showToast('✅ "' + _pendingGroceryItem + '" ajouté!');
@@ -1423,22 +1424,25 @@ function addWithoutPrice() {
 
 function addWithPrice(price, storeEl) {
   var store = typeof storeEl === "string" ? storeEl : storeEl;
-  // UPDATE existing item
-  if(window._updatingItemIdx !== null && window._updatingItemIdx !== undefined && window._updatingItemIdx >= 0) {
-    var updateIdx = window._updatingItemIdx;
-    window._updatingItemIdx = null;
-    groceries[updateIdx].price = price;
-    groceries[updateIdx].store = store;
-    renderGr();
-    saveData();
-    showToast('✅ Prix mis à jour — ' + store + ' $' + price.toFixed(2));
-    closePricePicker();
-    return;
+  // UPDATE existing item by UID
+  if(window._updatingItemUID) {
+    var uid = window._updatingItemUID;
+    window._updatingItemUID = null;
+    var itemToUpdate = groceries.find(function(g){ return g.uid == uid; });
+    if(itemToUpdate) {
+      itemToUpdate.price = price;
+      itemToUpdate.store = store;
+      renderGr();
+      saveData();
+      showToast('✅ Prix mis à jour — ' + store + ' $' + price.toFixed(2));
+      closePricePicker();
+      return;
+    }
   }
   // ADD new item
   if(_pendingGroceryItem) {
     var cat = window._pendingCategory || guessCategory(_pendingGroceryItem);
-    var newItem = {name: _pendingGroceryItem, price: price, done: false, store: store, category: cat};
+    var newItem = {name: _pendingGroceryItem, price: price, done: false, store: store, category: cat, uid: Date.now()+Math.random()};
     groceries.push(newItem);
     renderGr();
     saveData();
@@ -2219,17 +2223,20 @@ async function analyzeReceipt(input) {
     document.getElementById('receipt-loading').style.display = 'none';
     document.getElementById('receipt-results').style.display = 'block';
     
-    var total = _receiptItems.reduce(function(s,i){ return s + (i.prix * (i.quantite||1)); }, 0);
+    var totalPaid = _receiptItems.reduce(function(s,i){ return s + (i.prix * (i.quantite||1)); }, 0);
     
     document.getElementById('receipt-items-list').innerHTML = 
-      _receiptItems.map(function(item, idx) {
+      _receiptItems.map(function(item) {
         return '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--light);">' +
           '<div style="flex:1;font-size:13px;">' + item.nom + (item.quantite > 1 ? ' x'+item.quantite : '') + '</div>' +
           '<div style="font-size:13px;font-weight:700;color:var(--g);">$' + (item.prix * (item.quantite||1)).toFixed(2) + '</div>' +
           '</div>';
       }).join('') +
-      '<div style="display:flex;justify-content:space-between;padding:10px 0;font-size:14px;font-weight:700;">' +
-      '<span>Total détecté</span><span>$' + total.toFixed(2) + '</span></div>';
+      '<div style="display:flex;justify-content:space-between;padding:10px 0;font-size:14px;font-weight:700;border-top:2px solid var(--border);">' +
+      '<span>Total payé</span><span>$' + totalPaid.toFixed(2) + '</span></div>';
+    
+    // Calculate potential savings with Groq
+    calculateReceiptSavings(totalPaid);
     
   } catch(e) {
     document.getElementById('receipt-loading').style.display = 'none';
@@ -2264,6 +2271,41 @@ function addAllReceiptItems() {
   closeReceiptScanner();
   showToast('🛒 ' + addedCount + ' produits ajoutés! Appuie sur chaque article pour comparer les prix.');
   goTo('liste', null);
+}
+
+
+async function calculateReceiptSavings(totalPaid) {
+  try {
+    var localStores = window._localStores 
+      ? window._localStores.map(function(s){return s.nom;}).join(', ') 
+      : 'IGA, Maxi, Metro, Walmart';
+    var productNames = _receiptItems.slice(0,8).map(function(i){ return i.nom; }).join(', ');
+    
+    var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        max_completion_tokens: 600,
+        messages: [{role:'user',content:'Pour ces produits au Quebec, donne le meilleur prix total si on achetait chaque produit a l epicerie la moins chere parmi: '+localStores+'. Produits: '+productNames+'. JSON seulement: {"totalOptimal":45.67,"economies":8.32,"meilleureMagasin":"Maxi","details":"Poulet chez Maxi, lait chez Walmart..."}'}]
+      })
+    });
+    var data = await res.json();
+    var text = data.choices[0].message.content.replace(/```json|```/g,'').trim();
+    var jsonMatch = text.match(/\{[\s\S]*\}/);
+    if(!jsonMatch) return;
+    var result = JSON.parse(jsonMatch[0]);
+    
+    var savings = totalPaid - result.totalOptimal;
+    if(savings > 0.50) {
+      document.getElementById('receipt-savings').style.display = 'block';
+      document.getElementById('receipt-savings-amount').textContent = '$' + savings.toFixed(2);
+      document.getElementById('receipt-savings-detail').textContent = 
+        'Tu aurais pu économiser $' + savings.toFixed(2) + ' en magasinant chez ' + result.meilleureMagasin;
+    }
+  } catch(e) {
+    console.log('Savings calculation error:', e);
+  }
 }
 
 // Always have fallback trending recipes
@@ -2727,7 +2769,7 @@ function renderGr(){
         html += '<div class="gi" style="background:#fff;">' +
           '<div class="gc" onclick="toggleGr(' + realIdx + ')" style="border-color:var(--g);">' +
           '<i class="ti ti-circle" style="font-size:10px;color:#d1d5db;"></i></div>' +
-          '<div style="flex:1;cursor:pointer;" onclick="comparePriceForItem('+realIdx+')"><div style="font-size:13px;color:var(--text);display:flex;align-items:center;gap:4px;">'+g.name+'<span style="font-size:9px;color:var(--g);background:#dcfce7;padding:1px 5px;border-radius:999px;">💰</span></div>' +
+          '<div style="flex:1;cursor:pointer;" onclick="comparePriceForItem(\''+g.uid+'\')"><div style="font-size:13px;color:var(--text);display:flex;align-items:center;gap:4px;">'+g.name+'<span style="font-size:9px;color:var(--g);background:#dcfce7;padding:1px 5px;border-radius:999px;">💰</span></div>' +
           (g.expiry ? (function(){ var d=new Date(g.expiry); var today=new Date(); today.setHours(0,0,0,0); d.setHours(0,0,0,0); var days=Math.round((d-today)/(1000*60*60*24)); var col=days<0?'#ef4444':days<=2?'#f97316':days<=5?'#eab308':'#6b7280'; return '<div style="font-size:10px;color:'+col+';font-weight:700;margin-top:2px;">'+(days<0?'🚨 Expiré!':days===0?'⚠️ Expire aujourd\'hui!':days<=2?'⚠️ Expire dans '+days+' jour(s)':'📅 Expire dans '+days+' jours')+'</div>'; })() : '') +
         (g.store ? '<div style="margin-top:3px;"><span style="background:' + ({'IGA':'#FFEBEE','Maxi':'#FCE4EC','Metro':'#E3F2FD','Walmart':'#E8F4FD','Costco':'#FFEBEE'}[g.store]||'#f3f4f6') + ';color:' + ({'IGA':'#E53935','Maxi':'#880E4F','Metro':'#1565C0','Walmart':'#0071CE','Costco':'#C62828'}[g.store]||'#6b7280') + ';font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;">' + ({'IGA':'🏪','Maxi':'🏬','Metro':'🛒','Walmart':'🏢','Costco':'🏭'}[g.store]||'🏪') + ' ' + g.store + '</span></div>' : '') +
           '</div>' +
