@@ -2236,7 +2236,7 @@ async function addAllReceiptItems() {
     });
     var data = await res.json();
     var text = data.choices[0].message.content.replace(/```json|```/g,'').trim();
-    var jsonMatch = text.match(/\[\s\S]*\]/);
+    var jsonMatch = text.match(/\[[\s\S]*\]/);
     var priceData = jsonMatch ? JSON.parse(jsonMatch[0]) : [];
     
     var addedCount = 0;
