@@ -471,9 +471,9 @@ function switchInstall(type, btn){
 // ============================================================
 // FORM SUBMIT
 // ============================================================
-async function submitForm(){
-  const name = document.getElementById('name-input').value.trim();
-  const email = document.getElementById('email-input').value.trim();
+function submitForm(){
+  var name = document.getElementById('name-input').value.trim();
+  var email = document.getElementById('email-input').value.trim();
 
   if(!name){
     alert(currentLang === 'fr' ? 'Veuillez entrer votre prénom.' : 'Please enter your first name.');
@@ -484,11 +484,11 @@ async function submitForm(){
     return;
   }
 
-  const btn = document.getElementById('submit-btn');
+  var btn = document.getElementById('submit-btn');
   btn.disabled = true;
   btn.innerHTML = currentLang === 'fr' ? '⏳ Envoi en cours...' : '⏳ Sending...';
 
-  const code = getNextCode();
+  var code = getNextCode();
   if(!code){
     alert(currentLang === 'fr' ? 'Toutes les places sont prises! Revenez bientôt.' : 'All spots are taken! Check back soon.');
     btn.disabled = false;
@@ -496,29 +496,22 @@ async function submitForm(){
     return;
   }
 
-  try {
-    await emailjs.send('service_lleoy3h', 'template_j79pyg8', {
-      to_name: name,
-      to_email: email,
-      beta_code: code
-    });
-
-    // Succès
+  emailjs.send('service_lleoy3h', 'template_j79pyg8', {
+    to_name: name,
+    to_email: email,
+    beta_code: code
+  }).then(function() {
     document.getElementById('signup-form').style.display = 'none';
     document.getElementById('code-display').textContent = code;
     document.getElementById('success-box').classList.add('show');
-
-  } catch(err) {
+  }, function(err) {
     console.error('EmailJS error:', err);
-    alert(currentLang === 'fr'
-      ? 'Erreur lors de l\'envoi. Veuillez réessayer.'
-      : 'Error sending. Please try again.');
-    // Rembobiner le code
-    let idx = parseInt(localStorage.getItem('sg_code_idx') || '1');
+    alert(currentLang === 'fr' ? 'Erreur lors de l\'envoi. Veuillez réessayer.' : 'Error sending. Please try again.');
+    var idx = parseInt(localStorage.getItem('sg_code_idx') || '1');
     localStorage.setItem('sg_code_idx', Math.max(0, idx - 1));
     btn.disabled = false;
     btn.innerHTML = currentLang === 'fr' ? '🚀 Obtenir mon accès VIP gratuit' : '🚀 Get my free VIP access';
-  }
+  });
 }
 
 // Init
