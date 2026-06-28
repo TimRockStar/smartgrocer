@@ -281,6 +281,7 @@ ml('account', '2355363');
       <div class="plus-item" onclick="goExtra('profil')"><i class="ti ti-user" style="color:var(--p);"></i><div class="plus-item-label">Profil</div></div>
       <div class="plus-item" onclick="goExtra('premium')"><i class="ti ti-star" style="color:var(--gold);"></i><div class="plus-item-label">Premium</div></div>
       <div class="plus-item" onclick="goExtra('planner')"><i class="ti ti-calendar" style="color:var(--g);"></i><div class="plus-item-label">Planificateur</div></div>
+      <div class="plus-item" onclick="openReceiptScanner()"><i class="ti ti-receipt" style="color:var(--c);"></i><div class="plus-item-label">Scanner reçu</div></div>
     </div>
   </div>
 </div>
@@ -2126,6 +2127,110 @@ function getPriceHistoryHTML(productName, currentPrice) {
     '</div></div>';
 }
 
+
+var _receiptItems = [];
+
+function openReceiptScanner() {
+  closePlus();
+  document.getElementById('receipt-modal').style.display = 'block';
+  document.getElementById('receipt-upload-section').style.display = 'block';
+  document.getElementById('receipt-loading').style.display = 'none';
+  document.getElementById('receipt-results').style.display = 'none';
+  document.getElementById('receipt-file-input').value = '';
+}
+
+function closeReceiptScanner() {
+  document.getElementById('receipt-modal').style.display = 'none';
+  _receiptItems = [];
+}
+
+async function analyzeReceipt(input) {
+  var file = input.files[0];
+  if(!file) return;
+  
+  document.getElementById('receipt-upload-section').style.display = 'none';
+  document.getElementById('receipt-loading').style.display = 'block';
+  
+  try {
+    // Convert image to base64
+    var base64 = await new Promise(function(resolve, reject) {
+      var reader = new FileReader();
+      reader.onload = function(e) { resolve(e.target.result.split(',')[1]); };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+    
+    // Send to Groq Vision
+    var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
+      body: JSON.stringify({
+        model: 'meta-llama/llama-4-scout-17b-16e-instruct',
+        max_tokens: 1000,
+        messages: [{
+          role: 'user',
+          content: [
+            {
+              type: 'image_url',
+              image_url: {url: 'data:image/jpeg;base64,' + base64}
+            },
+            {
+              type: 'text',
+              text: 'Analyse ce reçu d épicerie. Extrait tous les produits avec leurs prix. JSON seulement: [{"nom":"Lait 2% 4L","prix":5.99,"quantite":1},{"nom":"Pain tranché","prix":3.49,"quantite":2}]'
+            }
+          ]
+        }]
+      })
+    });
+    
+    var data = await res.json();
+    if(!data.choices || !data.choices[0]) throw new Error('No response');
+    var text = data.choices[0].message.content.replace(/```json|```/g,'').trim();
+    var jsonMatch = text.match(/\[[\s\S]*\]/);
+    if(!jsonMatch) throw new Error('No JSON');
+    _receiptItems = JSON.parse(jsonMatch[0]);
+    
+    // Show results
+    document.getElementById('receipt-loading').style.display = 'none';
+    document.getElementById('receipt-results').style.display = 'block';
+    
+    var total = _receiptItems.reduce(function(s,i){ return s + (i.prix * (i.quantite||1)); }, 0);
+    
+    document.getElementById('receipt-items-list').innerHTML = 
+      _receiptItems.map(function(item, idx) {
+        return '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--light);">' +
+          '<div style="flex:1;font-size:13px;">' + item.nom + (item.quantite > 1 ? ' x'+item.quantite : '') + '</div>' +
+          '<div style="font-size:13px;font-weight:700;color:var(--g);">$' + (item.prix * (item.quantite||1)).toFixed(2) + '</div>' +
+          '</div>';
+      }).join('') +
+      '<div style="display:flex;justify-content:space-between;padding:10px 0;font-size:14px;font-weight:700;">' +
+      '<span>Total détecté</span><span>$' + total.toFixed(2) + '</span></div>';
+    
+  } catch(e) {
+    document.getElementById('receipt-loading').style.display = 'none';
+    document.getElementById('receipt-upload-section').style.display = 'block';
+    showToast('⚠️ Erreur analyse — réessaie avec une meilleure photo!');
+    console.log('Receipt error:', e);
+  }
+}
+
+function addAllReceiptItems() {
+  var addedCount = 0;
+  _receiptItems.forEach(function(item) {
+    var alreadyInList = groceries.some(function(g){ return g.name.toLowerCase() === item.nom.toLowerCase(); });
+    if(!alreadyInList) {
+      var cat = guessCategory(item.nom);
+      groceries.push({name: item.nom, price: item.prix, done: false, category: cat, store: 'Reçu'});
+      addedCount++;
+    }
+  });
+  renderGr();
+  saveData();
+  closeReceiptScanner();
+  showToast('🛒 ' + addedCount + ' produits ajoutés à ta liste!');
+  goTo('liste', null);
+}
+
 // Always have fallback trending recipes
 window.trendingRecipes = [
   {emoji:'🍝', nom:'Pâtes Alfredo au poulet'},
@@ -3833,6 +3938,41 @@ window.addEventListener('load', function() {
     <div style="display:flex;gap:8px;">
       <button onclick="saveExpiry()" class="btn bg" style="flex:1;"><i class="ti ti-bell"></i> Ajouter l'alerte</button>
       <button onclick="skipExpiry()" class="btn bo" style="flex:1;">Passer</button>
+    </div>
+  </div>
+</div>
+
+<!-- RECEIPT SCANNER MODAL -->
+<div id="receipt-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:2000;overflow-y:auto;">
+  <div style="background:#fff;margin:1rem auto;max-width:480px;border-radius:20px;overflow:hidden;">
+    <div style="background:linear-gradient(135deg,#D85A30,#993C1D);padding:1.25rem;display:flex;align-items:center;justify-content:space-between;">
+      <div><div style="font-size:16px;font-weight:700;color:#fff;">🧾 Scanner de reçu</div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.85);">Analyse IA de ton reçu d'épicerie</div></div>
+      <button onclick="closeReceiptScanner()" style="background:rgba(255,255,255,0.2);border:none;color:#fff;border-radius:8px;padding:6px 10px;cursor:pointer;font-size:14px;">✕</button>
+    </div>
+    <div style="padding:1.25rem;">
+      <div id="receipt-upload-section">
+        <div style="border:2px dashed var(--border);border-radius:14px;padding:2rem;text-align:center;margin-bottom:1rem;cursor:pointer;" onclick="document.getElementById('receipt-file-input').click()">
+          <div style="font-size:40px;margin-bottom:8px;">🧾</div>
+          <div style="font-size:14px;font-weight:700;margin-bottom:4px;">Prends une photo de ton reçu</div>
+          <div style="font-size:12px;color:var(--sub);">ou clique pour choisir une image</div>
+        </div>
+        <input type="file" id="receipt-file-input" accept="image/*" capture="environment" style="display:none;" onchange="analyzeReceipt(this)"/>
+        <div style="font-size:11px;color:var(--sub);text-align:center;">💡 Assure-toi que le reçu est bien éclairé et lisible</div>
+      </div>
+      <div id="receipt-loading" style="display:none;text-align:center;padding:2rem;">
+        <div style="font-size:32px;margin-bottom:8px;">⏳</div>
+        <div style="font-size:14px;font-weight:700;">Analyse du reçu en cours...</div>
+        <div style="font-size:12px;color:var(--sub);margin-top:4px;">L'IA extrait les produits et les prix</div>
+      </div>
+      <div id="receipt-results" style="display:none;">
+        <div style="font-size:14px;font-weight:700;margin-bottom:10px;">📋 Produits détectés</div>
+        <div id="receipt-items-list"></div>
+        <div style="display:flex;gap:8px;margin-top:1rem;">
+          <button onclick="addAllReceiptItems()" class="btn bg bf">🛒 Tout ajouter à ma liste</button>
+        </div>
+        <div style="font-size:10px;color:var(--sub);text-align:center;margin-top:8px;">⚠️ Vérifie les prix — analyse IA peut contenir des erreurs</div>
+      </div>
     </div>
   </div>
 </div>
