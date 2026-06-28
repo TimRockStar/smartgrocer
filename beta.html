@@ -2216,13 +2216,18 @@ async function analyzeReceipt(input) {
 
 async function addAllReceiptItems() {
   var btn = document.querySelector('#receipt-results .btn');
-  if(btn) { btn.disabled = true; btn.textContent = '⏳ Comparaison des prix...'; }
+  if(btn) { btn.disabled = true; btn.innerHTML = '⏳ Comparaison des prix...'; }
+  
+  // Safety timeout - unlock button after 15 seconds
+  var timeout = setTimeout(function() {
+    if(btn) { btn.disabled = false; btn.innerHTML = '🛒 Tout ajouter à ma liste'; }
+  }, 15000);
   
   var localStores = window._localStores 
     ? window._localStores.map(function(s){return s.nom;}).join(', ') 
     : 'IGA, Maxi, Metro, Walmart';
   
-  var productNames = _receiptItems.map(function(i){ return i.nom; }).join(', ');
+  var productNames = _receiptItems.slice(0,8).map(function(i){ return i.nom; }).join(', ');
   
   try {
     var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -2256,6 +2261,7 @@ async function addAllReceiptItems() {
       }
     });
     
+    clearTimeout(timeout);
     renderGr();
     saveData();
     closeReceiptScanner();
@@ -2263,6 +2269,7 @@ async function addAllReceiptItems() {
     goTo('liste', null);
     
   } catch(e) {
+    clearTimeout(timeout);
     // Fallback without prices
     var addedCount = 0;
     _receiptItems.forEach(function(item) {
