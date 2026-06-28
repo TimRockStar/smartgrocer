@@ -2260,6 +2260,7 @@ async function searchProd(){
     scansToday++;totalScans++;
     const ps=document.getElementById('prof-scans');if(ps)ps.textContent=totalScans;
     updateLimitDots();
+    showHealthScoreInResults(d.nom);
     // Save to product DB if came from a barcode scan
     if(window._lastScannedCode) {
       saveProductToDB(window._lastScannedCode, d.nom, '', '');
