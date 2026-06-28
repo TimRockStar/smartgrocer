@@ -1412,10 +1412,14 @@ function addWithPrice(price, storeEl) {
   var store = typeof storeEl === "string" ? storeEl : storeEl;
   if(_pendingGroceryItem) {
     var cat = window._pendingCategory || guessCategory(_pendingGroceryItem);
-    groceries.push({name: _pendingGroceryItem, price: price, done: false, store: store, category: cat});
+    var newItem = {name: _pendingGroceryItem, price: price, done: false, store: store, category: cat};
+    groceries.push(newItem);
     renderGr();
     saveData();
     showToast('✅ "' + _pendingGroceryItem + '" — ' + store + ' $' + price.toFixed(2));
+    closePricePicker();
+    setTimeout(function(){ showExpiryModal(newItem); }, 400);
+    return;
   }
   closePricePicker();
 }
@@ -1568,7 +1572,7 @@ function guessCategory(productName) {
   var n = productName.toLowerCase();
   if(/pomme|banane|carotte|brocoli|laitue|légume|fruit|tomate|oignon|poivron|concombre|fraise|orange|citron|raisin|patate|pomme de terre/.test(n)) return 'Fruits et légumes';
   if(/poulet|boeuf|porc|poisson|saumon|viande|steak|jambon|bacon|dinde|crevette|thon/.test(n)) return 'Viandes et poissons';
-  if(/lait|fromage|yogourt|yaourt|beurre|crème|oeuf|œuf/.test(n)) return 'Produits laitiers';
+  if(/lait|fromage|yogourt|yaourt|beurre|crème|creme|oeuf|œuf|café|cafe|charcuterie|saucisse|jambon|tofu|vinaigre|mayonnaise|margarine|kefir|ricotta|mascarpone/.test(n)) return 'Produits laitiers';
   if(/pain|bagel|croissant|baguette|brioche|muffin/.test(n)) return 'Boulangerie';
   if(/surgelé|congelé|glace|crème glacée/.test(n)) return 'Surgelés';
   if(/jus|boisson|soda|eau|café|thé|bière|vin/.test(n)) return 'Boissons';
