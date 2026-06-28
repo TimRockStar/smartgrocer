@@ -1397,16 +1397,17 @@ function openLocalStore(idx) {
 function comparePriceForItem(idx) {
   var item = groceries[idx];
   if(!item) return;
+  // Set update index BEFORE opening picker
+  window._updatingItemIdx = idx;
   window._pendingCategory = item.category;
   _pendingGroceryItem = item.name;
   showPricePicker(item.name);
-  // Override addWithPrice to update existing item instead of adding new one
-  window._updatingItemIdx = idx;
 }
 
 function closePricePicker() {
   document.getElementById('price-picker-modal').style.display = 'none';
   _pendingGroceryItem = '';
+  window._updatingItemIdx = null;
 }
 
 function addWithoutPrice() {
@@ -1422,6 +1423,19 @@ function addWithoutPrice() {
 
 function addWithPrice(price, storeEl) {
   var store = typeof storeEl === "string" ? storeEl : storeEl;
+  // UPDATE existing item
+  if(window._updatingItemIdx !== null && window._updatingItemIdx !== undefined && window._updatingItemIdx >= 0) {
+    var updateIdx = window._updatingItemIdx;
+    window._updatingItemIdx = null;
+    groceries[updateIdx].price = price;
+    groceries[updateIdx].store = store;
+    renderGr();
+    saveData();
+    showToast('✅ Prix mis à jour — ' + store + ' $' + price.toFixed(2));
+    closePricePicker();
+    return;
+  }
+  // ADD new item
   if(_pendingGroceryItem) {
     var cat = window._pendingCategory || guessCategory(_pendingGroceryItem);
     var newItem = {name: _pendingGroceryItem, price: price, done: false, store: store, category: cat};
