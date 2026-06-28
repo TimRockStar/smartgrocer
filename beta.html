@@ -1990,6 +1990,82 @@ function renderHealthScore(score) {
     '</div>';
 }
 
+
+var _pendingExpiryItem = null;
+
+function showExpiryModal(groceryItem) {
+  _pendingExpiryItem = groceryItem;
+  document.getElementById('exp-product-name').textContent = groceryItem.name;
+  // Set default date to 7 days from now
+  var defaultDate = new Date();
+  defaultDate.setDate(defaultDate.getDate() + 7);
+  document.getElementById('exp-date').value = defaultDate.toISOString().split('T')[0];
+  document.getElementById('expiry-modal').style.display = 'flex';
+}
+
+function saveExpiry() {
+  var date = document.getElementById('exp-date').value;
+  if(_pendingExpiryItem && date) {
+    _pendingExpiryItem.expiry = date;
+    // Save updated groceries
+    var idx = groceries.findIndex(function(g){ return g.name === _pendingExpiryItem.name; });
+    if(idx >= 0) groceries[idx].expiry = date;
+    saveData();
+    renderGr();
+    showToast('🔔 Alerte créée pour ' + _pendingExpiryItem.name + '!');
+  }
+  document.getElementById('expiry-modal').style.display = 'none';
+  _pendingExpiryItem = null;
+}
+
+function skipExpiry() {
+  document.getElementById('expiry-modal').style.display = 'none';
+  _pendingExpiryItem = null;
+}
+
+function checkExpiryAlerts() {
+  var today = new Date();
+  today.setHours(0,0,0,0);
+  var warnings = [];
+  
+  groceries.forEach(function(g) {
+    if(!g.expiry) return;
+    var expDate = new Date(g.expiry);
+    expDate.setHours(0,0,0,0);
+    var daysLeft = Math.round((expDate - today) / (1000*60*60*24));
+    
+    if(daysLeft < 0) {
+      warnings.push({name: g.name, msg: 'EXPIRÉ!', color: '#ef4444', emoji: '🚨'});
+    } else if(daysLeft === 0) {
+      warnings.push({name: g.name, msg: "Expire aujourd'hui!", color: '#ef4444', emoji: '⚠️'});
+    } else if(daysLeft <= 2) {
+      warnings.push({name: g.name, msg: 'Expire dans ' + daysLeft + ' jour(s)!', color: '#f97316', emoji: '⚠️'});
+    } else if(daysLeft <= 5) {
+      warnings.push({name: g.name, msg: 'Expire dans ' + daysLeft + ' jours', color: '#eab308', emoji: '📅'});
+    }
+  });
+  
+  if(warnings.length > 0) {
+    var alertEl = document.getElementById('expiry-alerts');
+    if(!alertEl) {
+      alertEl = document.createElement('div');
+      alertEl.id = 'expiry-alerts';
+      var listPage = document.querySelector('#liste .px');
+      if(listPage) listPage.insertBefore(alertEl, listPage.firstChild);
+    }
+    alertEl.innerHTML = warnings.map(function(w) {
+      return '<div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:10px;margin-bottom:8px;display:flex;align-items:center;gap:8px;">' +
+        '<div style="font-size:18px;">' + w.emoji + '</div>' +
+        '<div style="flex:1;"><div style="font-size:13px;font-weight:700;">' + w.name + '</div>' +
+        '<div style="font-size:11px;color:' + w.color + ';font-weight:700;">' + w.msg + '</div></div>' +
+        '</div>';
+    }).join('');
+  } else {
+    var alertEl2 = document.getElementById('expiry-alerts');
+    if(alertEl2) alertEl2.innerHTML = '';
+  }
+}
+
 // Always have fallback trending recipes
 window.trendingRecipes = [
   {emoji:'🍝', nom:'Pâtes Alfredo au poulet'},
@@ -2136,7 +2212,7 @@ function finishOb_complete() {
   loadProductDB(); loadTrendingRecipes(); loadFavorites(); renderFavorites(); loadLocalStores(); loadMealPlan(); renderPlannerDays();
   showToast('🎉 Email vérifié! Bienvenue ' + name + '!', 4000);
 }
-function goTo(p,btn){
+function goTo(p,btn){ if(p==='liste') setTimeout(checkExpiryAlerts, 100);
   document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
   document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
   document.getElementById(p).classList.add('active');
@@ -2452,7 +2528,8 @@ function renderGr(){
           '<div class="gc" onclick="toggleGr(' + realIdx + ')" style="border-color:var(--g);">' +
           '<i class="ti ti-circle" style="font-size:10px;color:#d1d5db;"></i></div>' +
           '<div style="flex:1;"><div style="font-size:13px;color:var(--text);">' + g.name + '</div>' +
-          (g.store ? '<div style="margin-top:3px;"><span style="background:' + ({'IGA':'#FFEBEE','Maxi':'#FCE4EC','Metro':'#E3F2FD','Walmart':'#E8F4FD','Costco':'#FFEBEE'}[g.store]||'#f3f4f6') + ';color:' + ({'IGA':'#E53935','Maxi':'#880E4F','Metro':'#1565C0','Walmart':'#0071CE','Costco':'#C62828'}[g.store]||'#6b7280') + ';font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;">' + ({'IGA':'🏪','Maxi':'🏬','Metro':'🛒','Walmart':'🏢','Costco':'🏭'}[g.store]||'🏪') + ' ' + g.store + '</span></div>' : '') +
+          (g.expiry ? (function(){ var d=new Date(g.expiry); var today=new Date(); today.setHours(0,0,0,0); d.setHours(0,0,0,0); var days=Math.round((d-today)/(1000*60*60*24)); var col=days<0?'#ef4444':days<=2?'#f97316':days<=5?'#eab308':'#6b7280'; return '<div style="font-size:10px;color:'+col+';font-weight:700;margin-top:2px;">'+(days<0?'🚨 Expiré!':days===0?'⚠️ Expire aujourd\'hui!':days<=2?'⚠️ Expire dans '+days+' jour(s)':'📅 Expire dans '+days+' jours')+'</div>'; })() : '') +
+        (g.store ? '<div style="margin-top:3px;"><span style="background:' + ({'IGA':'#FFEBEE','Maxi':'#FCE4EC','Metro':'#E3F2FD','Walmart':'#E8F4FD','Costco':'#FFEBEE'}[g.store]||'#f3f4f6') + ';color:' + ({'IGA':'#E53935','Maxi':'#880E4F','Metro':'#1565C0','Walmart':'#0071CE','Costco':'#C62828'}[g.store]||'#6b7280') + ';font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;">' + ({'IGA':'🏪','Maxi':'🏬','Metro':'🛒','Walmart':'🏢','Costco':'🏭'}[g.store]||'🏪') + ' ' + g.store + '</span></div>' : '') +
           '</div>' +
           '<div style="font-size:11px;font-weight:700;color:var(--g);">$' + g.price.toFixed(2) + '</div>' +
           '<button style="background:none;border:none;cursor:pointer;color:#d1d5db;font-size:16px;padding:0 3px;" onclick="delGr(' + realIdx + ')">×</button>' +
@@ -3502,6 +3579,7 @@ function showApp() {
     updatePlanUI(); renderRewards(); renderC(); renderBCats(); renderWallet(); renderGr(); updatePointsUI(); loadSpecials();
     loadProductDB();
     loadTrendingRecipes();
+    checkExpiryAlerts();
     loadFavorites();
     renderFavorites();
     loadLocalStores();
@@ -3674,6 +3752,27 @@ window.addEventListener('load', function() {
     <button onclick="addWithoutPrice()" class="btn bo bf" style="margin-top:4px;">
       + Ajouter sans comparer les prix
     </button>
+  </div>
+</div>
+
+<!-- EXPIRY MODAL -->
+<div id="expiry-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:2000;align-items:flex-end;justify-content:center;">
+  <div style="background:#fff;border-radius:24px 24px 0 0;padding:1.5rem;width:100%;max-width:480px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+      <div>
+        <div style="font-size:16px;font-weight:700;" id="exp-product-name">Produit</div>
+        <div style="font-size:11px;color:var(--sub);">Ajouter une date d'expiration (optionnel)</div>
+      </div>
+      <button onclick="skipExpiry()" style="background:var(--light);border:none;border-radius:8px;padding:6px 10px;cursor:pointer;font-size:14px;">✕</button>
+    </div>
+    <div style="margin-bottom:1rem;">
+      <label style="font-size:12px;font-weight:700;color:var(--sub);display:block;margin-bottom:6px;">📅 Date d'expiration</label>
+      <input type="date" id="exp-date" style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;"/>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button onclick="saveExpiry()" class="btn bg" style="flex:1;"><i class="ti ti-bell"></i> Ajouter l'alerte</button>
+      <button onclick="skipExpiry()" class="btn bo" style="flex:1;">Passer</button>
+    </div>
   </div>
 </div>
 </body>
