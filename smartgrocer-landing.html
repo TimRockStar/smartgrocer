@@ -497,7 +497,7 @@ async function submitForm(){
   }
 
   try {
-    await emailjs.send('service_lleoy3h', 'template_j79pyg8', {
+    await emailjs.send('service_lleoy3h', 'template_j79pyg8', { to_name: name, to_email: email, beta_code: code });
       to_name: name,
       to_email: email,
       beta_code: code,
