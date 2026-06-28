@@ -497,17 +497,10 @@ async function submitForm(){
   }
 
   try {
-    await emailjs.send('service_lleoy3h', 'template_j79pyg8', { to_name: name, to_email: email, beta_code: code });
+    await emailjs.send('service_lleoy3h', 'template_j79pyg8', {
       to_name: name,
       to_email: email,
-      beta_code: code,
-      app_url: 'https://smartgrocer.health/beta.html',
-      subject: currentLang === 'fr'
-        ? `🎉 Ton code bêta SmartGrocer : ${code}`
-        : `🎉 Your SmartGrocer beta code: ${code}`,
-      message: currentLang === 'fr'
-        ? `Bonjour ${name}!\n\nBienvenue dans l'équipe des bêta-testeurs SmartGrocer 🎉\n\nTon code d'accès VIP : ${code}\n\nPour installer l'app sur ton téléphone :\n\n📱 ANDROID (Chrome) :\n1. Ouvre Chrome et va sur https://smartgrocer.health/beta.html\n2. Menu ⋮ → "Ajouter à l'écran d'accueil"\n3. C'est tout!\n\n🍎 IPHONE (Safari) :\n1. Ouvre Safari et va sur https://smartgrocer.health/beta.html\n2. Bouton Partager → "Sur l'écran d'accueil"\n3. C'est tout!\n\nBonne épicerie! 🛒\nL'équipe SmartGrocer`
-        : `Hello ${name}!\n\nWelcome to the SmartGrocer beta team 🎉\n\nYour VIP access code: ${code}\n\nTo install the app on your phone:\n\n📱 ANDROID (Chrome):\n1. Open Chrome and go to https://smartgrocer.health/beta.html\n2. Menu ⋮ → "Add to Home screen"\n3. That's it!\n\n🍎 IPHONE (Safari):\n1. Open Safari and go to https://smartgrocer.health/beta.html\n2. Share button → "Add to Home Screen"\n3. That's it!\n\nHappy shopping! 🛒\nThe SmartGrocer Team`
+      beta_code: code
     });
 
     // Succès
