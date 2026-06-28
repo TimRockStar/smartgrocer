@@ -1918,17 +1918,32 @@ async function genRecipesFromSpecials() {
 
 
 function showHealthScoreInResults(productName) {
+  // Remove existing score
   var existing = document.getElementById('health-score-section');
   if(existing) existing.remove();
+  
+  // Show loading placeholder
+  var placeholder = document.createElement('div');
+  placeholder.id = 'health-score-section';
+  placeholder.innerHTML = '<div style="background:#f3f4f6;border-radius:14px;padding:10px;margin-bottom:1rem;display:flex;align-items:center;gap:8px;"><div style="font-size:16px;">⏳</div><div style="font-size:12px;color:var(--sub);">Analyse santé en cours...</div></div>';
+  var pxRes = document.getElementById('px-res');
+  if(pxRes) pxRes.insertBefore(placeholder, pxRes.firstChild);
+  
+  // Get real score
   getHealthScore(productName).then(function(score) {
+    var existing2 = document.getElementById('health-score-section');
+    if(existing2) existing2.remove();
     var healthHTML = renderHealthScore(score);
     if(healthHTML) {
       var div = document.createElement('div');
       div.id = 'health-score-section';
       div.innerHTML = healthHTML;
-      var pxRes = document.getElementById('px-res');
-      if(pxRes) pxRes.insertBefore(div, pxRes.firstChild);
+      var pxRes2 = document.getElementById('px-res');
+      if(pxRes2) pxRes2.insertBefore(div, pxRes2.firstChild);
     }
+  }).catch(function(e) {
+    var existing3 = document.getElementById('health-score-section');
+    if(existing3) existing3.remove();
   });
 }
 
