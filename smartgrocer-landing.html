@@ -406,30 +406,19 @@ span[data-lang].show{display:inline;}
 (function(){emailjs.init("2cNfgyonkmXqvbV-N");})();
 
 // ============================================================
-// CODES BÊTA — distribués en ordre
+// CODES BÊTA — Google Sheets (compteur global)
 // ============================================================
-const BETA_CODES = [
-  'SG-BETA-002','SG-BETA-003','SG-BETA-004','SG-BETA-005',
-  'SG-BETA-006','SG-BETA-007','SG-BETA-008','SG-BETA-009',
-  'SG-BETA-010','SG-BETA-011','SG-BETA-012','SG-BETA-013',
-  'SG-BETA-014','SG-BETA-015','SG-BETA-016','SG-BETA-017',
-  'SG-BETA-018','SG-BETA-019','SG-BETA-020'
-];
+var GSHEET_BETA_URL = 'https://script.google.com/macros/s/AKfycby3gVyL9Fo1WM-_4VjFxTCqsXkZsopzuWGNLJz5qwKVmJPoV7wtNGGUR228nsYtkhtc9g/exec';
 
-function getNextCode(){
-  let idx = parseInt(localStorage.getItem('sg_code_idx') || '0');
-  if(idx >= BETA_CODES.length) return null;
-  const code = BETA_CODES[idx];
-  localStorage.setItem('sg_code_idx', idx + 1);
-  updateSpotsCounter();
-  return code;
+function updateSpotsCounter(remaining){
+  if(remaining !== undefined) {
+    document.getElementById('spots-num').textContent = remaining;
+  }
 }
 
-function updateSpotsCounter(){
-  const used = parseInt(localStorage.getItem('sg_code_idx') || '0');
-  const remaining = Math.max(0, 20 - used);
-  document.getElementById('spots-num').textContent = remaining;
-}
+// ============================================================
+// FORM SUBMIT
+// ============================================================
 
 // ============================================================
 // LANGUAGE
@@ -468,9 +457,6 @@ function switchInstall(type, btn){
   document.getElementById('install-iphone').classList.toggle('on', type === 'iphone');
 }
 
-// ============================================================
-// FORM SUBMIT
-// ============================================================
 function submitForm(){
   var name = document.getElementById('name-input').value.trim();
   var email = document.getElementById('email-input').value.trim();
@@ -488,31 +474,44 @@ function submitForm(){
   btn.disabled = true;
   btn.innerHTML = currentLang === 'fr' ? '⏳ Envoi en cours...' : '⏳ Sending...';
 
-  var code = getNextCode();
-  if(!code){
-    alert(currentLang === 'fr' ? 'Toutes les places sont prises! Revenez bientôt.' : 'All spots are taken! Check back soon.');
-    btn.disabled = false;
-    btn.innerHTML = currentLang === 'fr' ? '🚀 Obtenir mon mois gratuit' : '🚀 Get my free month';
-    return;
-  }
-
-  emailjs.send('service_lleoy3h', 'template_fa18vqs', {
-    to_name: name,
-    to_email: email,
-    passcode: code,
-    beta_code: code
-  }).then(function() {
-    document.getElementById('signup-form').style.display = 'none';
-    document.getElementById('code-display').textContent = code;
-    document.getElementById('success-box').classList.add('show');
-  }, function(err) {
-    console.error('EmailJS error:', err);
-    alert(currentLang === 'fr' ? 'Erreur lors de l\'envoi. Veuillez réessayer.' : 'Error sending. Please try again.');
-    var idx = parseInt(localStorage.getItem('sg_code_idx') || '1');
-    localStorage.setItem('sg_code_idx', Math.max(0, idx - 1));
-    btn.disabled = false;
-    btn.innerHTML = currentLang === 'fr' ? '🚀 Obtenir mon mois gratuit' : '🚀 Get my free month';
-  });
+  // Obtenir le code depuis Google Sheets
+  var url = GSHEET_BETA_URL + '?action=getBetaCode&name=' + encodeURIComponent(name) + '&email=' + encodeURIComponent(email);
+  
+  fetch(url)
+    .then(function(res){ return res.json(); })
+    .then(function(data) {
+      if(!data.success) {
+        alert(currentLang === 'fr' ? 'Toutes les places sont prises! Revenez bientôt.' : 'All spots are taken! Check back soon.');
+        btn.disabled = false;
+        btn.innerHTML = currentLang === 'fr' ? '🚀 Obtenir mon mois gratuit' : '🚀 Get my free month';
+        return;
+      }
+      var code = data.code;
+      updateSpotsCounter(data.remaining);
+      
+      // Envoyer le courriel avec EmailJS
+      emailjs.send('service_lleoy3h', 'template_fa18vqs', {
+        to_name: name,
+        to_email: email,
+        passcode: code,
+        beta_code: code
+      }).then(function() {
+        document.getElementById('signup-form').style.display = 'none';
+        document.getElementById('code-display').textContent = code;
+        document.getElementById('success-box').classList.add('show');
+      }, function(err) {
+        console.error('EmailJS error:', err);
+        alert(currentLang === 'fr' ? 'Erreur lors de l\'envoi. Veuillez réessayer.' : 'Error sending. Please try again.');
+        btn.disabled = false;
+        btn.innerHTML = currentLang === 'fr' ? '🚀 Obtenir mon mois gratuit' : '🚀 Get my free month';
+      });
+    })
+    .catch(function(err) {
+      console.error('Google Sheets error:', err);
+      alert(currentLang === 'fr' ? 'Erreur de connexion. Veuillez réessayer.' : 'Connection error. Please try again.');
+      btn.disabled = false;
+      btn.innerHTML = currentLang === 'fr' ? '🚀 Obtenir mon mois gratuit' : '🚀 Get my free month';
+    });
 }
 
 // Init
