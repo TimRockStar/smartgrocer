@@ -499,6 +499,7 @@ function submitForm(){
   emailjs.send('service_lleoy3h', 'template_fa18vqs', {
     to_name: name,
     to_email: email,
+    passcode: code,
     beta_code: code
   }).then(function() {
     document.getElementById('signup-form').style.display = 'none';
