@@ -281,6 +281,7 @@ ml('account', '2355363');
       <div class="plus-item" onclick="goExtra('profil')"><i class="ti ti-user" style="color:var(--p);"></i><div class="plus-item-label">Profil</div></div>
       <div class="plus-item" onclick="goExtra('premium')"><i class="ti ti-star" style="color:var(--gold);"></i><div class="plus-item-label">Premium</div></div>
       <div class="plus-item" onclick="goExtra('planner')"><i class="ti ti-calendar" style="color:var(--g);"></i><div class="plus-item-label">Planificateur</div></div>
+      <div class="plus-item" onclick="goExtra('nutrition')"><i class="ti ti-apple" style="color:#e53935;"></i><div class="plus-item-label">Nutrition</div></div>
     </div>
   </div>
 </div>
@@ -948,6 +949,137 @@ ml('account', '2355363');
     </button>
     <div class="sl2">Ou choisis dans tes favoris</div>
     <div id="dp-favorites-list"></div>
+  </div>
+</div>
+
+
+<!-- NUTRITION -->
+<div id="nutrition" class="page">
+  <div class="hero" style="background:linear-gradient(160deg,#e53935,#c62828);">
+    <div class="hc1"></div>
+    <div class="logo-row">
+      <svg class="lsvg" viewBox="0 0 680 500"><use href="#logo-icon"/></svg>
+      <div><div class="lt"><span>Smart</span><span style="color:#C9A227;">Grocer</span></div><div class="ls">🍎 Analyse Nutritionnelle IA</div></div>
+    </div>
+    <div class="hstats">
+      <div class="hs"><div class="hs-n" id="nut-cal-today">0</div><div class="hs-l">Cal. aujourd'hui</div></div>
+      <div class="hs"><div class="hs-n" id="nut-goal">2000</div><div class="hs-l">Objectif</div></div>
+      <div class="hs"><div class="hs-n" id="nut-meals-count">0</div><div class="hs-l">Repas</div></div>
+    </div>
+  </div>
+  <div class="px">
+
+    <!-- Barre progression calorique -->
+    <div class="card" style="margin-bottom:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <div style="font-size:13px;font-weight:700;">Calories aujourd'hui</div>
+        <div style="font-size:12px;color:var(--sub);" id="nut-cal-display">0 / 2000 kcal</div>
+      </div>
+      <div style="background:var(--light);border-radius:999px;height:10px;overflow:hidden;">
+        <div id="nut-cal-bar" style="height:100%;border-radius:999px;background:linear-gradient(90deg,#1D9E75,#e53935);width:0%;transition:width 0.5s;"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px;">
+        <div style="text-align:center;background:var(--light);border-radius:10px;padding:8px;">
+          <div style="font-size:16px;font-weight:700;color:#e53935;" id="nut-prot">0g</div>
+          <div style="font-size:10px;color:var(--sub);">Protéines</div>
+        </div>
+        <div style="text-align:center;background:var(--light);border-radius:10px;padding:8px;">
+          <div style="font-size:16px;font-weight:700;color:var(--gold);" id="nut-gras">0g</div>
+          <div style="font-size:10px;color:var(--sub);">Gras</div>
+        </div>
+        <div style="text-align:center;background:var(--light);border-radius:10px;padding:8px;">
+          <div style="font-size:16px;font-weight:700;color:var(--b);" id="nut-carbs">0g</div>
+          <div style="font-size:10px;color:var(--sub);">Glucides</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Analyser un repas -->
+    <div class="sl">📸 Analyser un repas</div>
+    <div class="card">
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div style="background:var(--light);border-radius:12px;padding:1.25rem;text-align:center;cursor:pointer;border:2px dashed var(--border);" onclick="document.getElementById('nut-photo-input').click()">
+          <div style="font-size:36px;margin-bottom:6px;">📷</div>
+          <div style="font-size:13px;font-weight:700;">Prendre une photo de ton repas</div>
+          <div style="font-size:11px;color:var(--sub);margin-top:4px;">L'IA identifie les aliments et calcule les calories</div>
+        </div>
+        <input type="file" id="nut-photo-input" accept="image/*" capture="environment" style="display:none;" onchange="analyzeNutritionPhoto(this)"/>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="flex:1;height:1px;background:var(--border);"></div>
+          <div style="font-size:11px;color:var(--sub);">ou entre manuellement</div>
+          <div style="flex:1;height:1px;background:var(--border);"></div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <input type="text" id="nut-food-input" placeholder="Ex: poulet grillé, riz, salade..." style="flex:1;"/>
+          <button class="btn bg" onclick="analyzeNutritionText()"><i class="ti ti-search"></i></button>
+        </div>
+        <select id="nut-meal-type" style="width:100%;">
+          <option value="Déjeuner">🌅 Déjeuner</option>
+          <option value="Dîner">☀️ Dîner</option>
+          <option value="Souper" selected>🌙 Souper</option>
+          <option value="Collation">🍎 Collation</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Résultats analyse -->
+    <div id="nut-results" style="display:none;">
+      <div class="card" style="border:2px solid #e53935;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+          <div style="font-size:28px;" id="nut-emoji">🍽️</div>
+          <div>
+            <div style="font-size:14px;font-weight:700;" id="nut-food-name">Repas analysé</div>
+            <div style="font-size:11px;color:var(--sub);" id="nut-meal-label">Souper</div>
+          </div>
+          <div style="margin-left:auto;text-align:right;">
+            <div style="font-size:22px;font-weight:700;color:#e53935;" id="nut-calories-result">0</div>
+            <div style="font-size:10px;color:var(--sub);">kcal</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;">
+          <div style="background:var(--light);border-radius:10px;padding:8px;text-align:center;">
+            <div style="font-size:15px;font-weight:700;color:#e53935;" id="nut-prot-result">0g</div>
+            <div style="font-size:10px;color:var(--sub);">Protéines</div>
+          </div>
+          <div style="background:var(--light);border-radius:10px;padding:8px;text-align:center;">
+            <div style="font-size:15px;font-weight:700;color:var(--gold);" id="nut-gras-result">0g</div>
+            <div style="font-size:10px;color:var(--sub);">Gras</div>
+          </div>
+          <div style="background:var(--light);border-radius:10px;padding:8px;text-align:center;">
+            <div style="font-size:15px;font-weight:700;color:var(--b);" id="nut-carbs-result">0g</div>
+            <div style="font-size:10px;color:var(--sub);">Glucides</div>
+          </div>
+        </div>
+        <div id="nut-details" style="font-size:12px;color:var(--sub);margin-bottom:12px;line-height:1.6;"></div>
+        <button class="btn bg bf" onclick="addMealToHistory()">
+          <i class="ti ti-plus"></i> Ajouter à mon journal
+        </button>
+      </div>
+    </div>
+
+    <!-- Objectif calorique -->
+    <div class="sl">🎯 Mon objectif</div>
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span style="font-size:12px;color:var(--sub);">1200</span>
+        <input type="range" min="1200" max="3500" value="2000" step="50" style="flex:1;" oninput="updateCalGoal(this.value)" id="nut-goal-slider"/>
+        <span style="font-size:13px;font-weight:700;min-width:55px;" id="nut-goal-display">2000 kcal</span>
+      </div>
+    </div>
+
+    <!-- Historique -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <div class="sl" style="margin-bottom:0;">📅 Journal d'aujourd'hui</div>
+      <button onclick="clearTodayMeals()" style="background:none;border:none;font-size:11px;color:var(--sub);cursor:pointer;">Effacer</button>
+    </div>
+    <div id="nut-history-list">
+      <div style="text-align:center;padding:1.5rem;color:var(--sub);">
+        <div style="font-size:32px;margin-bottom:8px;">🍽️</div>
+        <div style="font-size:13px;">Aucun repas enregistré aujourd'hui</div>
+        <div style="font-size:11px;margin-top:4px;">Prends une photo ou entre un repas!</div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -3680,6 +3812,7 @@ function showApp() {
     loadLocalStores();
     loadMealPlan();
     renderPlannerDays();
+    loadNutritionData();
     applyTranslations();
     showToast('Bon retour sur SmartGrocer!');
   } else {
@@ -3699,6 +3832,197 @@ function checkBetaCode() {
     document.getElementById('beta-error').style.display = 'block';
     setTimeout(function(){ document.getElementById('beta-error').style.display = 'none'; }, 3000);
   }
+}
+
+
+// ===== NUTRITION =====
+var nutritionLog = [];
+var calGoal = 2000;
+var _pendingMeal = null;
+
+function loadNutritionData() {
+  try {
+    var saved = localStorage.getItem('sg_nutrition');
+    if(saved) {
+      var data = JSON.parse(saved);
+      var today = new Date().toISOString().split('T')[0];
+      nutritionLog = (data.date === today) ? (data.meals || []) : [];
+      calGoal = data.goal || 2000;
+    }
+  } catch(e) { nutritionLog = []; }
+  updateNutritionUI();
+}
+
+function saveNutritionData() {
+  var today = new Date().toISOString().split('T')[0];
+  localStorage.setItem('sg_nutrition', JSON.stringify({
+    date: today, meals: nutritionLog, goal: calGoal
+  }));
+}
+
+function updateNutritionUI() {
+  var totalCal = nutritionLog.reduce(function(s,m){ return s + (m.calories||0); }, 0);
+  var totalProt = nutritionLog.reduce(function(s,m){ return s + (m.proteines||0); }, 0);
+  var totalGras = nutritionLog.reduce(function(s,m){ return s + (m.gras||0); }, 0);
+  var totalCarbs = nutritionLog.reduce(function(s,m){ return s + (m.glucides||0); }, 0);
+
+  var calEl = document.getElementById('nut-cal-today');
+  if(calEl) calEl.textContent = totalCal;
+  var goalEl = document.getElementById('nut-goal');
+  if(goalEl) goalEl.textContent = calGoal;
+  var mealsEl = document.getElementById('nut-meals-count');
+  if(mealsEl) mealsEl.textContent = nutritionLog.length;
+  var calDisplay = document.getElementById('nut-cal-display');
+  if(calDisplay) calDisplay.textContent = totalCal + ' / ' + calGoal + ' kcal';
+  var pct = Math.min(Math.round(totalCal / calGoal * 100), 100);
+  var calBar = document.getElementById('nut-cal-bar');
+  if(calBar) calBar.style.width = pct + '%';
+  var protEl = document.getElementById('nut-prot');
+  if(protEl) protEl.textContent = Math.round(totalProt) + 'g';
+  var grasEl = document.getElementById('nut-gras');
+  if(grasEl) grasEl.textContent = Math.round(totalGras) + 'g';
+  var carbsEl = document.getElementById('nut-carbs');
+  if(carbsEl) carbsEl.textContent = Math.round(totalCarbs) + 'g';
+  renderMealHistory();
+}
+
+function renderMealHistory() {
+  var el = document.getElementById('nut-history-list');
+  if(!el) return;
+  if(nutritionLog.length === 0) {
+    el.innerHTML = '<div style="text-align:center;padding:1.5rem;color:var(--sub);"><div style="font-size:32px;margin-bottom:8px;">🍽️</div><div style="font-size:13px;">Aucun repas enregistré aujourd'hui</div><div style="font-size:11px;margin-top:4px;">Prends une photo ou entre un repas!</div></div>';
+    return;
+  }
+  el.innerHTML = nutritionLog.map(function(m, i) {
+    return '<div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--card);border:1px solid var(--border);border-radius:12px;margin-bottom:8px;">' +
+      '<div style="font-size:24px;">' + (m.emoji||'🍽️') + '</div>' +
+      '<div style="flex:1;">' +
+        '<div style="font-size:13px;font-weight:700;">' + m.nom + '</div>' +
+        '<div style="font-size:10px;color:var(--sub);">' + (m.type||'Repas') + ' · ' + (m.proteines||0) + 'g prot · ' + (m.gras||0) + 'g gras · ' + (m.glucides||0) + 'g carbs</div>' +
+      '</div>' +
+      '<div style="text-align:right;">' +
+        '<div style="font-size:16px;font-weight:700;color:#e53935;">' + (m.calories||0) + '</div>' +
+        '<div style="font-size:10px;color:var(--sub);">kcal</div>' +
+      '</div>' +
+      '<button onclick="deleteMeal(' + i + ')" style="background:none;border:none;color:#d1d5db;font-size:16px;cursor:pointer;">×</button>' +
+    '</div>';
+  }).join('');
+}
+
+function deleteMeal(idx) {
+  nutritionLog.splice(idx, 1);
+  saveNutritionData();
+  updateNutritionUI();
+  showToast('Repas supprimé!');
+}
+
+function clearTodayMeals() {
+  nutritionLog = [];
+  saveNutritionData();
+  updateNutritionUI();
+  showToast('Journal effacé!');
+}
+
+function updateCalGoal(val) {
+  calGoal = parseInt(val);
+  var el = document.getElementById('nut-goal-display');
+  if(el) el.textContent = val + ' kcal';
+  saveNutritionData();
+  updateNutritionUI();
+}
+
+async function analyzeNutritionPhoto(input) {
+  if(!input.files || !input.files[0]) return;
+  var file = input.files[0];
+  showToast('⏳ Analyse de la photo en cours...', 4000);
+  
+  try {
+    var base64 = await new Promise(function(resolve, reject) {
+      var reader = new FileReader();
+      reader.onload = function(e) { resolve(e.target.result.split(',')[1]); };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+    
+    var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
+      body: JSON.stringify({
+        model: 'meta-llama/llama-4-scout-17b-16e-instruct',
+        max_tokens: 400,
+        messages: [{
+          role: 'user',
+          content: [
+            {type: 'image_url', image_url: {url: 'data:image/jpeg;base64,' + base64}},
+            {type: 'text', text: 'Analyse ce repas et donne les infos nutritionnelles. JSON seulement: {"emoji":"🍗","nom":"Poulet grillé avec riz","calories":520,"proteines":38,"gras":12,"glucides":55,"details":"Poitrine de poulet grillée (~150g), riz blanc (~150g). Bonne source de protéines."}'}
+          ]
+        }]
+      })
+    });
+    var data = await res.json();
+    var text = data.choices[0].message.content.replace(/```json|```/g,'').trim();
+    var jsonMatch = text.match(/\{[\s\S]*\}/);
+    if(!jsonMatch) throw new Error('No JSON');
+    var result = JSON.parse(jsonMatch[0]);
+    showNutritionResults(result);
+  } catch(e) {
+    console.error('Photo analysis error:', e);
+    showToast('⚠️ Impossible d'analyser la photo — entre le repas manuellement!');
+  }
+}
+
+async function analyzeNutritionText() {
+  var food = document.getElementById('nut-food-input').value.trim();
+  if(!food) { showToast('⚠️ Entre un aliment!'); return; }
+  showToast('⏳ Analyse en cours...', 3000);
+  
+  try {
+    var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        max_tokens: 300,
+        messages: [{role:'user',content:'Infos nutritionnelles pour "'+food+'". JSON seulement: {"emoji":"🍗","nom":"'+food+'","calories":520,"proteines":38,"gras":12,"glucides":55,"details":"Description courte et conseil nutritionnel."}'}]
+      })
+    });
+    var data = await res.json();
+    var text = data.choices[0].message.content.replace(/```json|```/g,'').trim();
+    var jsonMatch = text.match(/\{[\s\S]*\}/);
+    if(!jsonMatch) throw new Error('No JSON');
+    var result = JSON.parse(jsonMatch[0]);
+    showNutritionResults(result);
+  } catch(e) {
+    showToast('⚠️ Erreur — réessaie!');
+  }
+}
+
+function showNutritionResults(result) {
+  _pendingMeal = result;
+  _pendingMeal.type = document.getElementById('nut-meal-type') ? document.getElementById('nut-meal-type').value : 'Repas';
+  
+  document.getElementById('nut-emoji').textContent = result.emoji || '🍽️';
+  document.getElementById('nut-food-name').textContent = result.nom;
+  document.getElementById('nut-meal-label').textContent = _pendingMeal.type;
+  document.getElementById('nut-calories-result').textContent = result.calories;
+  document.getElementById('nut-prot-result').textContent = result.proteines + 'g';
+  document.getElementById('nut-gras-result').textContent = result.gras + 'g';
+  document.getElementById('nut-carbs-result').textContent = result.glucides + 'g';
+  document.getElementById('nut-details').textContent = result.details || '';
+  document.getElementById('nut-results').style.display = 'block';
+  document.getElementById('nut-results').scrollIntoView({behavior:'smooth'});
+  showToast('✅ Analyse terminée!');
+}
+
+function addMealToHistory() {
+  if(!_pendingMeal) return;
+  nutritionLog.push(_pendingMeal);
+  saveNutritionData();
+  updateNutritionUI();
+  document.getElementById('nut-results').style.display = 'none';
+  document.getElementById('nut-food-input').value = '';
+  _pendingMeal = null;
+  showToast('✅ Repas ajouté au journal!');
 }
 
 window.addEventListener('load', function() {
