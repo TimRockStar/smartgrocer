@@ -307,24 +307,31 @@ input:focus,select:focus{outline:none;border-color:var(--g);box-shadow:0 0 0 3px
 
 
 /* BACKGROUNDS DE PAGE PAR ONGLET */
-#home.page.active{background-image:url('https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&q=60');background-size:cover;background-position:center;background-attachment:fixed;}
-#prix.page.active{background-image:url('https://images.unsplash.com/photo-1534723328310-e82dad3ee43f?w=800&q=60');background-size:cover;background-position:center;background-attachment:fixed;}
-#recettes.page.active{background-image:url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&q=60');background-size:cover;background-position:center;background-attachment:fixed;}
-#liste.page.active{background-image:url('https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&q=60');background-size:cover;background-position:center;background-attachment:fixed;}
-#social.page.active{background-image:url('https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&q=60');background-size:cover;background-position:center;background-attachment:fixed;}
-#points.page.active{background-image:url('https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=800&q=60');background-size:cover;background-position:center;background-attachment:fixed;}
-#carte.page.active{background-image:url('https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=800&q=60');background-size:cover;background-position:center;background-attachment:fixed;}
-#wallet.page.active{background-image:url('https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=800&q=60');background-size:cover;background-position:center;background-attachment:fixed;}
-#alertes.page.active{background-image:url('https://images.unsplash.com/photo-1579208575657-c595a05383b7?w=800&q=60');background-size:cover;background-position:center;background-attachment:fixed;}
-#budget.page.active{background-image:url('https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&q=60');background-size:cover;background-position:center;background-attachment:fixed;}
-#profil.page.active{background-image:url('https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=800&q=60');background-size:cover;background-position:center;background-attachment:fixed;}
-#planner.page.active{background-image:url('https://images.unsplash.com/photo-1466637574441-749b8f19452f?w=800&q=60');background-size:cover;background-position:center;background-attachment:fixed;}
-#nutrition.page.active{background-image:url('https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=800&q=60');background-size:cover;background-position:center;background-attachment:fixed;}
+#home.page.active{background-image:url('https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&q=80');background-size:cover;background-position:center top;background-attachment:local;min-height:100vh;}
+#prix.page.active{background-image:url('https://images.unsplash.com/photo-1534723328310-e82dad3ee43f?w=800&q=80');background-size:cover;background-position:center top;background-attachment:local;min-height:100vh;}
+#recettes.page.active{background-image:url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&q=80');background-size:cover;background-position:center top;background-attachment:local;min-height:100vh;}
+#liste.page.active{background-image:url('https://images.unsplash.com/photo-1488459716781-31db52582fe9?w=800&q=80');background-size:cover;background-position:center top;background-attachment:local;min-height:100vh;}
+#social.page.active{background-image:url('https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&q=80');background-size:cover;background-position:center top;background-attachment:local;min-height:100vh;}
+#points.page.active{background-image:url('https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=800&q=80');background-size:cover;background-position:center top;background-attachment:local;min-height:100vh;}
+#carte.page.active{background-image:url('https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=800&q=80');background-size:cover;background-position:center top;background-attachment:local;min-height:100vh;}
+#wallet.page.active{background-image:url('https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=800&q=80');background-size:cover;background-position:center top;background-attachment:local;min-height:100vh;}
+#alertes.page.active{background-image:url('https://images.unsplash.com/photo-1579208575657-c595a05383b7?w=800&q=80');background-size:cover;background-position:center top;background-attachment:local;min-height:100vh;}
+#budget.page.active{background-image:url('https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&q=80');background-size:cover;background-position:center top;background-attachment:local;min-height:100vh;}
+#profil.page.active{background-image:url('https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=800&q=80');background-size:cover;background-position:center top;background-attachment:local;min-height:100vh;}
+#planner.page.active{background-image:url('https://images.unsplash.com/photo-1466637574441-749b8f19452f?w=800&q=80');background-size:cover;background-position:center top;background-attachment:local;min-height:100vh;}
+#nutrition.page.active{background-image:url('https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=800&q=80');background-size:cover;background-position:center top;background-attachment:local;min-height:100vh;}
 
-/* Overlay blanc sur toutes les pages pour lisibilité */
-.page.active::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(240,249,244,0.88);z-index:0;pointer-events:none;}
+/* Overlay léger sur toutes les pages */
+.page.active::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(240,249,244,0.55);z-index:0;pointer-events:none;}
 .page.active .px{position:relative;z-index:1;}
-.page.active .hero{position:relative;z-index:1;}
+.page.active .hero{position:relative;z-index:2;}
+.page.active .card{background:rgba(255,255,255,0.88);backdrop-filter:blur(4px);}
+.page.active .feed-card{background:rgba(255,255,255,0.88);backdrop-filter:blur(4px);}
+.page.active .store-item{background:rgba(255,255,255,0.88);backdrop-filter:blur(4px);}
+.page.active .dc{background:rgba(255,255,255,0.88);backdrop-filter:blur(4px);}
+.page.active .rc{background:rgba(255,255,255,0.88);backdrop-filter:blur(4px);}
+.page.active .gi{background:transparent;}
+.page.active .sc{background:rgba(255,255,255,0.88);backdrop-filter:blur(4px);}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
