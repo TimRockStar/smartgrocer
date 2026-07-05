@@ -8,17 +8,31 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/3.19.0/iconfont/tabler-icons.min.css">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-:root{--g:#1D9E75;--g2:#0F6E56;--c:#D85A30;--p:#534AB7;--b:#378ADD;--gold:#C9A227;--bg:#FFF8F0;--card:#fff;--border:#e5e7eb;--text:#1a1a2e;--sub:#6b7280;--light:#f3f4f6;}
+:root{
+  --g:#1D9E75;--g2:#0F6E56;--c:#D85A30;--p:#534AB7;--b:#378ADD;--gold:#C9A227;
+  --bg:#f0f9f4;--card:#fff;--border:#e0f0e8;--text:#1a2e1a;--sub:#4a6b5a;--light:#e8f5ee;
+  --nav-bg:#fff;--nav-border:#e0f0e8;--nav-active:#1D9E75;
+  --hero-overlay:linear-gradient(180deg,rgba(15,110,86,0.55) 0%,rgba(15,110,86,0.85) 100%);
+}
 body{font-family:system-ui,-apple-system,sans-serif;font-size:14px;background:var(--bg);max-width:480px;margin:0 auto;min-height:100vh;}
-.nav{display:flex;background:#7B0000;padding:6px 8px 10px;border-top:none;position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;z-index:200;box-shadow:0 -4px 20px rgba(0,0,0,0.3);}
-.nb{flex:1;min-width:44px;padding:6px 2px 4px;font-size:11px;font-weight:700;cursor:pointer;text-align:center;color:rgba(255,255,255,0.45);background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:3px;border-radius:10px;transition:all 0.2s;}
+
+/* NAV — blanc propre */
+.nav{display:flex;background:var(--nav-bg);padding:6px 8px 10px;border-top:1px solid var(--nav-border);position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;z-index:200;box-shadow:0 -2px 12px rgba(0,0,0,0.06);}
+.nb{flex:1;min-width:44px;padding:6px 2px 4px;font-size:10px;font-weight:600;cursor:pointer;text-align:center;color:#aaa;background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:3px;border-radius:10px;transition:all 0.2s;}
 .nb i{font-size:22px;}
-.nb.active{color:#fff;background:rgba(255,255,255,0.15);}
-.page{display:none;padding-bottom:90px;padding-top:52px;}
+.nb.active{color:var(--nav-active);}
+
+/* PAGES */
+.page{display:none;padding-bottom:90px;padding-top:0;}
 .page.active{display:block;}
-.hero{padding:1.5rem 1.5rem 2.5rem;border-radius:0 0 32px 32px;position:relative;overflow:hidden;margin-bottom:1.5rem;}
-.hc1{position:absolute;top:-40px;right:-40px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,0.08);}
-.hc2{position:absolute;bottom:-60px;left:-30px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,0.05);}
+
+/* HERO avec photo */
+.hero{position:relative;overflow:hidden;margin-bottom:1.5rem;}
+.hero-photo{width:100%;height:220px;object-fit:cover;display:block;background-size:cover;background-position:center;}
+.hero-overlay{position:absolute;top:0;left:0;right:0;height:220px;background:var(--hero-overlay);}
+.hero-content{position:absolute;top:0;left:0;right:0;height:220px;padding:1.25rem 1.25rem 1rem;display:flex;flex-direction:column;justify-content:space-between;}
+.hc1{display:none;}
+.hc2{display:none;}
 .logo-row{display:flex;align-items:center;gap:10px;margin-bottom:1.25rem;}
 .lsvg{width:44px;height:44px;flex-shrink:0;}
 .lt{font-size:20px;font-weight:800;color:#fff;line-height:1;}
@@ -141,12 +155,19 @@ input:focus,select:focus{outline:none;border-color:var(--g);}
 .toast.show{opacity:1;}
 .plus-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.4);z-index:500;display:none;}
 .plus-overlay.open{display:block;}
-.plus-sheet{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);width:calc(100% - 2rem);max-width:440px;background:var(--card);border-radius:20px;padding:1.25rem;z-index:501;box-shadow:0 -8px 32px rgba(0,0,0,0.15);}
-.plus-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
-.plus-item{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 8px;border-radius:14px;cursor:pointer;background:var(--light);border:1px solid var(--border);}
-.plus-item:hover{background:var(--border);}
-.plus-item i{font-size:22px;}
-.plus-item-label{font-size:11px;font-weight:700;color:var(--text);}
+.plus-sheet{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);width:calc(100% - 2rem);max-width:440px;background:var(--card);border-radius:20px;z-index:501;box-shadow:0 -8px 32px rgba(0,0,0,0.12);overflow:hidden;}
+.plus-header{padding:14px 16px 10px;border-bottom:1px solid var(--border);}
+.plus-header-title{font-size:14px;font-weight:700;color:var(--text);}
+.plus-grid{display:flex;flex-direction:column;}
+.plus-item{display:flex;align-items:center;gap:12px;padding:12px 16px;cursor:pointer;border-bottom:0.5px solid var(--border);transition:background 0.15s;}
+.plus-item:last-child{border-bottom:none;}
+.plus-item:hover{background:var(--light);}
+.plus-item-icon{width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.plus-item-icon i{font-size:18px;}
+.plus-item-text{flex:1;}
+.plus-item-label{font-size:13px;font-weight:600;color:var(--text);}
+.plus-item-sub{font-size:11px;color:var(--sub);margin-top:1px;}
+.plus-item-arrow{font-size:16px;color:#ccc;}
 .loyalty-card{border-radius:20px;padding:1.5rem;cursor:pointer;box-shadow:0 12px 32px rgba(0,0,0,0.15);margin-bottom:12px;}
 .mini-card{background:var(--card);border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:12px;border:1px solid var(--border);cursor:pointer;margin-bottom:8px;transition:all 0.2s;}
 .mini-card:hover{border-color:var(--g);}
@@ -191,6 +212,99 @@ input:focus,select:focus{outline:none;border-color:var(--g);}
 .ob-step.active{display:block;}
 
 @keyframes spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
+
+/* NOUVEAU DESIGN — STYLE B FRAIS NATUREL */
+
+/* Cartes modernisées */
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1rem;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,0.04);}
+
+/* Stats hero */
+.hstats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.hs{background:rgba(255,255,255,0.18);backdrop-filter:blur(8px);border-radius:12px;padding:8px;text-align:center;border:1px solid rgba(255,255,255,0.25);}
+.hs-n{font-size:18px;font-weight:700;color:#fff;}
+.hs-l{font-size:9px;color:rgba(255,255,255,0.75);margin-top:2px;}
+
+/* Logo row dans hero */
+.logo-row{display:flex;align-items:center;gap:10px;}
+.lsvg{width:38px;height:38px;flex-shrink:0;}
+.lt{font-size:18px;font-weight:800;color:#fff;line-height:1;}
+.ls{font-size:10px;color:rgba(255,255,255,0.75);margin-top:2px;}
+
+/* Sections */
+.sl{font-size:16px;font-weight:700;color:var(--text);margin-bottom:12px;}
+.sl2{font-size:11px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;}
+.px{padding:0 1rem;}
+
+/* Quick cards avec photos */
+.qgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:1.5rem;}
+.qc{border-radius:18px;cursor:pointer;position:relative;overflow:hidden;min-height:100px;display:flex;flex-direction:column;justify-content:flex-end;padding:0;}
+.qc-photo{position:absolute;top:0;left:0;right:0;bottom:0;background-size:cover;background-position:center;}
+.qc-overlay{position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(180deg,rgba(0,0,0,0.05) 0%,rgba(0,0,0,0.65) 100%);}
+.qc-info{position:relative;z-index:1;padding:10px 12px;}
+.qc-blob{display:none;}
+.qc i{font-size:0;}
+.qc-t{font-size:12px;font-weight:700;color:#fff;}
+.qc-s{font-size:9px;color:rgba(255,255,255,0.8);margin-top:2px;}
+
+/* Spéciaux scroll */
+.dscroll{display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;margin-bottom:1.5rem;scrollbar-width:none;}
+.dscroll::-webkit-scrollbar{display:none;}
+.dc{background:var(--card);border-radius:16px;padding:12px;min-width:140px;flex-shrink:0;border:1px solid var(--border);box-shadow:0 1px 4px rgba(0,0,0,0.04);}
+
+/* Badges */
+.badge{display:inline-block;font-size:10px;padding:2px 8px;border-radius:999px;font-weight:700;}
+.bdg{background:#dcfce7;color:#166534;}
+.bdc{background:#FAECE7;color:#993C1D;}
+.bdgold{background:#fef3c7;color:#92400e;}
+.bdfree{background:var(--light);color:var(--sub);}
+
+/* Boutons */
+.btn{padding:8px 14px;border:none;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:all 0.2s;}
+.btn:hover{opacity:0.88;transform:translateY(-1px);}
+.btn:disabled{opacity:0.4;cursor:not-allowed;transform:none;}
+.bg{background:var(--g);color:#fff;}
+.bb{background:var(--b);color:#fff;}
+.bc{background:var(--c);color:#fff;}
+.bp{background:var(--p);color:#fff;}
+.bgold{background:var(--gold);color:#fff;}
+.bo{background:none;border:1.5px solid var(--border);color:var(--text);}
+.bf{width:100%;justify-content:center;padding:13px;font-size:14px;}
+
+/* Hero sections autres pages */
+.hero-prix{background:linear-gradient(160deg,#1a3a6e,#2d5fa8);border-radius:0 0 28px 28px;padding:1.25rem 1.25rem 1.75rem;margin-bottom:1.5rem;position:relative;overflow:hidden;}
+.hero-rec{background:linear-gradient(160deg,#7c2d12,#c2410c);border-radius:0 0 28px 28px;padding:1.25rem 1.25rem 1.75rem;margin-bottom:1.5rem;position:relative;overflow:hidden;}
+.hero-liste{background:linear-gradient(160deg,#064e3b,#0f6e56);border-radius:0 0 28px 28px;padding:1.25rem 1.25rem 1.75rem;margin-bottom:1.5rem;position:relative;overflow:hidden;}
+.hero-social{background:linear-gradient(160deg,#3730a3,#4f46e5);border-radius:0 0 28px 28px;padding:1.25rem 1.25rem 1.75rem;margin-bottom:1.5rem;position:relative;overflow:hidden;}
+.hero-points{background:linear-gradient(160deg,#78350f,#b45309);border-radius:0 0 28px 28px;padding:1.25rem 1.25rem 1.75rem;margin-bottom:1.5rem;position:relative;overflow:hidden;}
+
+/* Input modernisé */
+input,select,textarea{padding:10px 12px;border:1.5px solid var(--border);border-radius:12px;font-size:13px;width:100%;font-family:inherit;color:var(--text);background:var(--card);transition:border-color 0.2s;}
+input:focus,select:focus{outline:none;border-color:var(--g);box-shadow:0 0 0 3px rgba(29,158,117,0.1);}
+
+/* Points card */
+.pts-card{background:linear-gradient(135deg,#C9A227,#9A7A10);border-radius:18px;padding:1.25rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:12px;cursor:pointer;box-shadow:0 4px 12px rgba(201,162,39,0.3);}
+
+/* Store items */
+.store-item{display:flex;align-items:center;gap:10px;padding:12px;background:var(--card);border:1px solid var(--border);border-radius:14px;margin-bottom:8px;cursor:pointer;transition:all 0.2s;box-shadow:0 1px 4px rgba(0,0,0,0.04);}
+.store-item:hover{border-color:var(--g);box-shadow:0 2px 8px rgba(29,158,117,0.1);}
+
+/* Feed cards */
+.feed-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:0.875rem;margin-bottom:8px;box-shadow:0 1px 4px rgba(0,0,0,0.04);}
+
+/* Grocery items */
+.gi{display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--border);}
+.gi:last-child{border-bottom:none;}
+.gc{width:20px;height:20px;border-radius:6px;border:2px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:10px;transition:all 0.2s;}
+.gc.done{background:var(--g);border-color:var(--g);color:#fff;}
+
+/* Recipe cards */
+.rc{background:var(--card);border:1.5px solid var(--border);border-radius:16px;padding:0.875rem;cursor:pointer;transition:all 0.2s;box-shadow:0 1px 4px rgba(0,0,0,0.04);}
+.rc:hover,.rc.sel{border-color:var(--g);box-shadow:0 2px 8px rgba(29,158,117,0.15);}
+.rc.sel{border-width:2px;}
+
+/* Profil header */
+.prof-header{background:linear-gradient(160deg,#064e3b,#0f6e56);padding:1.5rem 1.5rem 2.5rem;border-radius:0 0 32px 32px;margin-bottom:1.5rem;position:relative;overflow:hidden;}
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
@@ -272,16 +386,50 @@ ml('account', '2355363');
 <!-- PLUS MENU --><!-- PLUS MENU -->
 <div class="plus-overlay" id="plus-overlay" onclick="closePlus()">
   <div class="plus-sheet" onclick="event.stopPropagation()">
-    <div style="font-size:11px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:12px;">Plus d'options</div>
+    <div class="plus-header">
+      <div class="plus-header-title">Plus d'options</div>
+    </div>
     <div class="plus-grid">
-      <div class="plus-item" onclick="goExtra('carte')"><i class="ti ti-map-pin" style="color:var(--b);"></i><div class="plus-item-label">Carte</div></div>
-      <div class="plus-item" onclick="goExtra('wallet')"><i class="ti ti-wallet" style="color:var(--gold);"></i><div class="plus-item-label">Portefeuille</div></div>
-      <div class="plus-item" onclick="goExtra('alertes')"><i class="ti ti-bell" style="color:var(--gold);"></i><div class="plus-item-label">Alertes</div></div>
-      <div class="plus-item" onclick="goExtra('budget')"><i class="ti ti-chart-pie" style="color:var(--p);"></i><div class="plus-item-label">Budget</div></div>
-      <div class="plus-item" onclick="goExtra('profil')"><i class="ti ti-user" style="color:var(--p);"></i><div class="plus-item-label">Profil</div></div>
-      <div class="plus-item" onclick="goExtra('premium')"><i class="ti ti-star" style="color:var(--gold);"></i><div class="plus-item-label">Premium</div></div>
-      <div class="plus-item" onclick="goExtra('planner')"><i class="ti ti-calendar" style="color:var(--g);"></i><div class="plus-item-label">Planificateur</div></div>
-      <div class="plus-item" onclick="goExtra('nutrition')"><i class="ti ti-apple" style="color:#e53935;"></i><div class="plus-item-label">Nutrition</div></div>
+      <div class="plus-item" onclick="goExtra('carte');closePlus()">
+        <div class="plus-item-icon" style="background:#e3f2fd;"><i class="ti ti-map-pin" style="color:#1565c0;"></i></div>
+        <div class="plus-item-text"><div class="plus-item-label">Carte des épiceries</div><div class="plus-item-sub">5 épiceries près de toi</div></div>
+        <div class="plus-item-arrow">›</div>
+      </div>
+      <div class="plus-item" onclick="goExtra('wallet');closePlus()">
+        <div class="plus-item-icon" style="background:#fff8e1;"><i class="ti ti-wallet" style="color:#f59e0b;"></i></div>
+        <div class="plus-item-text"><div class="plus-item-label">Portefeuille numérique</div><div class="plus-item-sub" id="plus-wallet-sub">3 cartes fidélité</div></div>
+        <div class="plus-item-arrow">›</div>
+      </div>
+      <div class="plus-item" onclick="goExtra('alertes');closePlus()">
+        <div class="plus-item-icon" style="background:#fff3e0;"><i class="ti ti-bell" style="color:#ea580c;"></i></div>
+        <div class="plus-item-text"><div class="plus-item-label">Alertes spéciaux</div><div class="plus-item-sub">Prix & spéciaux</div></div>
+        <div class="plus-item-arrow">›</div>
+      </div>
+      <div class="plus-item" onclick="goExtra('budget');closePlus()">
+        <div class="plus-item-icon" style="background:#ede7f6;"><i class="ti ti-chart-pie" style="color:#7c3aed;"></i></div>
+        <div class="plus-item-text"><div class="plus-item-label">Budget épicerie</div><div class="plus-item-sub">Suivi mensuel</div></div>
+        <div class="plus-item-arrow">›</div>
+      </div>
+      <div class="plus-item" onclick="goExtra('planner');closePlus()">
+        <div class="plus-item-icon" style="background:#e8f5e9;"><i class="ti ti-calendar" style="color:#16a34a;"></i></div>
+        <div class="plus-item-text"><div class="plus-item-label">Planificateur de repas</div><div class="plus-item-sub">Menu de la semaine</div></div>
+        <div class="plus-item-arrow">›</div>
+      </div>
+      <div class="plus-item" onclick="goExtra('nutrition');closePlus()">
+        <div class="plus-item-icon" style="background:#fce4ec;"><i class="ti ti-apple" style="color:#e53935;"></i></div>
+        <div class="plus-item-text"><div class="plus-item-label">Nutrition & Calories</div><div class="plus-item-sub">Analyse IA de tes repas</div></div>
+        <div class="plus-item-arrow">›</div>
+      </div>
+      <div class="plus-item" onclick="goExtra('profil');closePlus()">
+        <div class="plus-item-icon" style="background:#e8eaf6;"><i class="ti ti-user" style="color:#534AB7;"></i></div>
+        <div class="plus-item-text"><div class="plus-item-label">Mon profil</div><div class="plus-item-sub" id="plus-profil-sub">Joliette, QC</div></div>
+        <div class="plus-item-arrow">›</div>
+      </div>
+      <div class="plus-item" onclick="goExtra('premium');closePlus()">
+        <div class="plus-item-icon" style="background:#fef3c7;"><i class="ti ti-star" style="color:#d97706;"></i></div>
+        <div class="plus-item-text"><div class="plus-item-label">Premium</div><div class="plus-item-sub">Plans et abonnements</div></div>
+        <div class="plus-item-arrow">›</div>
+      </div>
     </div>
   </div>
 </div>
@@ -420,25 +568,44 @@ ml('account', '2355363');
 
 <!-- HOME -->
 <div id="home" class="page active">
-  <div class="hero" style="background:linear-gradient(160deg,#1D9E75 0%,#0F6E56 50%,#085041 100%);">
-    <div class="hc1"></div><div class="hc2"></div>
-    <div class="logo-row">
-      <svg class="lsvg" viewBox="0 0 680 500"><use href="#logo-icon"/></svg>
-      <div><div class="lt"><span>Smart</span><span style="color:#C9A227;">Grocer</span></div><div class="ls">Bonjour <span id="h-name">Tim</span> 👋</div></div>
-    </div>
-    <div class="hstats">
-      <div class="hs"><div class="hs-n" id="h-scans">∞</div><div class="hs-l">Scans restants</div></div>
-      <div class="hs"><div class="hs-n">$38</div><div class="hs-l">Économisé</div></div>
-      <div class="hs"><div class="hs-n" id="h-pts">0</div><div class="hs-l">Points</div></div>
+  <div class="hero">
+    <div class="hero-photo" style="background-image:url('https://images.unsplash.com/photo-1542838132-92c53300491e?w=600&q=80');background-size:cover;background-position:center;width:100%;height:220px;display:block;"></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <div class="logo-row">
+        <svg class="lsvg" viewBox="0 0 680 500"><use href="#logo-icon"/></svg>
+        <div><div class="lt"><span>Smart</span><span style="color:#C9A227;">Grocer</span></div><div class="ls">Bonjour <span id="h-name">Tim</span> 👋</div></div>
+      </div>
+      <div class="hstats">
+        <div class="hs"><div class="hs-n" id="h-scans">∞</div><div class="hs-l">Scans restants</div></div>
+        <div class="hs"><div class="hs-n">$38</div><div class="hs-l">Économisé</div></div>
+        <div class="hs"><div class="hs-n" id="h-pts">0</div><div class="hs-l">Points</div></div>
+      </div>
     </div>
   </div>
   <div class="px">
     <div class="sl">Accès rapide</div>
     <div class="qgrid">
-      <div class="qc" style="background:linear-gradient(135deg,#1D9E75,#0F6E56)" onclick="goTo('prix',null)"><div class="qc-blob"></div><i class="ti ti-barcode"></i><div><div class="qc-t">Scanner prix</div><div class="qc-s" id="ql-scan">Illimité ⭐</div></div></div>
-      <div class="qc" style="background:linear-gradient(135deg,#D85A30,#B84520)" onclick="goTo('recettes',null)"><div class="qc-blob"></div><i class="ti ti-salad"></i><div><div class="qc-t">Recettes IA</div><div class="qc-s">+ Vidéos YouTube</div></div></div>
-      <div class="qc" style="background:linear-gradient(135deg,#378ADD,#1A5FA8)" onclick="goTo('liste',null)"><div class="qc-blob"></div><i class="ti ti-shopping-cart"></i><div><div class="qc-t">Ma liste</div><div class="qc-s" id="ql-list">0 article</div></div></div>
-      <div class="qc" style="background:linear-gradient(135deg,#C9A227,#9A7A10)" onclick="goExtra('wallet')"><div class="qc-blob"></div><i class="ti ti-wallet"></i><div><div class="qc-t">Portefeuille</div><div class="qc-s" id="ql-wallet">3 cartes fidélité</div></div></div>
+      <div class="qc" onclick="goTo('prix',null)" style="min-height:100px;">
+        <div class="qc-photo" style="background-image:url('https://images.unsplash.com/photo-1534723328310-e82dad3ee43f?w=300&q=70');"></div>
+        <div class="qc-overlay"></div>
+        <div class="qc-info"><div class="qc-t">Scanner prix</div><div class="qc-s" id="ql-scan">Illimité ⭐</div></div>
+      </div>
+      <div class="qc" onclick="goTo('recettes',null)" style="min-height:100px;">
+        <div class="qc-photo" style="background-image:url('https://images.unsplash.com/photo-1466637574441-749b8f19452f?w=300&q=70');"></div>
+        <div class="qc-overlay"></div>
+        <div class="qc-info"><div class="qc-t">Recettes IA</div><div class="qc-s">+ Vidéos YouTube</div></div>
+      </div>
+      <div class="qc" onclick="goTo('liste',null)" style="min-height:100px;">
+        <div class="qc-photo" style="background-image:url('https://images.unsplash.com/photo-1604719312566-8912e9667d9f?w=300&q=70');"></div>
+        <div class="qc-overlay"></div>
+        <div class="qc-info"><div class="qc-t">Ma liste</div><div class="qc-s" id="ql-list">0 article</div></div>
+      </div>
+      <div class="qc" onclick="goExtra('wallet')" style="min-height:100px;">
+        <div class="qc-photo" style="background-image:url('https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&q=70');"></div>
+        <div class="qc-overlay"></div>
+        <div class="qc-info"><div class="qc-t">Portefeuille</div><div class="qc-s" id="ql-wallet">3 cartes</div></div>
+      </div>
     </div>
     <div class="pts-card" onclick="goTo('points',null)">
       <div style="font-size:28px;">🏆</div>
@@ -471,7 +638,8 @@ ml('account', '2355363');
 
 <!-- PRIX -->
 <div id="prix" class="page">
-  <div class="hero" style="background:linear-gradient(160deg,#378ADD,#1A5FA8);">
+  <div class="hero" style="background:linear-gradient(160deg,#1a3a6e,#2d5fa8);">
+    <div style="position:absolute;top:0;left:0;right:0;bottom:0;background-image:url('https://images.unsplash.com/photo-1534723328310-e82dad3ee43f?w=600&q=70');background-size:cover;opacity:0.2;"></div>
     <div class="hc1"></div>
     <div class="logo-row">
       <svg class="lsvg" viewBox="0 0 680 500"><use href="#logo-icon"/></svg>
@@ -533,7 +701,8 @@ ml('account', '2355363');
 
 <!-- RECETTES -->
 <div id="recettes" class="page">
-  <div class="hero" style="background:linear-gradient(160deg,#D85A30,#993C1D);">
+  <div class="hero" style="background:linear-gradient(160deg,#7c2d12,#c2410c);">
+    <div style="position:absolute;top:0;left:0;right:0;bottom:0;background-image:url('https://images.unsplash.com/photo-1466637574441-749b8f19452f?w=600&q=70');background-size:cover;opacity:0.2;"></div>
     <div class="hc1"></div>
     <div class="logo-row">
       <svg class="lsvg" viewBox="0 0 680 500"><use href="#logo-icon"/></svg>
@@ -567,7 +736,8 @@ ml('account', '2355363');
 
 <!-- LISTE -->
 <div id="liste" class="page">
-  <div class="hero" style="background:linear-gradient(160deg,#0F6E56,#04342C);">
+  <div class="hero" style="background:linear-gradient(160deg,#064e3b,#0f6e56);">
+    <div style="position:absolute;top:0;left:0;right:0;bottom:0;background-image:url('https://images.unsplash.com/photo-1604719312566-8912e9667d9f?w=600&q=70');background-size:cover;opacity:0.15;"></div>
     <div class="hc1"></div>
     <div class="logo-row">
       <svg class="lsvg" viewBox="0 0 680 500"><use href="#logo-icon"/></svg>
