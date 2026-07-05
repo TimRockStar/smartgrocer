@@ -1075,7 +1075,7 @@ ml('account', '2355363');
     <div id="nut-history-list">
       <div style="text-align:center;padding:1.5rem;color:var(--sub);">
         <div style="font-size:32px;margin-bottom:8px;">🍽️</div>
-        <div style="font-size:13px;">Aucun repas enregistré aujourd'hui</div>
+        <div style="font-size:13px;">Aucun repas enregistré auj.</div>
         <div style="font-size:11px;margin-top:4px;">Prends une photo ou entre un repas!</div>
       </div>
     </div>
@@ -3890,7 +3890,7 @@ function renderMealHistory() {
   var el = document.getElementById('nut-history-list');
   if(!el) return;
   if(nutritionLog.length === 0) {
-    el.innerHTML = '<div style="text-align:center;padding:1.5rem;color:var(--sub);"><div style="font-size:32px;margin-bottom:8px;">🍽️</div><div style="font-size:13px;">Aucun repas enregistré aujourd'hui</div><div style="font-size:11px;margin-top:4px;">Prends une photo ou entre un repas!</div></div>';
+    el.innerHTML = '<div style="text-align:center;padding:1.5rem;color:var(--sub);"><div style="font-size:32px;margin-bottom:8px;">🍽️</div><div style="font-size:13px;">Aucun repas enregistré auj.</div><div style="font-size:11px;margin-top:4px;">Prends une photo ou entre un repas!</div></div>';
     return;
   }
   el.innerHTML = nutritionLog.map(function(m, i) {
@@ -3967,7 +3967,7 @@ async function analyzeNutritionPhoto(input) {
     showNutritionResults(result);
   } catch(e) {
     console.error('Photo analysis error:', e);
-    showToast('⚠️ Impossible d'analyser la photo — entre le repas manuellement!');
+    showToast("⚠️ Impossible d'analyser la photo — entre le repas manuellement!");
   }
 }
 
