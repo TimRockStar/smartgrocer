@@ -4224,7 +4224,38 @@ function addMealToHistory() {
   showToast('✅ Repas ajouté au journal!');
 }
 
+// ===== SYSTÈME DE VERSION =====
+var APP_VERSION = '2.1';
+
+function checkVersion() {
+  var savedVersion = localStorage.getItem('sg_app_version');
+  if(savedVersion !== APP_VERSION) {
+    // Migration silencieuse — garde les données importantes
+    var betaCode = localStorage.getItem('sg_beta_code');
+    var lang = localStorage.getItem('sg_lang');
+    var favorites = localStorage.getItem('sg_favorites');
+    var mealPlan = localStorage.getItem('sg_meal_plan');
+    var priceHistory = localStorage.getItem('sg_price_history');
+    var mainData = localStorage.getItem('smartgrocer_data');
+    
+    // Effacer et réappliquer
+    localStorage.clear();
+    
+    // Remettre les données importantes
+    if(betaCode) localStorage.setItem('sg_beta_code', betaCode);
+    if(lang) localStorage.setItem('sg_lang', lang);
+    if(favorites) localStorage.setItem('sg_favorites', favorites);
+    if(mealPlan) localStorage.setItem('sg_meal_plan', mealPlan);
+    if(priceHistory) localStorage.setItem('sg_price_history', priceHistory);
+    if(mainData) localStorage.setItem('smartgrocer_data', mainData);
+    
+    localStorage.setItem('sg_app_version', APP_VERSION);
+    console.log('Migration vers version ' + APP_VERSION + ' complétée!');
+  }
+}
+
 window.addEventListener('load', function() {
+  checkVersion();
   var saved = localStorage.getItem('sg_beta_code');
   if (saved && BETA_CODES.includes(saved)) {
     showApp();
