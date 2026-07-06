@@ -859,11 +859,11 @@ ml('account', '2355363');
     <div style="font-size:10px;color:rgba(255,255,255,0.8);margin-top:4px;" id="pts-level-text">100 pts pour Argent</div>
   </div>
   <div class="px">
-    <div class="sl">Récompenses disponibles</div>
-    <div id="rewards-list"></div>
-    <div class="card" style="background:linear-gradient(135deg,var(--p),var(--b));color:#fff;text-align:center;border:none;cursor:pointer;" onclick="goExtra('premium')">
-      <div style="font-size:14px;font-weight:700;">⭐ Passer à Premium → 2x points</div>
-      <div style="font-size:11px;opacity:0.85;margin-top:2px;">$4.99/mois · Essai 30 jours gratuit</div>
+    <div class="sl">Récompenses</div>
+    <div class="card" style="text-align:center;padding:2rem 1rem;">
+      <div style="font-size:48px;margin-bottom:12px;">🎁</div>
+      <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:8px;">Récompenses bientôt disponibles!</div>
+      <div style="font-size:13px;color:var(--sub);line-height:1.6;">Nous travaillons à établir des partenariats avec les chaînes d'épicerie pour vous offrir de vraies cartes cadeaux. Continue d'accumuler tes points — ils seront échangeables très bientôt!</div>
     </div>
   </div>
 </div>
@@ -3126,17 +3126,9 @@ function submitUp(){
   document.getElementById('up-prep').value='';
   document.getElementById('up-yt').value='';
 }
-function renderRewards(){const el=document.getElementById('rewards-list');if(!el)return;el.innerHTML=rewards.map(r=>`<div style="background:var(--card);border-radius:16px;padding:12px;display:flex;align-items:center;gap:10px;border:1px solid var(--border);margin-bottom:8px;"><div style="font-size:22px;">${r.icon}</div><div style="flex:1"><div style="font-size:12px;font-weight:700;">${r.name}</div><div style="font-size:10px;color:var(--sub);">${r.desc}</div></div><button class="btn bgold" style="padding:5px 10px;font-size:11px;" onclick="claimReward(${r.pts},'${r.name}')">${r.pts} pts</button></div>`).join('');}
+function renderRewards(){ /* Récompenses désactivées — en attente de partenariats */ }
 function claimReward(pts,name){
-  if(points>=pts){
-    points-=pts;
-    updatePointsUI();
-    saveData();
-    showToast('🎉 Récompense réclamée! Vérifie ton email dans 24h pour ton code promo!',5000);
-    showToast('🎉 Récompense réclamée! Code promo envoyé par email dans 24h', 5000);
-  } else {
-    showToast('❌ '+pts+' pts requis — tu en as '+points);
-  }
+  showToast('🔜 Récompenses bientôt disponibles — accumule tes points!', 3000);
 }
 function addAlert(){const p=document.getElementById('alert-prod').value.trim();const pr=document.getElementById('alert-price').value;const s=document.getElementById('alert-store').value;if(!p){showToast('⚠️ Ajoute un produit!');return;}const emojis=['🛒','🍎','🥦','🍞','🧃','🥩'];const emoji=emojis[Math.floor(Math.random()*emojis.length)];const div=document.createElement('div');div.className='al';div.innerHTML=`<div style="font-size:20px;">${emoji}</div><div style="flex:1"><div style="font-size:13px;font-weight:700;">${p}</div><div style="font-size:11px;color:var(--sub);">Alerte si prix &lt; $${pr||'?'} · ${s}</div></div><label class="atog"><input type="checkbox" checked><div class="ts"></div></label>`;document.getElementById('alerts-list').appendChild(div);document.getElementById('alert-prod').value='';document.getElementById('alert-price').value='';showToast('✅ Alerte créée!');}
 function updBudget(v){['bsv','bmd'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='$'+v;});const pct=Math.round(247/v*100);document.getElementById('bbar').style.width=Math.min(pct,100)+'%';document.getElementById('bpct').textContent=pct+'% utilisé';}
