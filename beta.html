@@ -332,6 +332,22 @@ input:focus,select:focus{outline:none;border-color:var(--g);box-shadow:0 0 0 3px
 .page.active .rc{background:rgba(255,255,255,0.88);backdrop-filter:blur(4px);}
 .page.active .gi{background:transparent;}
 .page.active .sc{background:rgba(255,255,255,0.88);backdrop-filter:blur(4px);}
+
+/* RÉSEAUX SOCIAUX */
+.social-links{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
+.social-btn{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:999px;font-size:11px;font-weight:600;text-decoration:none;border:none;cursor:pointer;transition:all 0.2s;}
+.social-btn:hover{transform:translateY(-1px);opacity:0.9;}
+.social-fb{background:#1877f2;color:#fff;}
+.social-ig{background:linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);color:#fff;}
+.social-tiktok{background:#010101;color:#fff;}
+.social-yt{background:#ff0000;color:#fff;}
+.social-pinterest{background:#e60023;color:#fff;}
+.social-twitter{background:#000;color:#fff;}
+.social-input-wrap{display:flex;flex-direction:column;gap:8px;margin-bottom:1rem;}
+.social-input-row{display:flex;align-items:center;gap:8px;}
+.social-input-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.social-input-row input{flex:1;font-size:12px;padding:7px 10px;}
+.recipe-author-social{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
@@ -1062,6 +1078,33 @@ ml('account', '2355363');
 
         <div><label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:3px;">Régime / Diet</label>
         <select id="pp-diet-input" onchange="saveProfile()"><option>Aucun / None</option><option>Végétarien</option><option>Végétalien</option><option>Sans gluten</option><option>Sans lactose</option></select></div>
+        <div><label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:6px;">🌐 Mes réseaux sociaux</label>
+        <div class="social-input-wrap">
+          <div class="social-input-row">
+            <div class="social-input-icon" style="background:#1877f2;">📘</div>
+            <input type="url" id="pp-facebook" placeholder="facebook.com/mapage" onchange="saveProfile()"/>
+          </div>
+          <div class="social-input-row">
+            <div class="social-input-icon" style="background:linear-gradient(135deg,#f09433,#dc2743);">📷</div>
+            <input type="url" id="pp-instagram" placeholder="instagram.com/moncompte" onchange="saveProfile()"/>
+          </div>
+          <div class="social-input-row">
+            <div class="social-input-icon" style="background:#010101;">🎵</div>
+            <input type="url" id="pp-tiktok" placeholder="tiktok.com/@moncompte" onchange="saveProfile()"/>
+          </div>
+          <div class="social-input-row">
+            <div class="social-input-icon" style="background:#ff0000;">▶️</div>
+            <input type="url" id="pp-youtube" placeholder="youtube.com/@machaîne" onchange="saveProfile()"/>
+          </div>
+          <div class="social-input-row">
+            <div class="social-input-icon" style="background:#e60023;">📌</div>
+            <input type="url" id="pp-pinterest" placeholder="pinterest.com/moncompte" onchange="saveProfile()"/>
+          </div>
+          <div class="social-input-row">
+            <div class="social-input-icon" style="background:#000;">🐦</div>
+            <input type="url" id="pp-twitter" placeholder="x.com/moncompte" onchange="saveProfile()"/>
+          </div>
+        </div></div>
         <button class="btn bg bf" onclick="saveProfile();showToast('✅ Profil sauvegardé!')"><i class="ti ti-check"></i> Sauvegarder</button>
       </div>
     </div>
@@ -2989,11 +3032,23 @@ function renderC(){
   document.getElementById('cl').innerHTML=cFilt.map(function(r){
     var safeNom = r.nom.replace(/"/g,' ').replace(/'/g,' ');
     var safeEmoji = r.emoji;
+    // Construire les boutons réseaux sociaux de l'auteur
+    var socialHTML = '';
+    if(r.social) {
+      if(r.social.facebook) socialHTML += '<a href="'+r.social.facebook+'" target="_blank" class="social-btn social-fb">📘 FB</a>';
+      if(r.social.instagram) socialHTML += '<a href="'+r.social.instagram+'" target="_blank" class="social-btn social-ig">📷 IG</a>';
+      if(r.social.tiktok) socialHTML += '<a href="'+r.social.tiktok+'" target="_blank" class="social-btn social-tiktok">🎵 TikTok</a>';
+      if(r.social.youtube) socialHTML += '<a href="'+r.social.youtube+'" target="_blank" class="social-btn social-yt">▶️ YT</a>';
+      if(r.social.pinterest) socialHTML += '<a href="'+r.social.pinterest+'" target="_blank" class="social-btn social-pinterest">📌 PIN</a>';
+      if(r.social.twitter) socialHTML += '<a href="'+r.social.twitter+'" target="_blank" class="social-btn social-twitter">🐦 X</a>';
+    }
     return '<div class="feed-card">' +
     '<div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:8px;">' +
     '<div style="width:42px;height:42px;border-radius:10px;background:var(--light);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">'+r.emoji+'</div>' +
     '<div style="flex:1"><div style="font-size:12px;font-weight:700;margin-bottom:2px;">'+r.nom+'</div>' +
-    '<div style="font-size:10px;color:var(--sub);">'+r.auteur+' · '+r.temps+'</div></div>' +
+    '<div style="font-size:10px;color:var(--sub);">'+r.auteur+' · '+r.temps+'</div>' +
+    (socialHTML ? '<div class="recipe-author-social">'+socialHTML+'</div>' : '') +
+    '</div>' +
     (r.viral ? '<div class="badge bdc" style="font-size:9px;">🔥 Viral</div>' : '') +
     '</div>' +
     '<div style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:8px;">'+r.tags.map(function(t){return '<span style="background:var(--light);color:var(--sub);font-size:9px;padding:2px 6px;border-radius:999px;">#'+t+'</span>';}).join('')+'</div>' +
@@ -3046,6 +3101,7 @@ function submitUp(){
   // Add to community
   var userName = document.getElementById('h-name').textContent || 'Moi';
   var initials = userName.substring(0,2).toUpperCase();
+  var userSocial = JSON.parse(localStorage.getItem('sg_social') || '{}');
   commRecs.unshift({
     id: Date.now(),
     emoji: '🍳',
@@ -3058,7 +3114,8 @@ function submitUp(){
     viral: false,
     liked: false,
     prep: prep,
-    youtube: yt
+    youtube: yt,
+    social: userSocial
   });
   filterC();
   addPoints(pts);
@@ -3389,6 +3446,14 @@ function saveProfile() {
   const city = document.getElementById('pp-city-input')?.value?.trim();
   const budget = document.getElementById('pp-budget-input')?.value?.trim();
   const diet = document.getElementById('pp-diet-input')?.value;
+  // Réseaux sociaux
+  const facebook = document.getElementById('pp-facebook')?.value?.trim();
+  const instagram = document.getElementById('pp-instagram')?.value?.trim();
+  const tiktok = document.getElementById('pp-tiktok')?.value?.trim();
+  const youtube = document.getElementById('pp-youtube')?.value?.trim();
+  const pinterest = document.getElementById('pp-pinterest')?.value?.trim();
+  const twitter = document.getElementById('pp-twitter')?.value?.trim();
+  if(facebook !== undefined) localStorage.setItem('sg_social', JSON.stringify({facebook,instagram,tiktok,youtube,pinterest,twitter}));
   
   if(name) {
     ['h-name','pnm'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=name;});
@@ -3422,6 +3487,13 @@ function loadProfileInputs() {
     if(cityInput && data.city) cityInput.value = data.city;
     if(budgetInput && data.budget) budgetInput.value = data.budget.replace('$','');
     if(dietInput && data.diet) dietInput.value = data.diet;
+    // Charger réseaux sociaux
+    var social = JSON.parse(localStorage.getItem('sg_social') || '{}');
+    var fields = ['facebook','instagram','tiktok','youtube','pinterest','twitter'];
+    fields.forEach(function(f) {
+      var el = document.getElementById('pp-' + f);
+      if(el && social[f]) el.value = social[f];
+    });
   } catch(e) {}
 }
 
