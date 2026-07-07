@@ -348,6 +348,25 @@ input:focus,select:focus{outline:none;border-color:var(--g);box-shadow:0 0 0 3px
 .social-input-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
 .social-input-row input{flex:1;font-size:12px;padding:7px 10px;}
 .recipe-author-social{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;}
+
+/* ===== GUIDED TOUR ===== */
+.tour-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:9000;pointer-events:none;}
+.tour-spotlight{position:fixed;border-radius:12px;box-shadow:0 0 0 9999px rgba(0,0,0,0.7);z-index:9001;pointer-events:none;transition:all 0.4s ease;border:2px solid rgba(29,158,117,0.8);}
+.tour-bubble{position:fixed;background:#fff;border-radius:16px;padding:16px;max-width:280px;z-index:9002;box-shadow:0 8px 32px rgba(0,0,0,0.3);transition:all 0.4s ease;}
+.tour-bubble::before{content:'';position:absolute;width:12px;height:12px;background:#fff;transform:rotate(45deg);}
+.tour-bubble.arrow-top::before{top:-6px;left:50%;transform:translateX(-50%) rotate(45deg);}
+.tour-bubble.arrow-bottom::before{bottom:-6px;left:50%;transform:translateX(-50%) rotate(45deg);}
+.tour-bubble.arrow-left::before{left:-6px;top:50%;transform:translateY(-50%) rotate(45deg);}
+.tour-bubble-step{font-size:10px;font-weight:700;color:var(--g);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;}
+.tour-bubble-title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:6px;}
+.tour-bubble-text{font-size:12px;color:var(--sub);line-height:1.6;margin-bottom:12px;}
+.tour-bubble-emoji{font-size:28px;margin-bottom:8px;display:block;}
+.tour-btn-row{display:flex;gap:8px;align-items:center;}
+.tour-btn-next{background:var(--g);color:#fff;border:none;border-radius:10px;padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer;flex:1;}
+.tour-btn-skip{background:none;border:none;color:var(--sub);font-size:11px;cursor:pointer;padding:4px;}
+.tour-dots{display:flex;gap:4px;justify-content:center;margin-bottom:10px;}
+.tour-dot{width:6px;height:6px;border-radius:50%;background:var(--border);}
+.tour-dot.active{background:var(--g);width:16px;border-radius:3px;}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
@@ -1326,6 +1345,22 @@ ml('account', '2355363');
       </div>
     </div>
 
+  </div>
+</div>
+
+
+<!-- GUIDED TOUR -->
+<div id="tour-overlay" class="tour-overlay" style="display:none;"></div>
+<div id="tour-spotlight" class="tour-spotlight" style="display:none;"></div>
+<div id="tour-bubble" class="tour-bubble" style="display:none;">
+  <div class="tour-dots" id="tour-dots"></div>
+  <span class="tour-bubble-emoji" id="tour-emoji">👋</span>
+  <div class="tour-bubble-step" id="tour-step">Étape 1 / 8</div>
+  <div class="tour-bubble-title" id="tour-title">Bienvenue!</div>
+  <div class="tour-bubble-text" id="tour-text">Voici un rapide tour de SmartGrocer.</div>
+  <div class="tour-btn-row">
+    <button class="tour-btn-skip" onclick="endTour()">Passer</button>
+    <button class="tour-btn-next" id="tour-next-btn" onclick="tourNext()">Suivant →</button>
   </div>
 </div>
 
@@ -4320,6 +4355,162 @@ function checkVersion() {
     localStorage.setItem('sg_app_version', APP_VERSION);
     console.log('Migration vers version ' + APP_VERSION + ' complétée!');
   }
+}
+
+
+// ===== GUIDED TOUR =====
+var tourSteps = [
+  {
+    emoji: '👋',
+    title: 'Bienvenue sur SmartGrocer!',
+    text: "Laisse-moi te faire visiter l'app en quelques secondes. Tu peux passer à tout moment.",
+    target: null,
+    position: 'center'
+  },
+  {
+    emoji: '📷',
+    title: 'Scanner les prix',
+    text: "Appuie ici pour scanner le code-barres d'un produit et comparer les prix entre toutes les épiceries!",
+    target: '.qc:nth-child(1)',
+    position: 'bottom'
+  },
+  {
+    emoji: '🍳',
+    title: 'Recettes IA + YouTube',
+    text: "L'IA génère des recettes personnalisées avec des vidéos YouTube automatiques pour chaque repas.",
+    target: '.qc:nth-child(2)',
+    position: 'bottom'
+  },
+  {
+    emoji: '🛒',
+    title: "Ma liste d'épicerie",
+    text: "Ta liste d'épicerie intelligente — ajoute des articles, coche-les en magasin et compare les prix.",
+    target: '.qc:nth-child(3)',
+    position: 'bottom'
+  },
+  {
+    emoji: '💳',
+    title: 'Portefeuille numérique',
+    text: "Garde toutes tes cartes de fidélité (IGA, Maxi, Metro, Walmart) dans l'app — plus besoin de les chercher!",
+    target: '.qc:nth-child(4)',
+    position: 'top'
+  },
+  {
+    emoji: '💲',
+    title: 'Section Prix',
+    text: 'Compare les prix en temps réel entre toutes les épiceries. Note : en version bêta, les prix sont estimés par IA — les vrais prix arrivent avec la version native!',
+    target: '.nb:nth-child(2)',
+    position: 'top'
+  },
+  {
+    emoji: '🥗',
+    title: 'Section Recettes',
+    text: "Planifie tes repas de la semaine, génère des recettes et crée ta liste d'épicerie automatiquement.",
+    target: '.nb:nth-child(3)',
+    position: 'top'
+  },
+  {
+    emoji: '⋯',
+    title: 'Menu Plus',
+    text: 'Retrouve ici la carte des épiceries, ton budget, la nutrition, le planificateur et bien plus!',
+    target: '.nb:nth-child(5)',
+    position: 'top'
+  },
+  {
+    emoji: '🎉',
+    title: "C'est parti!",
+    text: "Tu es prêt à utiliser SmartGrocer. Bonne épicerie et bon appétit! 🛒",
+    target: null,
+    position: 'center'
+  }
+];
+
+var tourCurrent = 0;
+
+function startTour() {
+  if(localStorage.getItem('sg_tour_done')) return;
+  tourCurrent = 0;
+  document.getElementById('tour-overlay').style.display = 'block';
+  document.getElementById('tour-spotlight').style.display = 'block';
+  document.getElementById('tour-bubble').style.display = 'block';
+  showTourStep(0);
+}
+
+function showTourStep(idx) {
+  var step = tourSteps[idx];
+  var total = tourSteps.length;
+
+  // Mettre à jour le contenu
+  document.getElementById('tour-emoji').textContent = step.emoji;
+  document.getElementById('tour-step').textContent = 'Étape ' + (idx + 1) + ' / ' + total;
+  document.getElementById('tour-title').textContent = step.title;
+  document.getElementById('tour-text').textContent = step.text;
+
+  // Bouton dernier step
+  var nextBtn = document.getElementById('tour-next-btn');
+  nextBtn.textContent = idx === total - 1 ? 'Terminer ✓' : 'Suivant →';
+
+  // Dots
+  var dotsEl = document.getElementById('tour-dots');
+  dotsEl.innerHTML = tourSteps.map(function(_, i) {
+    return '<div class="tour-dot' + (i === idx ? ' active' : '') + '"></div>';
+  }).join('');
+
+  // Spotlight et position bulle
+  var spotlight = document.getElementById('tour-spotlight');
+  var bubble = document.getElementById('tour-bubble');
+
+  if(step.target) {
+    var el = document.querySelector(step.target);
+    if(el) {
+      var rect = el.getBoundingClientRect();
+      var pad = 8;
+      spotlight.style.left = (rect.left - pad) + 'px';
+      spotlight.style.top = (rect.top - pad) + 'px';
+      spotlight.style.width = (rect.width + pad * 2) + 'px';
+      spotlight.style.height = (rect.height + pad * 2) + 'px';
+      spotlight.style.display = 'block';
+
+      // Position bulle
+      bubble.className = 'tour-bubble';
+      if(step.position === 'bottom') {
+        bubble.style.top = (rect.bottom + 20) + 'px';
+        bubble.style.left = Math.max(10, Math.min(rect.left - 40, window.innerWidth - 300)) + 'px';
+        bubble.classList.add('arrow-top');
+      } else if(step.position === 'top') {
+        bubble.style.top = Math.max(10, rect.top - 180) + 'px';
+        bubble.style.left = Math.max(10, Math.min(rect.left - 40, window.innerWidth - 300)) + 'px';
+        bubble.classList.add('arrow-bottom');
+      }
+    }
+  } else {
+    // Centré — pas de spotlight
+    spotlight.style.display = 'none';
+    bubble.className = 'tour-bubble';
+    bubble.style.top = '50%';
+    bubble.style.left = '50%';
+    bubble.style.transform = 'translate(-50%, -50%)';
+  }
+
+  if(step.target) {
+    bubble.style.transform = '';
+  }
+}
+
+function tourNext() {
+  tourCurrent++;
+  if(tourCurrent >= tourSteps.length) {
+    endTour();
+    return;
+  }
+  showTourStep(tourCurrent);
+}
+
+function endTour() {
+  document.getElementById('tour-overlay').style.display = 'none';
+  document.getElementById('tour-spotlight').style.display = 'none';
+  document.getElementById('tour-bubble').style.display = 'none';
+  localStorage.setItem('sg_tour_done', '1');
 }
 
 window.addEventListener('load', function() {
