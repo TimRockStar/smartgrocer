@@ -3035,7 +3035,7 @@ function renderGr(){
           '<div class="gc" onclick="toggleGr(' + realIdx + ')" style="border-color:var(--g);">' +
           '<i class="ti ti-circle" style="font-size:10px;color:#d1d5db;"></i></div>' +
           '<div style="flex:1;cursor:pointer;" onclick="comparePriceForItem(\''+g.uid+'\')"><div style="font-size:13px;color:var(--text);display:flex;align-items:center;gap:4px;">'+g.name+'<span style="font-size:9px;color:var(--g);background:#dcfce7;padding:1px 5px;border-radius:999px;">💰</span></div>' +
-          (g.expiry ? (function(){ var d=new Date(g.expiry); var today=new Date(); today.setHours(0,0,0,0); d.setHours(0,0,0,0); var days=Math.round((d-today)/(1000*60*60*24)); var col=days<0?'#ef4444':days<=2?'#f97316':days<=5?'#eab308':'#6b7280'; var msg=days<0?'🚨 Expiré!':days===0?'⚠️ Expire ce soir!':days<=2?'⚠️ Expire dans '+days+' jour(s)':'📅 Expire dans '+days+' jours'; return '<div style="font-size:10px;color:'+col+';font-weight:700;margin-top:2px;">'+msg+'</div>'; })() : '') +
+'' +
         (g.store ? '<div style="margin-top:3px;"><span style="background:' + ({'IGA':'#FFEBEE','Maxi':'#FCE4EC','Metro':'#E3F2FD','Walmart':'#E8F4FD','Costco':'#FFEBEE'}[g.store]||'#f3f4f6') + ';color:' + ({'IGA':'#E53935','Maxi':'#880E4F','Metro':'#1565C0','Walmart':'#0071CE','Costco':'#C62828'}[g.store]||'#6b7280') + ';font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;">' + ({'IGA':'🏪','Maxi':'🏬','Metro':'🛒','Walmart':'🏢','Costco':'🏭'}[g.store]||'🏪') + ' ' + g.store + '</span></div>' : '') +
           '</div>' +
           '<div style="font-size:11px;font-weight:700;color:var(--g);">$' + g.price.toFixed(2) + '</div>' +
@@ -3050,9 +3050,28 @@ function renderGr(){
     html += '<div style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:0.05em;padding:10px 0 4px;border-top:1px dashed var(--border);margin-top:6px;">Dans le panier 🛒 (' + inCart.length + ')</div>';
     inCart.forEach(function(g) {
       var realIdx = groceries.indexOf(g);
-      html += '<div class="gi" style="background:#f9fafb;opacity:0.75;">' +
+      // Affichage date péremption si elle existe
+      var expiryDisplay = '';
+      if(g.expiry) {
+        var d = new Date(g.expiry);
+        var today = new Date();
+        today.setHours(0,0,0,0);
+        d.setHours(0,0,0,0);
+        var days = Math.round((d - today) / (1000*60*60*24));
+        var col = days < 0 ? '#ef4444' : days <= 2 ? '#f97316' : days <= 5 ? '#eab308' : '#6b7280';
+        var msg = days < 0 ? '🚨 Expiré!' : days === 0 ? '⚠️ Expire ce soir!' : days <= 2 ? '⚠️ Expire dans ' + days + ' jour(s)' : '📅 Expire dans ' + days + ' jours';
+        expiryDisplay = '<div style="font-size:10px;color:'+col+';font-weight:700;margin-top:2px;">'+msg+'</div>';
+      }
+      // Bouton ajouter date péremption
+      var expiryBtn = g.expiry ? '' : '<button onclick="openExpiryModal(groceries['+realIdx+'])" style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;font-size:10px;color:#16a34a;cursor:pointer;padding:3px 8px;margin-top:4px;display:block;">📅 Ajouter date péremption</button>';
+      
+      html += '<div class="gi" style="background:#f0fdf4;opacity:0.9;">' +
         '<div class="gc done" onclick="toggleGr(' + realIdx + ')">✓</div>' +
-        '<div style="flex:1;font-size:13px;color:var(--sub);text-decoration:line-through;">' + g.name + '</div>' +
+        '<div style="flex:1;">' +
+          '<div style="font-size:13px;color:var(--sub);text-decoration:line-through;">' + g.name + '</div>' +
+          expiryDisplay +
+          expiryBtn +
+        '</div>' +
         '<div style="font-size:11px;font-weight:700;color:var(--sub);">$' + g.price.toFixed(2) + '</div>' +
         '<button style="background:none;border:none;cursor:pointer;color:#d1d5db;font-size:16px;padding:0 3px;" onclick="delGr(' + realIdx + ')">×</button>' +
         '</div>';
