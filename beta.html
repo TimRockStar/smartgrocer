@@ -377,6 +377,30 @@ input:focus,select:focus{outline:none;border-color:var(--g);box-shadow:0 0 0 3px
 .pwa-banner-sub{font-size:11px;color:var(--sub);margin-top:2px;}
 .pwa-banner-btn{background:var(--g);color:#fff;border:none;border-radius:10px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;}
 .pwa-banner-close{background:none;border:none;color:var(--sub);font-size:18px;cursor:pointer;padding:0 4px;flex-shrink:0;}
+
+/* ===== PLAN PERSONNALISÉ NUTRITION ===== */
+.plan-step{display:none;}
+.plan-step.active{display:block;}
+.plan-option{background:var(--card);border:2px solid var(--border);border-radius:14px;padding:12px 16px;margin-bottom:8px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:all 0.2s;}
+.plan-option:hover{border-color:var(--g);}
+.plan-option.selected{border-color:var(--g);background:var(--light);}
+.plan-option-icon{font-size:24px;width:36px;text-align:center;}
+.plan-option-text{flex:1;}
+.plan-option-title{font-size:13px;font-weight:700;color:var(--text);}
+.plan-option-sub{font-size:11px;color:var(--sub);margin-top:2px;}
+.plan-check{width:20px;height:20px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;transition:all 0.2s;}
+.plan-option.selected .plan-check{background:var(--g);border-color:var(--g);color:#fff;}
+.plan-progress{display:flex;gap:4px;margin-bottom:20px;}
+.plan-prog-dot{flex:1;height:4px;border-radius:2px;background:var(--border);}
+.plan-prog-dot.done{background:var(--g);}
+.plan-result-card{border-radius:16px;padding:16px;margin-bottom:10px;text-align:center;}
+.plan-macro{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0;}
+.plan-macro-item{background:var(--card);border-radius:12px;padding:10px;border:1px solid var(--border);}
+.plan-macro-val{font-size:18px;font-weight:700;}
+.plan-macro-label{font-size:10px;color:var(--sub);margin-top:2px;}
+.plan-tip{background:var(--light);border-radius:12px;padding:10px 12px;margin-bottom:8px;display:flex;gap:8px;align-items:flex-start;}
+.plan-tip-icon{font-size:16px;flex-shrink:0;}
+.plan-tip-text{font-size:12px;color:var(--text);line-height:1.5;}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
@@ -1205,6 +1229,20 @@ ml('account', '2355363');
     </div>
   </div>
   <div class="px">
+    <!-- Bouton génération basée sur spéciaux -->
+    <div class="card" style="background:linear-gradient(135deg,#C9A227,#9A7A10);border:none;margin-bottom:12px;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="font-size:28px;">🔥</div>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:700;color:#fff;">Planifier selon les spéciaux</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.8);margin-top:2px;">L'IA génère ton menu avec les produits en rabais cette semaine</div>
+        </div>
+        <button class="btn" style="background:rgba(255,255,255,0.2);color:#fff;border:1px solid rgba(255,255,255,0.4);white-space:nowrap;" onclick="generateMenuFromSpecials()">
+          Générer 🎯
+        </button>
+      </div>
+    </div>
+
     <div class="sl">Cette semaine</div>
     <div id="planner-days"></div>
     <button class="btn bg bf" onclick="generatePlannerList()" style="margin-top:1rem;">
@@ -1333,8 +1371,31 @@ ml('account', '2355363');
       </div>
     </div>
 
-    <!-- Objectif calorique -->
-    <div class="sl">🎯 Mon objectif</div>
+    <!-- Plan personnalisé -->
+    <div class="sl">🎯 Mon plan personnalisé</div>
+    <div id="plan-result-section" style="display:none;">
+      <div class="plan-result-card" id="plan-result-card" style="background:linear-gradient(135deg,#1D9E75,#0F6E56);">
+        <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.8);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;" id="plan-result-goal-label">Objectif</div>
+        <div style="font-size:22px;font-weight:700;color:#fff;margin-bottom:4px;" id="plan-result-calories">2000 kcal/jour</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.75);" id="plan-result-sub">Calculé par IA selon ton profil</div>
+      </div>
+      <div class="plan-macro" id="plan-macros"></div>
+      <div id="plan-tips"></div>
+      <button class="btn bo bf" onclick="resetPlan()" style="margin-top:4px;font-size:12px;padding:8px;">🔄 Refaire le questionnaire</button>
+    </div>
+    <div id="plan-questionnaire">
+      <div class="card" style="padding:20px;">
+        <div style="text-align:center;margin-bottom:16px;">
+          <div style="font-size:32px;margin-bottom:8px;">🤖</div>
+          <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px;">Plan IA Personnalisé</div>
+          <div style="font-size:12px;color:var(--sub);">Réponds à 5 questions — l'IA calcule ton plan idéal</div>
+        </div>
+        <button class="btn bg bf" onclick="startPlan()">Créer mon plan →</button>
+      </div>
+    </div>
+
+    <!-- Objectif calorique manuel -->
+    <div class="sl">⚙️ Ajuster manuellement</div>
     <div class="card">
       <div style="display:flex;align-items:center;gap:12px;">
         <span style="font-size:12px;color:var(--sub);">1200</span>
@@ -1387,6 +1448,158 @@ ml('account', '2355363');
   <button class="pwa-banner-close" onclick="dismissPWA()">✕</button>
 </div>
 
+
+<!-- PLAN PERSONNALISÉ MODAL -->
+<div id="plan-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:3000;align-items:flex-end;justify-content:center;">
+  <div style="background:var(--card);border-radius:24px 24px 0 0;padding:24px 20px;width:100%;max-width:480px;max-height:85vh;overflow-y:auto;">
+    
+    <!-- Header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <div style="font-size:15px;font-weight:700;color:var(--text);">🤖 Mon plan personnalisé</div>
+      <button onclick="closePlanModal()" style="background:none;border:none;font-size:20px;color:var(--sub);cursor:pointer;">✕</button>
+    </div>
+
+    <!-- Progression -->
+    <div class="plan-progress" id="plan-progress">
+      <div class="plan-prog-dot done" id="pd1"></div>
+      <div class="plan-prog-dot" id="pd2"></div>
+      <div class="plan-prog-dot" id="pd3"></div>
+      <div class="plan-prog-dot" id="pd4"></div>
+      <div class="plan-prog-dot" id="pd5"></div>
+    </div>
+
+    <!-- ÉTAPE 1 — Objectif -->
+    <div class="plan-step active" id="plan-step-1">
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;">Étape 1/5 — Quel est ton objectif?</div>
+      <div style="font-size:11px;color:var(--sub);margin-bottom:16px;">Choisis ce qui correspond le mieux à ce que tu veux accomplir</div>
+      <div class="plan-option" onclick="selectPlanOption(this,'goal','perte')" data-val="perte">
+        <div class="plan-option-icon">⬇️</div>
+        <div class="plan-option-text"><div class="plan-option-title">Perdre du poids</div><div class="plan-option-sub">Réduire les calories progressivement</div></div>
+        <div class="plan-check"></div>
+      </div>
+      <div class="plan-option" onclick="selectPlanOption(this,'goal','maintien')" data-val="maintien">
+        <div class="plan-option-icon">⚖️</div>
+        <div class="plan-option-text"><div class="plan-option-title">Maintenir mon poids</div><div class="plan-option-sub">Garder mon poids actuel</div></div>
+        <div class="plan-check"></div>
+      </div>
+      <div class="plan-option" onclick="selectPlanOption(this,'goal','masse')" data-val="masse">
+        <div class="plan-option-icon">💪</div>
+        <div class="plan-option-text"><div class="plan-option-title">Prendre de la masse</div><div class="plan-option-sub">Augmenter les calories et protéines</div></div>
+        <div class="plan-check"></div>
+      </div>
+      <div class="plan-option" onclick="selectPlanOption(this,'goal','sante')" data-val="sante">
+        <div class="plan-option-icon">🥗</div>
+        <div class="plan-option-text"><div class="plan-option-title">Manger plus sainement</div><div class="plan-option-sub">Améliorer la qualité de mon alimentation</div></div>
+        <div class="plan-check"></div>
+      </div>
+    </div>
+
+    <!-- ÉTAPE 2 — Activité -->
+    <div class="plan-step" id="plan-step-2">
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;">Étape 2/5 — Niveau d'activité</div>
+      <div style="font-size:11px;color:var(--sub);margin-bottom:16px;">À quelle fréquence fais-tu de l'exercice?</div>
+      <div class="plan-option" onclick="selectPlanOption(this,'activity','sedentaire')" data-val="sedentaire">
+        <div class="plan-option-icon">🪑</div>
+        <div class="plan-option-text"><div class="plan-option-title">Sédentaire</div><div class="plan-option-sub">Peu ou pas d'exercice</div></div>
+        <div class="plan-check"></div>
+      </div>
+      <div class="plan-option" onclick="selectPlanOption(this,'activity','leger')" data-val="leger">
+        <div class="plan-option-icon">🚶</div>
+        <div class="plan-option-text"><div class="plan-option-title">Légèrement actif</div><div class="plan-option-sub">Exercice léger 1-3 fois/semaine</div></div>
+        <div class="plan-check"></div>
+      </div>
+      <div class="plan-option" onclick="selectPlanOption(this,'activity','modere')" data-val="modere">
+        <div class="plan-option-icon">🏃</div>
+        <div class="plan-option-text"><div class="plan-option-title">Modérément actif</div><div class="plan-option-sub">Exercice modéré 3-5 fois/semaine</div></div>
+        <div class="plan-check"></div>
+      </div>
+      <div class="plan-option" onclick="selectPlanOption(this,'activity','actif')" data-val="actif">
+        <div class="plan-option-icon">🏋️</div>
+        <div class="plan-option-text"><div class="plan-option-title">Très actif</div><div class="plan-option-sub">Exercice intense 6-7 fois/semaine</div></div>
+        <div class="plan-check"></div>
+      </div>
+    </div>
+
+    <!-- ÉTAPE 3 — Poids et taille -->
+    <div class="plan-step" id="plan-step-3">
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;">Étape 3/5 — Poids et taille</div>
+      <div style="font-size:11px;color:var(--sub);margin-bottom:16px;">Pour calculer tes besoins caloriques précis</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+        <div>
+          <label style="font-size:11px;font-weight:700;color:var(--sub);display:block;margin-bottom:4px;">Poids (kg)</label>
+          <input type="number" id="plan-weight" placeholder="Ex: 70" min="30" max="250" style="width:100%;"/>
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:700;color:var(--sub);display:block;margin-bottom:4px;">Taille (cm)</label>
+          <input type="number" id="plan-height" placeholder="Ex: 170" min="100" max="250" style="width:100%;"/>
+        </div>
+      </div>
+    </div>
+
+    <!-- ÉTAPE 4 — Âge et sexe -->
+    <div class="plan-step" id="plan-step-4">
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;">Étape 4/5 — Âge et sexe</div>
+      <div style="font-size:11px;color:var(--sub);margin-bottom:16px;">Ces informations affinent le calcul de tes besoins</div>
+      <div style="margin-bottom:12px;">
+        <label style="font-size:11px;font-weight:700;color:var(--sub);display:block;margin-bottom:4px;">Âge</label>
+        <input type="number" id="plan-age" placeholder="Ex: 35" min="15" max="100" style="width:100%;"/>
+      </div>
+      <div style="font-size:11px;font-weight:700;color:var(--sub);margin-bottom:8px;">Sexe biologique</div>
+      <div class="plan-option" onclick="selectPlanOption(this,'sex','homme')" data-val="homme">
+        <div class="plan-option-icon">👨</div>
+        <div class="plan-option-text"><div class="plan-option-title">Homme</div></div>
+        <div class="plan-check"></div>
+      </div>
+      <div class="plan-option" onclick="selectPlanOption(this,'sex','femme')" data-val="femme">
+        <div class="plan-option-icon">👩</div>
+        <div class="plan-option-text"><div class="plan-option-title">Femme</div></div>
+        <div class="plan-check"></div>
+      </div>
+    </div>
+
+    <!-- ÉTAPE 5 — Restrictions -->
+    <div class="plan-step" id="plan-step-5">
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;">Étape 5/5 — Restrictions alimentaires</div>
+      <div style="font-size:11px;color:var(--sub);margin-bottom:16px;">Sélectionne tout ce qui s'applique</div>
+      <div class="plan-option" onclick="togglePlanRestriction(this,'aucune')">
+        <div class="plan-option-icon">✅</div>
+        <div class="plan-option-text"><div class="plan-option-title">Aucune restriction</div></div>
+        <div class="plan-check"></div>
+      </div>
+      <div class="plan-option" onclick="togglePlanRestriction(this,'vegetarien')">
+        <div class="plan-option-icon">🥦</div>
+        <div class="plan-option-text"><div class="plan-option-title">Végétarien</div></div>
+        <div class="plan-check"></div>
+      </div>
+      <div class="plan-option" onclick="togglePlanRestriction(this,'vegan')">
+        <div class="plan-option-icon">🌱</div>
+        <div class="plan-option-text"><div class="plan-option-title">Végétalien / Vegan</div></div>
+        <div class="plan-check"></div>
+      </div>
+      <div class="plan-option" onclick="togglePlanRestriction(this,'sansgluten')">
+        <div class="plan-option-icon">🌾</div>
+        <div class="plan-option-text"><div class="plan-option-title">Sans gluten</div></div>
+        <div class="plan-check"></div>
+      </div>
+      <div class="plan-option" onclick="togglePlanRestriction(this,'sanslactose')">
+        <div class="plan-option-icon">🥛</div>
+        <div class="plan-option-text"><div class="plan-option-title">Sans lactose</div></div>
+        <div class="plan-check"></div>
+      </div>
+      <div class="plan-option" onclick="togglePlanRestriction(this,'diabetique')">
+        <div class="plan-option-icon">🩸</div>
+        <div class="plan-option-text"><div class="plan-option-title">Diabétique</div></div>
+        <div class="plan-check"></div>
+      </div>
+    </div>
+
+    <!-- Boutons navigation -->
+    <div style="display:flex;gap:8px;margin-top:16px;">
+      <button class="btn bo" id="plan-back-btn" onclick="planBack()" style="display:none;padding:10px 16px;">← Retour</button>
+      <button class="btn bg bf" id="plan-next-btn" onclick="planNext()">Suivant →</button>
+    </div>
+  </div>
+</div>
 <!-- NAV BOTTOM -->
 
 
@@ -4184,6 +4397,7 @@ var calGoal = 2000;
 var _pendingMeal = null;
 
 function loadNutritionData() {
+  loadSavedPlan();
   try {
     var saved = localStorage.getItem('sg_nutrition');
     if(saved) {
@@ -4616,6 +4830,303 @@ function showInstallInstructions() {
     '<button onclick="this.parentElement.parentElement.remove()" style="background:#1D9E75;color:#fff;border:none;border-radius:12px;padding:12px 24px;font-size:14px;font-weight:700;cursor:pointer;width:100%;">Compris! 👍</button>' +
     '</div>';
   document.body.appendChild(modal);
+}
+
+
+// ===== PLAN PERSONNALISÉ NUTRITION =====
+var planData = { goal: null, activity: null, weight: null, height: null, age: null, sex: null, restrictions: [] };
+var planCurrentStep = 1;
+
+function startPlan() {
+  planData = { goal: null, activity: null, weight: null, height: null, age: null, sex: null, restrictions: [] };
+  planCurrentStep = 1;
+  document.getElementById('plan-modal').style.display = 'flex';
+  showPlanStep(1);
+}
+
+function closePlanModal() {
+  document.getElementById('plan-modal').style.display = 'none';
+}
+
+function showPlanStep(step) {
+  // Cacher toutes les étapes
+  for(var i = 1; i <= 5; i++) {
+    document.getElementById('plan-step-' + i).classList.remove('active');
+    document.getElementById('pd' + i).classList.remove('done');
+  }
+  // Montrer l'étape courante
+  document.getElementById('plan-step-' + step).classList.add('active');
+  // Progression
+  for(var j = 1; j <= step; j++) {
+    document.getElementById('pd' + j).classList.add('done');
+  }
+  // Bouton retour
+  document.getElementById('plan-back-btn').style.display = step > 1 ? 'block' : 'none';
+  // Bouton suivant
+  var nextBtn = document.getElementById('plan-next-btn');
+  nextBtn.textContent = step === 5 ? 'Générer mon plan ✨' : 'Suivant →';
+}
+
+function selectPlanOption(el, field, val) {
+  // Désélectionner les autres dans le même groupe
+  var siblings = el.parentElement.querySelectorAll('.plan-option');
+  siblings.forEach(function(s) { s.classList.remove('selected'); s.querySelector('.plan-check').textContent = ''; });
+  el.classList.add('selected');
+  el.querySelector('.plan-check').textContent = '✓';
+  planData[field] = val;
+}
+
+function togglePlanRestriction(el, val) {
+  if(val === 'aucune') {
+    // Désélectionner tout
+    var all = el.parentElement.querySelectorAll('.plan-option');
+    all.forEach(function(s) { s.classList.remove('selected'); s.querySelector('.plan-check').textContent = ''; });
+    el.classList.add('selected');
+    el.querySelector('.plan-check').textContent = '✓';
+    planData.restrictions = [];
+    return;
+  }
+  // Désélectionner "aucune"
+  var options = el.parentElement.querySelectorAll('.plan-option');
+  options[0].classList.remove('selected');
+  options[0].querySelector('.plan-check').textContent = '';
+
+  if(el.classList.contains('selected')) {
+    el.classList.remove('selected');
+    el.querySelector('.plan-check').textContent = '';
+    planData.restrictions = planData.restrictions.filter(function(r) { return r !== val; });
+  } else {
+    el.classList.add('selected');
+    el.querySelector('.plan-check').textContent = '✓';
+    planData.restrictions.push(val);
+  }
+}
+
+function planNext() {
+  // Validation
+  if(planCurrentStep === 1 && !planData.goal) { showToast('⚠️ Choisis un objectif!'); return; }
+  if(planCurrentStep === 2 && !planData.activity) { showToast("⚠️ Choisis ton niveau d'activité!"); return; }
+  if(planCurrentStep === 3) {
+    planData.weight = parseFloat(document.getElementById('plan-weight').value);
+    planData.height = parseFloat(document.getElementById('plan-height').value);
+    if(!planData.weight || !planData.height) { showToast("⚠️ Entre ton poids et ta taille!"); return; }
+  }
+  if(planCurrentStep === 4) {
+    planData.age = parseInt(document.getElementById('plan-age').value);
+    if(!planData.age) { showToast("⚠️ Entre ton âge!"); return; }
+    if(!planData.sex) { showToast('⚠️ Choisis ton sexe!'); return; }
+  }
+  if(planCurrentStep === 5) {
+    generatePlan();
+    return;
+  }
+  planCurrentStep++;
+  showPlanStep(planCurrentStep);
+}
+
+function planBack() {
+  if(planCurrentStep > 1) {
+    planCurrentStep--;
+    showPlanStep(planCurrentStep);
+  }
+}
+
+function generatePlan() {
+  closePlanModal();
+  showToast('⏳ Génération de ton plan...', 4000);
+
+  // Calcul Harris-Benedict
+  var bmr;
+  if(planData.sex === 'homme') {
+    bmr = 88.362 + (13.397 * planData.weight) + (4.799 * planData.height) - (5.677 * planData.age);
+  } else {
+    bmr = 447.593 + (9.247 * planData.weight) + (3.098 * planData.height) - (4.330 * planData.age);
+  }
+
+  var activityFactor = { sedentaire: 1.2, leger: 1.375, modere: 1.55, actif: 1.725 };
+  var tdee = Math.round(bmr * (activityFactor[planData.activity] || 1.375));
+
+  // Ajustement selon objectif
+  var calories;
+  var goalLabel, goalColor;
+  if(planData.goal === 'perte') {
+    calories = tdee - 500;
+    goalLabel = 'Perte de poids';
+    goalColor = '#378ADD';
+  } else if(planData.goal === 'masse') {
+    calories = tdee + 300;
+    goalLabel = 'Prise de masse';
+    goalColor = '#D85A30';
+  } else if(planData.goal === 'sante') {
+    calories = tdee;
+    goalLabel = 'Manger sainement';
+    goalColor = '#1D9E75';
+  } else {
+    calories = tdee;
+    goalLabel = 'Maintien du poids';
+    goalColor = '#534AB7';
+  }
+
+  calories = Math.max(1200, calories);
+
+  // Calcul macros
+  var proteines, gras, glucides;
+  if(planData.goal === 'masse') {
+    proteines = Math.round(planData.weight * 2.2);
+    gras = Math.round(calories * 0.25 / 9);
+    glucides = Math.round((calories - (proteines * 4) - (gras * 9)) / 4);
+  } else if(planData.goal === 'perte') {
+    proteines = Math.round(planData.weight * 1.8);
+    gras = Math.round(calories * 0.30 / 9);
+    glucides = Math.round((calories - (proteines * 4) - (gras * 9)) / 4);
+  } else {
+    proteines = Math.round(planData.weight * 1.5);
+    gras = Math.round(calories * 0.30 / 9);
+    glucides = Math.round((calories - (proteines * 4) - (gras * 9)) / 4);
+  }
+
+  // Conseils personnalisés
+  var tips = [];
+  if(planData.goal === 'perte') {
+    tips.push({ icon: '🥗', text: 'Priorise les légumes et protéines à chaque repas — ils rassasient sans ajouter beaucoup de calories.' });
+    tips.push({ icon: '💧', text: 'Bois un grand verre d\'eau avant chaque repas pour réduire la faim naturellement.' });
+    tips.push({ icon: '⏰', text: 'Évite de manger après 20h — ton métabolisme ralentit en soirée.' });
+  } else if(planData.goal === 'masse') {
+    tips.push({ icon: '🍗', text: 'Mange ' + Math.round(proteines/4) + 'g de protéines à chaque repas pour optimiser la synthèse musculaire.' });
+    tips.push({ icon: '🏋️', text: 'Consomme des glucides complexes (riz, avoine, patate douce) autour de tes entraînements.' });
+    tips.push({ icon: '🥤', text: "Un smoothie protéiné post-entraînement peut t'aider à atteindre tes objectifs de protéines." });
+  } else if(planData.goal === 'sante') {
+    tips.push({ icon: '🌈', text: 'Mange au moins 5 couleurs de légumes et fruits différents par jour pour une nutrition complète.' });
+    tips.push({ icon: '🐟', text: 'Inclus des oméga-3 (saumon, sardines, noix) 2-3 fois par semaine pour la santé cardiovasculaire.' });
+    tips.push({ icon: '🌾', text: 'Remplace les grains raffinés par des grains entiers pour plus de fibres et de nutriments.' });
+  } else {
+    tips.push({ icon: '⚖️', text: "Maintiens une alimentation régulière — 3 repas équilibrés et 1-2 collations par jour." });
+    tips.push({ icon: '📏', text: "La constance est la clé — pas besoin de compter chaque calorie, sois simplement régulier." });
+    tips.push({ icon: '🚶', text: "Une marche de 30 minutes par jour suffit pour maintenir ton poids et améliorer ta santé." });
+  }
+
+  if(planData.restrictions.includes('vegetarien') || planData.restrictions.includes('vegan')) {
+    tips.push({ icon: '🌱', text: "Combine légumineuses + céréales complètes à chaque repas pour obtenir tous les acides aminés essentiels." });
+  }
+  if(planData.restrictions.includes('diabetique')) {
+    tips.push({ icon: '🩸', text: "Privilégie les aliments à index glycémique bas et répartis tes glucides sur 5-6 petits repas." });
+  }
+
+  // Mettre à jour l'objectif calorique
+  calGoal = calories;
+  var slider = document.getElementById('nut-goal-slider');
+  if(slider) slider.value = calories;
+  var goalDisplay = document.getElementById('nut-goal-display');
+  if(goalDisplay) goalDisplay.textContent = calories + ' kcal';
+
+  // Afficher les résultats
+  document.getElementById('plan-questionnaire').style.display = 'none';
+  document.getElementById('plan-result-section').style.display = 'block';
+  document.getElementById('plan-result-card').style.background = 'linear-gradient(135deg,' + goalColor + ',' + goalColor + 'cc)';
+  document.getElementById('plan-result-goal-label').textContent = goalLabel;
+  document.getElementById('plan-result-calories').textContent = calories + ' kcal/jour';
+  document.getElementById('plan-result-sub').textContent = 'Basé sur ta taille, ton poids et ton activité';
+
+  document.getElementById('plan-macros').innerHTML =
+    '<div class="plan-macro-item"><div class="plan-macro-val" style="color:#e53935;">' + proteines + 'g</div><div class="plan-macro-label">Protéines</div></div>' +
+    '<div class="plan-macro-item"><div class="plan-macro-val" style="color:' + goalColor + ';">' + glucides + 'g</div><div class="plan-macro-label">Glucides</div></div>' +
+    '<div class="plan-macro-item"><div class="plan-macro-val" style="color:#C9A227;">' + gras + 'g</div><div class="plan-macro-label">Gras</div></div>';
+
+  document.getElementById('plan-tips').innerHTML = tips.slice(0,3).map(function(t) {
+    return '<div class="plan-tip"><span class="plan-tip-icon">' + t.icon + '</span><span class="plan-tip-text">' + t.text + '</span></div>';
+  }).join('');
+
+  // Sauvegarder
+  localStorage.setItem('sg_plan', JSON.stringify({ calories, proteines, glucides, gras, goalLabel, tips, restrictions: planData.restrictions }));
+  saveNutritionData();
+  showToast('✅ Ton plan personnalisé est prêt!', 3000);
+}
+
+function resetPlan() {
+  document.getElementById('plan-result-section').style.display = 'none';
+  document.getElementById('plan-questionnaire').style.display = 'block';
+  localStorage.removeItem('sg_plan');
+}
+
+function loadSavedPlan() {
+  var saved = localStorage.getItem('sg_plan');
+  if(!saved) return;
+  try {
+    var plan = JSON.parse(saved);
+    document.getElementById('plan-questionnaire').style.display = 'none';
+    document.getElementById('plan-result-section').style.display = 'block';
+    document.getElementById('plan-result-goal-label').textContent = plan.goalLabel;
+    document.getElementById('plan-result-calories').textContent = plan.calories + ' kcal/jour';
+    document.getElementById('plan-macros').innerHTML =
+      '<div class="plan-macro-item"><div class="plan-macro-val" style="color:#e53935;">' + plan.proteines + 'g</div><div class="plan-macro-label">Protéines</div></div>' +
+      '<div class="plan-macro-item"><div class="plan-macro-val" style="color:#1D9E75;">' + plan.glucides + 'g</div><div class="plan-macro-label">Glucides</div></div>' +
+      '<div class="plan-macro-item"><div class="plan-macro-val" style="color:#C9A227;">' + plan.gras + 'g</div><div class="plan-macro-label">Gras</div></div>';
+    if(plan.tips) {
+      document.getElementById('plan-tips').innerHTML = plan.tips.slice(0,3).map(function(t) {
+        return '<div class="plan-tip"><span class="plan-tip-icon">' + t.icon + '</span><span class="plan-tip-text">' + t.text + '</span></div>';
+      }).join('');
+    }
+  } catch(e) {}
+}
+
+
+async function generateMenuFromSpecials() {
+  if(_weeklySpecials.length === 0) {
+    showToast('⏳ Chargement des spéciaux en cours — réessaie dans un instant!');
+    loadSpecials();
+    return;
+  }
+
+  showToast('🔥 Génération du menu basé sur les spéciaux...', 5000);
+
+  var specialsList = _weeklySpecials.map(function(s) {
+    return s.nom + ' (' + s.magasin + ' $' + s.prix + ')';
+  }).join(', ');
+
+  var jours = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
+
+  try {
+    var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        max_completion_tokens: 1500,
+        messages: [{role:'user',content:'Ces produits sont EN SPECIAL cette semaine: ' + specialsList + '. Genere un menu pour 7 jours qui utilise au maximum ces produits en special pour economiser. Un repas principal par jour. JSON seulement: {"menu":[{"jour":"Lundi","emoji":"🍗","repas":"Poulet roti aux herbes","special":"Utilise: poulet en special","temps":"45 min"},{"jour":"Mardi","emoji":"🥘","repas":"Soupe aux legumes","special":"Utilise: carottes en special","temps":"30 min"}]}'}]
+      })
+    });
+
+    var data = await res.json();
+    var text = data.choices[0].message.content.replace(/```json|```/g,'').trim();
+    var jsonMatch = text.match(/\{[\s\S]*\}/);
+    if(!jsonMatch) throw new Error('No JSON');
+    var parsed = JSON.parse(jsonMatch[0]);
+    var menu = parsed.menu;
+
+    // Appliquer le menu au planificateur
+    jours.forEach(function(jour, i) {
+      var item = menu[i];
+      if(!item) return;
+      var key = jour.toLowerCase();
+      if(!mealPlan[key]) mealPlan[key] = {};
+      mealPlan[key].souper = {
+        emoji: item.emoji || '🍽️',
+        nom: item.repas,
+        temps: item.temps || '30 min',
+        etapes: [],
+        ingredients: [],
+        special: item.special || ''
+      };
+    });
+
+    saveMealPlan();
+    renderPlannerDays();
+    showToast('✅ Menu basé sur les spéciaux généré! ' + menu.length + ' repas économiques!', 4000);
+
+  } catch(e) {
+    console.error('Erreur génération menu spéciaux:', e);
+    showToast('⚠️ Erreur — réessaie!');
+  }
 }
 
 window.addEventListener('load', function() {
