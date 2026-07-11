@@ -3085,7 +3085,7 @@ function renderGr(){
         expiryDisplay = '<div style="font-size:10px;color:'+col+';font-weight:700;margin-top:2px;">'+msg+'</div>';
       }
       // Bouton ajouter date péremption
-      var expiryBtn = g.expiry ? '' : '<button onclick="openExpiryModal(groceries['+realIdx+'])" style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;font-size:10px;color:#16a34a;cursor:pointer;padding:3px 8px;margin-top:4px;display:block;">📅 Ajouter date péremption</button>';
+      var expiryBtn = g.expiry ? '' : '<button onclick="showExpiryModal(groceries['+realIdx+'])" style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;font-size:10px;color:#16a34a;cursor:pointer;padding:3px 8px;margin-top:4px;display:block;">📅 Ajouter date péremption</button>';
       
       html += '<div class="gi" style="background:#f0fdf4;opacity:0.9;">' +
         '<div class="gc done" onclick="toggleGr(' + realIdx + ')">✓</div>' +
