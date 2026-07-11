@@ -5129,6 +5129,74 @@ async function generateMenuFromSpecials() {
   }
 }
 
+
+async function scanExpiryDate(input) {
+  if(!input.files || !input.files[0]) return;
+  
+  // Afficher loading
+  document.getElementById('expiry-ai-loading').style.display = 'block';
+  document.getElementById('expiry-ai-result').style.display = 'none';
+
+  try {
+    var file = input.files[0];
+    var base64 = await new Promise(function(resolve, reject) {
+      var reader = new FileReader();
+      reader.onload = function(e) { resolve(e.target.result.split(',')[1]); };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+    var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
+      body: JSON.stringify({
+        model: 'meta-llama/llama-4-scout-17b-16e-instruct',
+        max_tokens: 100,
+        messages: [{
+          role: 'user',
+          content: [
+            {type: 'image_url', image_url: {url: 'data:image/jpeg;base64,' + base64}},
+            {type: 'text', text: 'Lis la date de peremption sur cet emballage. Reponds UNIQUEMENT avec la date au format YYYY-MM-DD. Si tu ne vois pas de date, reponds "inconnu".'}
+          ]
+        }]
+      })
+    });
+
+    var data = await res.json();
+    var dateText = data.choices[0].message.content.trim();
+
+    document.getElementById('expiry-ai-loading').style.display = 'none';
+
+    if(dateText === 'inconnu' || !dateText.match(/\d{4}-\d{2}-\d{2}/)) {
+      showToast('⚠️ Date non détectée — entre-la manuellement');
+      return;
+    }
+
+    // Extraire la date au format YYYY-MM-DD
+    var dateMatch = dateText.match(/\d{4}-\d{2}-\d{2}/);
+    if(dateMatch) {
+      var dateVal = dateMatch[0];
+      document.getElementById('exp-date').value = dateVal;
+      
+      // Afficher le résultat IA
+      var aiResult = document.getElementById('expiry-ai-result');
+      aiResult.style.display = 'flex';
+      
+      // Formater la date pour affichage
+      var d = new Date(dateVal);
+      var options = { year: 'numeric', month: 'long', day: 'numeric' };
+      document.getElementById('expiry-ai-date').textContent = d.toLocaleDateString('fr-CA', options);
+      
+      showToast('✅ Date détectée : ' + dateVal, 3000);
+    }
+
+  } catch(e) {
+    console.error('Erreur scan date:', e);
+    document.getElementById('expiry-ai-loading').style.display = 'none';
+    showToast('⚠️ Erreur — entre la date manuellement');
+  }
+}
+
 window.addEventListener('load', function() {
   checkVersion();
   var saved = localStorage.getItem('sg_beta_code');
@@ -5285,16 +5353,46 @@ window.addEventListener('load', function() {
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
       <div>
         <div style="font-size:16px;font-weight:700;" id="exp-product-name">Produit</div>
-        <div style="font-size:11px;color:var(--sub);">Ajouter une date d'expiration (optionnel)</div>
+        <div style="font-size:11px;color:var(--sub);">Ajouter une date de péremption</div>
       </div>
       <button onclick="skipExpiry()" style="background:var(--light);border:none;border-radius:8px;padding:6px 10px;cursor:pointer;font-size:14px;">✕</button>
     </div>
+
+    <!-- Bouton photo IA -->
+    <div style="background:#f0fdf4;border:2px dashed #1D9E75;border-radius:14px;padding:14px;margin-bottom:12px;text-align:center;cursor:pointer;" onclick="document.getElementById('expiry-photo-input').click()">
+      <div style="font-size:28px;margin-bottom:4px;">📷</div>
+      <div style="font-size:13px;font-weight:700;color:#0F6E56;">Prendre une photo de la date</div>
+      <div style="font-size:11px;color:var(--sub);margin-top:2px;">L'IA lit la date automatiquement</div>
+    </div>
+    <input type="file" id="expiry-photo-input" accept="image/*" capture="environment" style="display:none;" onchange="scanExpiryDate(this)"/>
+
+    <!-- Résultat IA -->
+    <div id="expiry-ai-result" style="display:none;background:#dcfce7;border-radius:12px;padding:10px 12px;margin-bottom:12px;display:none;align-items:center;gap:8px;">
+      <span style="font-size:20px;">✅</span>
+      <div>
+        <div style="font-size:11px;font-weight:700;color:#166534;">Date détectée par IA</div>
+        <div style="font-size:13px;font-weight:700;color:#0F6E56;" id="expiry-ai-date"></div>
+      </div>
+    </div>
+
+    <!-- Loading IA -->
+    <div id="expiry-ai-loading" style="display:none;text-align:center;padding:10px;margin-bottom:12px;">
+      <div style="font-size:12px;color:var(--sub);">⏳ Analyse de la photo en cours...</div>
+    </div>
+
+    <!-- Séparateur -->
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+      <div style="flex:1;height:1px;background:var(--border);"></div>
+      <div style="font-size:11px;color:var(--sub);">ou entre manuellement</div>
+      <div style="flex:1;height:1px;background:var(--border);"></div>
+    </div>
+
     <div style="margin-bottom:1rem;">
-      <label style="font-size:12px;font-weight:700;color:var(--sub);display:block;margin-bottom:6px;">📅 Date d'expiration</label>
+      <label style="font-size:12px;font-weight:700;color:var(--sub);display:block;margin-bottom:6px;">📅 Date de péremption</label>
       <input type="date" id="exp-date" style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;"/>
     </div>
     <div style="display:flex;gap:8px;">
-      <button onclick="saveExpiry()" class="btn bg" style="flex:1;"><i class="ti ti-bell"></i> Ajouter l'alerte</button>
+      <button onclick="saveExpiry()" class="btn bg" style="flex:1;"><i class="ti ti-bell"></i> Enregistrer</button>
       <button onclick="skipExpiry()" class="btn bo" style="flex:1;">Passer</button>
     </div>
   </div>
