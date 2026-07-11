@@ -1883,7 +1883,6 @@ function addWithPrice(price, storeEl) {
     saveData();
     showToast('✅ "' + _pendingGroceryItem + '" — ' + store + ' $' + price.toFixed(2));
     closePricePicker();
-    setTimeout(function(){ showExpiryModal(newItem); }, 400);
     return;
   }
   closePricePicker();
