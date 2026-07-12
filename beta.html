@@ -848,6 +848,7 @@ ml('account', '2355363');
   <div class="px">
     <div class="limit-bar" id="list-limit-bar" style="display:none;"><div style="font-size:11px;flex:1;">Articles (max 10 gratuit)</div><div style="font-size:11px;font-weight:700;" id="list-count-text">0/10</div></div>
     <div class="sr"><input type="text" id="gr-in" placeholder="Ajouter un article / Add item..." data-i18n="liste_placeholder"/><button class="btn bg" id="voice-gr-in" onclick="startVoice('gr-in')" style="padding:8px 12px;font-size:18px;line-height:1;">🎤</button><button class="btn bg" onclick="addGr()"><i class="ti ti-plus"></i> Ajouter</button></div>
+    <button class="btn bo" style="width:100%;margin-bottom:10px;" onclick="openReceiptScanner()">🧾 Scanner un reçu / Scan a receipt</button>
     <div class="card"><div id="gr-items"><div style="color:var(--sub);font-size:12px;padding:8px 0;">Ta liste est vide / Your list is empty!</div></div></div>
     <div id="gr-foot" style="display:none;">
       <div class="card"><div style="display:flex;justify-content:space-between;align-items:center;"><div><div style="font-size:12px;color:var(--sub);">Total estimé / Estimated total</div></div><div style="font-size:20px;font-weight:700;" id="gr-total">$0.00</div></div></div>
@@ -993,7 +994,6 @@ ml('account', '2355363');
       </div>
       <button class="btn bo bf" onclick="quickAddCustomCard()">+ Autre carte</button>
     </div>
-    <div id="w-scan-active" style="display:none;"></div>
     <div id="w-scan-active" style="display:none;">
       <div style="position:relative;width:100%;border-radius:14px;overflow:hidden;margin-bottom:0.875rem;background:#000;">
         <div id="w-quagga-container" style="width:100%;"></div>
@@ -1093,7 +1093,7 @@ ml('account', '2355363');
     <div class="sl">Par catégorie</div>
     <div class="card" id="bcc"></div>
     <div class="sl">Ajuster mon budget</div>
-    <div class="card"><div style="display:flex;align-items:center;gap:12px;"><span style="font-size:12px;color:var(--sub);">$100</span><input type="range" min="100" max="800" value="400" step="10" style="flex:1;" oninput="updBudget(this.value)"/><span style="font-size:13px;font-weight:700;min-width:40px;" id="bsv">$400</span></div></div>
+    <div class="card"><div style="display:flex;align-items:center;gap:12px;"><span style="font-size:12px;color:var(--sub);">$100</span><input type="range" min="100" max="800" value="400" step="10" style="flex:1;" oninput="updBudget(this.value)"/><span style="font-size:13px;font-weight:700;min-width:40px;" id="budget-val">$400</span></div></div>
     <button class="btn bp bf" onclick="sendPrompt('Conseils pour réduire mon budget épicerie mensuel à Gatineau')">Conseils pour économiser ↗</button>
   </div>
 </div>
@@ -2849,7 +2849,7 @@ var _k3='WGdyb3FYPUj3';
 var _k4='JuATLEpTqXL7C49hHr0J';
 var GROQ_KEY=_k1+_k2+_k3+_k4;
 
-let isPremium=true,points=0,scansToday=0,recsToday=0,groceries=[],ings=[],selR=null,curRecs=[],currentProd='',camStream=null,totalScans=0; // BETA
+let isPremium=false,points=0,scansToday=0,recsToday=0,groceries=[],ings=[],selR=null,curRecs=[],currentProd='',camStream=null,totalScans=0; // FREEMIUM — false = free tier by default, true = Premium (via Stripe or VIP beta code)
 const LIMITS={scans:5,recs:3,list:10};
 const commRecs=[
   {id:1,emoji:"🍝",nom:"Pâtes Alfredo au poulet",auteur:"Marie L.",ini:"ML",temps:"30 min",tags:["pâtes","poulet"],likes:1284,viral:true,liked:false},
@@ -2928,7 +2928,7 @@ function finishOb(){
   const data = {
     name: name, email: email, city: fullCity,
     diet: 'Aucun', onboardingDone: true,
-    isPremium: true, points: 0, totalScans: 0,
+    isPremium: (BETA_CODES.includes(localStorage.getItem('sg_beta_code'))), points: 0, totalScans: 0,
     groceries: [], walletCards: []
   };
   try { localStorage.setItem('smartgrocer_data', JSON.stringify(data)); console.log('Saved OK:', name, email, fullCity); } catch(e) { console.error('Save error:', e); }
@@ -3452,7 +3452,7 @@ function claimReward(pts,name){
   showToast('🔜 Récompenses bientôt disponibles — accumule tes points!', 3000);
 }
 function addAlert(){const p=document.getElementById('alert-prod').value.trim();const pr=document.getElementById('alert-price').value;const s=document.getElementById('alert-store').value;if(!p){showToast('⚠️ Ajoute un produit!');return;}const emojis=['🛒','🍎','🥦','🍞','🧃','🥩'];const emoji=emojis[Math.floor(Math.random()*emojis.length)];const div=document.createElement('div');div.className='al';div.innerHTML=`<div style="font-size:20px;">${emoji}</div><div style="flex:1"><div style="font-size:13px;font-weight:700;">${p}</div><div style="font-size:11px;color:var(--sub);">Alerte si prix &lt; $${pr||'?'} · ${s}</div></div><label class="atog"><input type="checkbox" checked><div class="ts"></div></label>`;document.getElementById('alerts-list').appendChild(div);document.getElementById('alert-prod').value='';document.getElementById('alert-price').value='';showToast('✅ Alerte créée!');}
-function updBudget(v){['bsv','bmd'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='$'+v;});const pct=Math.round(247/v*100);document.getElementById('bbar').style.width=Math.min(pct,100)+'%';document.getElementById('bpct').textContent=pct+'% utilisé';}
+function updBudget(v){['budget-val','bmd'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='$'+v;});const pct=Math.round(247/v*100);document.getElementById('bbar').style.width=Math.min(pct,100)+'%';document.getElementById('bpct').textContent=pct+'% utilisé';}
 function renderBCats(){const cats=[{n:'Viandes & poissons',a:89,p:36,c:'#D85A30'},{n:'Fruits & légumes',a:54,p:22,c:'#1D9E75'},{n:'Produits laitiers',a:38,p:15,c:'#378ADD'},{n:'Épicerie sèche',a:42,p:17,c:'#534AB7'},{n:'Autres',a:24,p:10,c:'#C9A227'}];const el=document.getElementById('bcc');if(el)el.innerHTML=cats.map(c=>`<div class="bcat"><div class="bdot" style="background:${c.c};"></div><div style="flex:1;font-size:12px;">${c.n}</div><div class="bcbw"><div class="bcb" style="width:${c.p}%;background:${c.c};"></div></div><div style="font-size:12px;font-weight:700;min-width:30px;text-align:right;">$${c.a}</div></div>`).join('');}
 function genBarcode(container,count=40){container.innerHTML='';for(let i=0;i<count;i++){const bar=document.createElement('div');bar.style.cssText=`background:rgba(255,255,255,0.9);width:${Math.random()>0.5?2:1}px;height:${Math.random()>0.3?40:25}px;border-radius:1px;flex-shrink:0;`;container.appendChild(bar);}}
 function renderWallet(){
@@ -3824,7 +3824,7 @@ function saveData() {
       name: (nameEl && nameEl.textContent) ? nameEl.textContent : existing.name || '',
       email: (emailEl && emailEl.value) ? emailEl.value : existing.email || '',
       city: (cityEl && cityEl.textContent) ? cityEl.textContent : existing.city || '',
-      onboardingDone: true, isPremium: true,
+      onboardingDone: true, isPremium: isPremium,
       points: points, totalScans: totalScans,
       groceries: groceries, walletCards: walletCards
     };
@@ -3838,7 +3838,7 @@ function loadData() {
     if(!saved) return false;
     const data = JSON.parse(saved);
     if(!data.onboardingDone) return false;
-    isPremium = true;
+    isPremium = data.isPremium || false;
     points = data.points || 0;
     totalScans = data.totalScans || 0;
     groceries = data.groceries || [];
@@ -4385,7 +4385,8 @@ function showApp() {
   if (hasData) {
     document.getElementById('onboarding').style.display = 'none';
     document.getElementById('app').style.display = 'block';
-    isPremium = true;
+    var savedCode = localStorage.getItem('sg_beta_code');
+    if (savedCode && BETA_CODES.includes(savedCode)) { isPremium = true; }
     updatePlanUI(); renderRewards(); renderC(); renderBCats(); renderWallet(); renderGr(); updatePointsUI(); loadSpecials();
     loadProductDB();
     loadTrendingRecipes();
@@ -5255,14 +5256,31 @@ async function scanExpiryDate(input) {
 
 window.addEventListener('load', function() {
   checkVersion();
-  var saved = localStorage.getItem('sg_beta_code');
-  if (saved && BETA_CODES.includes(saved)) {
-    showApp();
-  } else {
-    document.getElementById('beta-gate').style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-  }
+  // Lancement public : accès direct pour tout le monde.
+  // Un code bêta déjà enregistré (sg_beta_code) donne toujours le statut VIP — voir showApp().
+  showApp();
+  handleStripeSuccess();
 });
+
+// ============================================================
+// STRIPE — activation Premium après paiement réussi
+// ============================================================
+// Le bouton Stripe doit être configuré (Stripe Dashboard > Payment Links >
+// ce buy-button-id > "After payment") pour rediriger vers :
+//   https://smartgrocer.health/beta.html?premium=success
+// Sans cette redirection configurée côté Stripe, ce code ne se déclenche jamais.
+function handleStripeSuccess() {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('premium') === 'success') {
+    isPremium = true;
+    saveData();
+    showToast('🎉 Bienvenue dans SmartGrocer Premium!');
+    // Nettoie l'URL pour éviter une réactivation si l'utilisateur rafraîchit la page
+    var cleanUrl = window.location.origin + window.location.pathname;
+    window.history.replaceState({}, document.title, cleanUrl);
+    updatePlanUI();
+  }
+}
 </script>
 
 <!-- BETA ACCESS GATE -->
@@ -5489,6 +5507,92 @@ window.addEventListener('load', function() {
     </div>
   </div>
 </div>
+<script>
+// ===== SCANNER DE REÇU =====
+function openReceiptScanner() {
+  document.getElementById('receipt-modal').style.display = 'flex';
+  document.getElementById('receipt-upload-section').style.display = 'block';
+  document.getElementById('receipt-loading').style.display = 'none';
+  document.getElementById('receipt-results').style.display = 'none';
+  document.getElementById('receipt-items-list').innerHTML = '';
+  window._receiptItems = [];
+}
+
+function closeReceiptScanner() {
+  document.getElementById('receipt-modal').style.display = 'none';
+  document.getElementById('receipt-file-input').value = '';
+}
+
+async function analyzeReceipt(input) {
+  if(!input.files || !input.files[0]) return;
+  var file = input.files[0];
+  document.getElementById('receipt-upload-section').style.display = 'none';
+  document.getElementById('receipt-loading').style.display = 'block';
+
+  try {
+    var base64 = await new Promise(function(resolve, reject) {
+      var reader = new FileReader();
+      reader.onload = function(e) { resolve(e.target.result.split(',')[1]); };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+    var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
+      body: JSON.stringify({
+        model: 'meta-llama/llama-4-scout-17b-16e-instruct',
+        max_tokens: 900,
+        messages: [{
+          role: 'user',
+          content: [
+            {type: 'image_url', image_url: {url: 'data:image/jpeg;base64,' + base64}},
+            {type: 'text', text: 'Analyse ce reçu d\'épicerie. Extrais chaque produit et son prix. JSON seulement, sans texte autour: {"items":[{"nom":"Lait 2% 4L","prix":5.49},{"nom":"Pain blanc","prix":2.99}]}'}
+          ]
+        }]
+      })
+    });
+    var data = await res.json();
+    var text = data.choices[0].message.content.replace(/```json|```/g,'').trim();
+    var jsonMatch = text.match(/\{[\s\S]*\}/);
+    if(!jsonMatch) throw new Error('No JSON');
+    var result = JSON.parse(jsonMatch[0]);
+    var items = (result.items || []).filter(function(it){ return it && it.nom; });
+
+    if(items.length === 0) throw new Error('No items detected');
+
+    window._receiptItems = items;
+    var listEl = document.getElementById('receipt-items-list');
+    listEl.innerHTML = items.map(function(it, i){
+      return '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);">'
+        + '<span style="font-size:13px;">' + it.nom + '</span>'
+        + '<span style="font-size:13px;font-weight:700;color:var(--g);">$' + Number(it.prix||0).toFixed(2) + '</span>'
+        + '</div>';
+    }).join('');
+
+    document.getElementById('receipt-loading').style.display = 'none';
+    document.getElementById('receipt-results').style.display = 'block';
+  } catch(e) {
+    console.error('Receipt analysis error:', e);
+    document.getElementById('receipt-loading').style.display = 'none';
+    document.getElementById('receipt-upload-section').style.display = 'block';
+    showToast("⚠️ Impossible d'analyser le reçu — réessaie avec une photo plus claire!");
+  }
+}
+
+function addAllReceiptItems() {
+  var items = window._receiptItems || [];
+  if(!items.length) { closeReceiptScanner(); return; }
+  items.forEach(function(it){
+    var cat = guessCategory(it.nom);
+    groceries.push({name: it.nom, price: Number(it.prix||0), done: true, category: cat, store: '', uid: Date.now()+Math.random()});
+  });
+  renderGr();
+  saveData();
+  showToast('✅ ' + items.length + ' articles ajoutés à ta liste!');
+  closeReceiptScanner();
+}
+</script>
 <script>
 // ===== MANIFEST DYNAMIQUE =====
 (function() {
