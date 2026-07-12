@@ -8,122 +8,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/3.19.0/iconfont/tabler-icons.min.css">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-:root{{
-  "name": "SmartGrocer — Épicerie Intelligente",
-  "short_name": "SmartGrocer",// SmartGrocer Service Worker v2.1
-const CACHE_NAME = 'smartgrocer-v2.1';
-const OFFLINE_URL = '/beta.html';
-
-// Fichiers à mettre en cache
-const CACHE_FILES = [
-  '/beta.html',
-  '/manifest.json',
-];
-
-// Installation — mise en cache des fichiers essentiels
-self.addEventListener('install', function(event) {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then(function(cache) {
-      return cache.addAll(CACHE_FILES);
-    })
-  );
-  self.skipWaiting();
-});
-
-// Activation — nettoyage des vieux caches
-self.addEventListener('activate', function(event) {
-  event.waitUntil(
-    caches.keys().then(function(cacheNames) {
-      return Promise.all(
-        cacheNames.filter(function(name) {
-          return name !== CACHE_NAME;
-        }).map(function(name) {
-          return caches.delete(name);
-        })
-      );
-    })
-  );
-  self.clients.claim();
-});
-
-// Fetch — réseau d'abord, cache en fallback
-self.addEventListener('fetch', function(event) {
-  // Ignorer les requêtes non-GET et les APIs externes
-  if(event.request.method !== 'GET') return;
-  if(event.request.url.includes('api.groq.com')) return;
-  if(event.request.url.includes('emailjs.com')) return;
-  if(event.request.url.includes('googleapis.com')) return;
-
-  event.respondWith(
-    fetch(event.request)
-      .then(function(response) {
-        // Mettre en cache la réponse si c'est une ressource locale
-        if(response.ok && event.request.url.includes(self.location.origin)) {
-          var responseClone = response.clone();
-          caches.open(CACHE_NAME).then(function(cache) {
-            cache.put(event.request, responseClone);
-          });
-        }
-        return response;
-      })
-      .catch(function() {
-        // Hors ligne — utiliser le cache
-        return caches.match(event.request).then(function(cached) {
-          return cached || caches.match(OFFLINE_URL);
-        });
-      })
-  );
-});
-
-  "description": "L'app IA qui planifie vos repas, génère des recettes et compare les prix d'épicerie près de chez vous.",
-  "start_url": "/beta.html",
-  "display": "standalone",
-  "background_color": "#f0f9f4",
-  "theme_color": "#1D9E75",
-  "orientation": "portrait",
-  "lang": "fr",
-  "categories": ["food", "health", "lifestyle"],
-  "icons": [
-    {
-      "src": "https://timrockstar.github.io/smartgrocer/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "https://timrockstar.github.io/smartgrocer/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
-  ],
-  "screenshots": [
-    {
-      "src": "https://timrockstar.github.io/smartgrocer/screenshot1.png",
-      "sizes": "390x844",
-      "type": "image/png",
-      "label": "SmartGrocer — Accueil"
-    }
-  ],
-  "shortcuts": [
-    {
-      "name": "Scanner un prix",
-      "url": "/beta.html#prix",
-      "description": "Scanner le code-barres d'un produit"
-    },
-    {
-      "name": "Mes recettes",
-      "url": "/beta.html#recettes",
-      "description": "Générer des recettes IA"
-    },
-    {
-      "name": "Ma liste",
-      "url": "/beta.html#liste",
-      "description": "Ma liste d'épicerie"
-    }
-  ]
-}
-
+:root{
   --g:#1D9E75;--g2:#0F6E56;--c:#D85A30;--p:#534AB7;--b:#378ADD;--gold:#C9A227;
   --bg:#f0f9f4;--card:#fff;--border:#e0f0e8;--text:#1a2e1a;--sub:#4a6b5a;--light:#e8f5ee;
   --nav-bg:#fff;--nav-border:#e0f0e8;--nav-active:#1D9E75;
@@ -5605,6 +5490,35 @@ window.addEventListener('load', function() {
   </div>
 </div>
 <script>
+// ===== MANIFEST DYNAMIQUE =====
+(function() {
+  var manifestData = {
+    name: "SmartGrocer — Épicerie Intelligente",
+    short_name: "SmartGrocer",
+    description: "L'app IA qui planifie vos repas et compare les prix d'épicerie",
+    start_url: "/beta.html",
+    display: "standalone",
+    background_color: "#f0f9f4",
+    theme_color: "#1D9E75",
+    orientation: "portrait",
+    categories: ["food", "health", "lifestyle"],
+    icons: [
+      { src: "https://timrockstar.github.io/smartgrocer/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any maskable" },
+      { src: "https://timrockstar.github.io/smartgrocer/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any maskable" }
+    ]
+  };
+  var blob = new Blob([JSON.stringify(manifestData)], {type: 'application/manifest+json'});
+  var url = URL.createObjectURL(blob);
+  var link = document.querySelector('link[rel="manifest"]');
+  if(link) link.href = url;
+  else {
+    link = document.createElement('link');
+    link.rel = 'manifest';
+    link.href = url;
+    document.head.appendChild(link);
+  }
+})();
+
 // ===== SERVICE WORKER =====
 if('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
