@@ -467,10 +467,7 @@ ml('account', '2355363');
       <div style="display:flex;align-items:center;gap:8px;font-size:12px;"><span style="color:var(--g);font-weight:700;">✓</span>Scanner illimité · Recettes illimitées</div>
       <div style="display:flex;align-items:center;gap:8px;font-size:12px;"><span style="color:var(--g);font-weight:700;">✓</span>2x points · Sans pub · Portefeuille illimité</div>
     </div>
-    <stripe-buy-button
-  buy-button-id="buy_btn_1TZxji8g6DMr5MKkOUY5K31c"
-  publishable-key="pk_live_51TZwZv8g6DMr5MKkRPebAg4U59jlMgIURfwaZcaMTgpSEFTn5jCQ2RQzowgt7RvPwE3sbDalFZADRoTj9N5kLegR00L4Tyau8k"
-></stripe-buy-button>
+    <a href="https://buy.stripe.com/8x2fZhdLzgF83yr8dd5gc00" class="btn bg bf" style="text-decoration:none;">⭐ S'abonner à Premium — 4,99$/mois</a>
     <button class="btn bo bf" onclick="closePaywall()" style="margin-top:8px;">Continuer gratuitement</button>
     <div style="text-align:center;margin-top:10px;font-size:10px;color:var(--sub);">
       <a href="https://timrockstar.github.io/smartgrocer/privacy.html" target="_blank" style="color:var(--sub);">Politique de confidentialité</a> · 
@@ -893,10 +890,7 @@ ml('account', '2355363');
           <div id="share-premium-msg" style="display:none;background:#fef3c7;border:1px solid #fcd34d;border-radius:10px;padding:8px;text-align:center;margin-top:6px;">
             <div style="font-size:12px;font-weight:700;color:#92400e;">🔒 Partage réservé aux membres Premium</div>
             <div style="font-size:11px;color:#78350f;margin:4px 0;">Passe à Premium pour partager tes recettes avec la communauté!</div>
-            <stripe-buy-button
-              buy-button-id="buy_btn_1TZxji8g6DMr5MKkOUY5K31c"
-              publishable-key="pk_live_51TZwZv8g6DMr5MKkRPebAg4U59jlMgIURfwaZcaMTgpSEFTn5jCQ2RQzowgt7RvPwE3sbDalFZADRoTj9N5kLegR00L4Tyau8k"
-            ></stripe-buy-button>
+            <a href="https://buy.stripe.com/8x2fZhdLzgF83yr8dd5gc00" class="btn bg bf" style="text-decoration:none;margin-top:6px;">⭐ S'abonner à Premium — 4,99$/mois</a>
           </div>
         </div>
       </div>
@@ -1186,7 +1180,7 @@ ml('account', '2355363');
     <div class="card" style="border:2px solid var(--border);">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.875rem;"><div style="font-size:14px;font-weight:700;">🆓 Gratuit / Free</div><div style="font-size:18px;font-weight:700;">$0<span style="font-size:11px;font-weight:400;color:var(--sub);">/mois</span></div></div>
       <div style="display:flex;flex-direction:column;gap:4px;margin-bottom:1rem;"><div style="font-size:12px;">📷 5 scans/jour · 🍳 3 recettes/jour</div><div style="font-size:12px;">🔔 2 alertes · 🛒 10 articles liste</div><div style="font-size:12px;color:var(--sub);">📢 Publicités incluses</div></div>
-      <button class="btn bo bf" onclick="downgradeFree()">Passer au plan Gratuit</button>
+      <button class="btn bo bf" onclick="openBillingPortal()">Gérer / annuler mon abonnement</button>
     </div>
     <div class="card" style="border:2px solid var(--p);position:relative;">
       <div style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--p);color:#fff;font-size:10px;font-weight:700;padding:3px 12px;border-radius:999px;">⭐ POPULAIRE</div>
@@ -1202,7 +1196,7 @@ ml('account', '2355363');
         <div class="prem-feature"><span style="color:var(--g);font-weight:700;">✓</span>Sans publicité / Ad-free</div>
         <div class="prem-feature"><span style="color:var(--g);font-weight:700;">✓</span>Portefeuille numérique illimité</div>
       </div>
-      <div style="background:#dcfce7;border:1px solid #86efac;border-radius:12px;padding:1rem;text-align:center;"><div style="font-size:14px;font-weight:700;color:#166534;">🧪 Version Bêta</div><div style="font-size:12px;color:#166534;margin-top:4px;">Toutes les fonctionnalités sont débloquées gratuitement!</div></div>
+      <a href="https://buy.stripe.com/8x2fZhdLzgF83yr8dd5gc00" class="btn bp bf" style="text-decoration:none;">⭐ S'abonner à Premium</a>
       <div style="text-align:center;margin-top:8px;font-size:10px;color:var(--sub);">
         <a href="https://timrockstar.github.io/smartgrocer/privacy.html" target="_blank" style="color:var(--sub);">Confidentialité</a> · 
         <a href="https://timrockstar.github.io/smartgrocer/terms.html" target="_blank" style="color:var(--sub);">Conditions</a>
@@ -3013,7 +3007,55 @@ function sendPrompt(text){
   showRecipeModal(nom, '🍳');
 }
 function activatePremium(){/* Disabled - use Stripe */document.getElementById('paywall').classList.remove('open');goExtra('premium');}
-function downgradeFree(){isPremium=false;updatePlanUI();showToast('ℹ️ Plan gratuit activé');goTo('home',null);}
+// ============================================================
+// STRIPE — Système Premium (webhook + statut + portail client)
+// ============================================================
+// URL du Google Apps Script déployé (stripe_premium_system.gs).
+// Remplace par ta vraie URL une fois déployé — voir instructions dans le fichier .gs
+var STRIPE_API_URL = 'https://script.google.com/macros/s/AKfycbyCQ3IMSdpu8LMdnZfAsZIANnYIUsstsD3MAXpwFDh_Th3NivPfz_af7UrWjTIF7Pjq/exec';
+
+// Vérifie le vrai statut Premium chez Stripe (via la feuille Google Sheets),
+// peu importe l'appareil ou si le localStorage a été vidé.
+async function syncPremiumStatus(){
+  var data = JSON.parse(localStorage.getItem('smartgrocer_data') || '{}');
+  var email = data.email;
+  if(!email || STRIPE_API_URL.indexOf('REMPLACE_PAR') === 0) return; // pas encore configuré
+  try {
+    var res = await fetch(STRIPE_API_URL + '?action=status&email=' + encodeURIComponent(email));
+    var result = await res.json();
+    if(typeof result.premium === 'boolean' && result.premium !== isPremium){
+      isPremium = result.premium;
+      saveData();
+      updatePlanUI();
+      if(isPremium) showToast('🎉 Abonnement Premium confirmé!');
+    }
+  } catch(e) {
+    console.error('Premium sync error:', e);
+    // Echec silencieux — on garde le statut local en attendant, pas grave si offline
+  }
+}
+
+async function openBillingPortal(){
+  var data = JSON.parse(localStorage.getItem('smartgrocer_data') || '{}');
+  var email = data.email;
+  if(!email){
+    showToast('⚠️ Aucun courriel associé — contacte smartgrocer.canada@gmail.com pour gérer ton abonnement.');
+    return;
+  }
+  showToast('⏳ Ouverture de ton portail d\'abonnement...', 3000);
+  try {
+    var res = await fetch(STRIPE_API_URL + '?action=portal&email=' + encodeURIComponent(email));
+    var result = await res.json();
+    if(result.url){
+      window.location.href = result.url;
+    } else {
+      showToast('⚠️ Aucun abonnement actif trouvé pour ce courriel. Contacte smartgrocer.canada@gmail.com si tu penses que c\'est une erreur.');
+    }
+  } catch(e) {
+    console.error('Billing portal error:', e);
+    showToast('⚠️ Erreur de connexion — contacte smartgrocer.canada@gmail.com pour gérer ton abonnement.');
+  }
+}
 function updatePlanUI(){
   // Update share button state
   const shareBtn = document.getElementById('share-btn');
@@ -5260,15 +5302,18 @@ window.addEventListener('load', function() {
   // Un code bêta déjà enregistré (sg_beta_code) donne toujours le statut VIP — voir showApp().
   showApp();
   handleStripeSuccess();
+  syncPremiumStatus(); // vérifie le vrai statut chez Stripe (multi-appareils)
 });
 
 // ============================================================
-// STRIPE — activation Premium après paiement réussi
+// STRIPE — activation Premium instantanée après paiement (UX optimiste)
 // ============================================================
 // Le bouton Stripe doit être configuré (Stripe Dashboard > Payment Links >
 // ce buy-button-id > "After payment") pour rediriger vers :
 //   https://smartgrocer.health/beta.html?premium=success
-// Sans cette redirection configurée côté Stripe, ce code ne se déclenche jamais.
+// Ceci donne un accès Premium immédiat pour une bonne expérience utilisateur.
+// syncPremiumStatus() (appelée juste après) confirme ensuite le vrai statut
+// via le webhook Stripe — c'est elle la source de vérité, pas ce paramètre d'URL.
 function handleStripeSuccess() {
   var params = new URLSearchParams(window.location.search);
   if (params.get('premium') === 'success') {
