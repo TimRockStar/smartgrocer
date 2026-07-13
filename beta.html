@@ -516,6 +516,11 @@ ml('account', '2355363');
         <div class="plus-item-text"><div class="plus-item-label">Nutrition & Calories</div><div class="plus-item-sub">Analyse IA de tes repas</div></div>
         <div class="plus-item-arrow">›</div>
       </div>
+      <div class="plus-item" onclick="openCircularScanner();closePlus()">
+        <div class="plus-item-icon" style="background:#e8f5e9;"><i class="ti ti-news" style="color:#16a34a;"></i></div>
+        <div class="plus-item-text"><div class="plus-item-label">Scanner une circulaire</div><div class="plus-item-sub">Ajoute les vrais spéciaux de la semaine</div></div>
+        <div class="plus-item-arrow">›</div>
+      </div>
       <div class="plus-item" onclick="goExtra('profil');closePlus()">
         <div class="plus-item-icon" style="background:#e8eaf6;"><i class="ti ti-user" style="color:#534AB7;"></i></div>
         <div class="plus-item-text"><div class="plus-item-label">Mon profil</div><div class="plus-item-sub" id="plus-profil-sub">Joliette, QC</div></div>
@@ -4131,6 +4136,27 @@ async function lookupBarcode(code) {
 
 
 async function loadSpecials() {
+  // 1. D'abord, vérifie s'il y a de vrais spéciaux partagés par la communauté (circulaires scannées)
+  try {
+    var userData = JSON.parse(localStorage.getItem('smartgrocer_data') || '{}');
+    var city = (userData.city || '').split(',')[0].trim();
+    var country = userData.country || 'Canada';
+    if(city && STRIPE_API_URL.indexOf('REMPLACE_PAR') !== 0) {
+      var realRes = await fetch(STRIPE_API_URL + '?action=specialsGet&city=' + encodeURIComponent(city) + '&country=' + encodeURIComponent(country));
+      var realData = await realRes.json();
+      if(realData.items && realData.items.length > 0) {
+        var realHtml = realData.items.map(function(s) {
+          var pct = s.prixRegulier > s.prixSpecial ? Math.round((1 - s.prixSpecial/s.prixRegulier)*100) : 0;
+          return '<div class="dc"><div style="font-size:24px;margin-bottom:6px;">🔥</div><div style="font-size:12px;font-weight:700;">'+s.nom+'</div><div style="font-size:10px;color:var(--sub);">'+s.magasin+' · Vrai spécial ✅</div><div style="display:flex;align-items:baseline;gap:6px;margin-top:6px;"><div style="font-size:16px;font-weight:700;color:var(--g);">$'+Number(s.prixSpecial).toFixed(2)+'</div>'+(pct>0?'<div style="font-size:11px;color:#9ca3af;text-decoration:line-through;">$'+Number(s.prixRegulier).toFixed(2)+'</div>':'')+'</div>'+(pct>0?'<div class="badge bdg" style="margin-top:4px;">-'+pct+'%</div>':'')+'</div>';
+        }).join('');
+        _weeklySpecials = realData.items.map(function(s){ return {nom:s.nom, magasin:s.magasin, prix:s.prixSpecial, prixReg:s.prixRegulier, emoji:'🔥'}; });
+        document.getElementById('specials-scroll').innerHTML = realHtml;
+        return; // On a de vrais spéciaux, pas besoin de l'estimation IA
+      }
+    }
+  } catch(e) { console.log('Real specials check failed, falling back to AI:', e); }
+
+  // 2. Aucun vrai spécial trouvé pour cette ville — repli sur l'estimation IA (comme avant)
   try {
     var jours = ['dim','lun','mar','mer','jeu','ven','sam'];
     var dateNow = new Date();
@@ -5574,6 +5600,44 @@ function handleStripeSuccess() {
 </div>
 
 <!-- RECEIPT SCANNER MODAL -->
+<div id="circular-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:2000;overflow-y:auto;">
+  <div style="background:#fff;margin:1rem auto;max-width:480px;border-radius:20px;overflow:hidden;">
+    <div style="background:linear-gradient(135deg,#16a34a,#0F6E56);padding:1.25rem;display:flex;align-items:center;justify-content:space-between;">
+      <div><div style="font-size:16px;font-weight:700;color:#fff;">📰 Scanner une circulaire</div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.85);">Ajoute les vrais spéciaux de la semaine</div></div>
+      <button onclick="closeCircularScanner()" style="background:rgba(255,255,255,0.2);border:none;color:#fff;border-radius:8px;padding:6px 10px;cursor:pointer;font-size:14px;">✕</button>
+    </div>
+    <div style="padding:1.25rem;">
+      <div id="circular-upload-section">
+        <div style="margin-bottom:0.875rem;">
+          <label style="font-size:11px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:4px;">🏪 Épicerie de cette circulaire</label>
+          <select id="circular-store-select"><option value="">Sélectionner...</option><option>IGA</option><option>Maxi</option><option>Metro</option><option>Walmart</option><option>Super C</option><option>Costco</option></select>
+        </div>
+        <div style="border:2px dashed var(--border);border-radius:14px;padding:2rem;text-align:center;margin-bottom:1rem;cursor:pointer;" onclick="document.getElementById('circular-file-input').click()">
+          <div style="font-size:40px;margin-bottom:8px;">📰</div>
+          <div style="font-size:14px;font-weight:700;margin-bottom:4px;">Prends une photo de la circulaire</div>
+          <div style="font-size:12px;color:var(--sub);">ou clique pour choisir une image</div>
+        </div>
+        <input type="file" id="circular-file-input" accept="image/*" capture="environment" style="display:none;" onchange="analyzeCircular(this)"/>
+        <div style="font-size:11px;color:var(--sub);text-align:center;">💡 Une page à la fois, bien éclairée et lisible</div>
+      </div>
+      <div id="circular-loading" style="display:none;text-align:center;padding:2rem;">
+        <div style="font-size:32px;margin-bottom:8px;">⏳</div>
+        <div style="font-size:14px;font-weight:700;">Analyse de la circulaire en cours...</div>
+        <div style="font-size:12px;color:var(--sub);margin-top:4px;">L'IA extrait les spéciaux et leurs prix</div>
+      </div>
+      <div id="circular-results" style="display:none;">
+        <div style="font-size:14px;font-weight:700;margin-bottom:10px;">🔥 Spéciaux détectés</div>
+        <div id="circular-items-list"></div>
+        <div style="display:flex;gap:8px;margin-top:1rem;">
+          <button onclick="addAllCircularItems()" class="btn bg bf">✅ Confirmer et partager ces spéciaux</button>
+        </div>
+        <div style="font-size:10px;color:var(--sub);text-align:center;margin-top:8px;">⚠️ Vérifie les prix — analyse IA peut contenir des erreurs</div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="receipt-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:2000;overflow-y:auto;">
   <div style="background:#fff;margin:1rem auto;max-width:480px;border-radius:20px;overflow:hidden;">
     <div style="background:linear-gradient(135deg,#D85A30,#993C1D);padding:1.25rem;display:flex;align-items:center;justify-content:space-between;">
@@ -5715,6 +5779,116 @@ function addAllReceiptItems() {
   }
 
   closeReceiptScanner();
+}
+
+// ===== SCANNER DE CIRCULAIRE =====
+function openCircularScanner() {
+  document.getElementById('circular-modal').style.display = 'flex';
+  document.getElementById('circular-upload-section').style.display = 'block';
+  document.getElementById('circular-loading').style.display = 'none';
+  document.getElementById('circular-results').style.display = 'none';
+  document.getElementById('circular-items-list').innerHTML = '';
+  window._circularItems = [];
+}
+
+function closeCircularScanner() {
+  document.getElementById('circular-modal').style.display = 'none';
+  document.getElementById('circular-file-input').value = '';
+}
+
+async function analyzeCircular(input) {
+  if(!input.files || !input.files[0]) return;
+  var storeSelect = document.getElementById('circular-store-select');
+  if(!storeSelect.value){
+    showToast('⚠️ Choisis d\'abord l\'épicerie de cette circulaire!');
+    input.value = '';
+    return;
+  }
+  var file = input.files[0];
+  document.getElementById('circular-upload-section').style.display = 'none';
+  document.getElementById('circular-loading').style.display = 'block';
+
+  try {
+    var base64 = await new Promise(function(resolve, reject) {
+      var reader = new FileReader();
+      reader.onload = function(e) { resolve(e.target.result.split(',')[1]); };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+    var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
+      body: JSON.stringify({
+        model: 'meta-llama/llama-4-scout-17b-16e-instruct',
+        max_tokens: 1800,
+        temperature: 0,
+        messages: [{
+          role: 'user',
+          content: [
+            {type: 'image_url', image_url: {url: 'data:image/jpeg;base64,' + base64}},
+            {type: 'text', text: 'Tu es un outil de transcription OCR strict, pas un assistant créatif. Regarde uniquement cette image d\'une circulaire/publicité d\'épicerie et transcris EXACTEMENT les spéciaux qui y sont imprimés.\n\nRègles absolues :\n- N\'invente JAMAIS un produit qui n\'est pas visible sur l\'image.\n- Ne complète PAS avec des produits "typiques". Transcris seulement ce que tu vois réellement.\n- Copie le nom du produit tel qu\'imprimé, ne le reformule pas.\n- Pour chaque spécial, note le prix spécial ET le prix régulier si visible (sinon laisse prixRegulier identique au prix spécial).\n- Si une date de fin de la promotion est visible sur la circulaire, transcris-la au format YYYY-MM-DD. Si aucune date n\'est visible, laisse le champ vide.\n- Si l\'image n\'est pas une circulaire lisible ou si aucun spécial n\'est visible, réponds avec une liste vide.\n- N\'ajoute AUCUN texte, explication ou commentaire — uniquement le JSON.\n\nFormat de réponse (JSON strict) :\n{"items":[{"nom":"nom exact du produit","prixSpecial":0.00,"prixRegulier":0.00,"dateFin":"YYYY-MM-DD"}]}'}
+          ]
+        }]
+      })
+    });
+    var data = await res.json();
+    var text = data.choices[0].message.content.replace(/```json|```/g,'').trim();
+    var jsonMatch = text.match(/\{[\s\S]*\}/);
+    if(!jsonMatch) throw new Error('No JSON');
+    var result = JSON.parse(jsonMatch[0]);
+    var items = (result.items || []).filter(function(it){ return it && it.nom && it.prixSpecial; });
+
+    if(items.length === 0) throw new Error('No items detected');
+
+    window._circularItems = items;
+    var listEl = document.getElementById('circular-items-list');
+    listEl.innerHTML = items.map(function(it){
+      var reg = it.prixRegulier && it.prixRegulier > it.prixSpecial
+        ? '<span style="font-size:11px;color:var(--sub);text-decoration:line-through;margin-right:6px;">$' + Number(it.prixRegulier).toFixed(2) + '</span>'
+        : '';
+      return '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);">'
+        + '<span style="font-size:13px;">' + it.nom + '</span>'
+        + '<span>' + reg + '<span style="font-size:13px;font-weight:700;color:var(--g);">$' + Number(it.prixSpecial).toFixed(2) + '</span></span>'
+        + '</div>';
+    }).join('');
+
+    document.getElementById('circular-loading').style.display = 'none';
+    document.getElementById('circular-results').style.display = 'block';
+  } catch(e) {
+    console.error('Circular analysis error:', e);
+    document.getElementById('circular-loading').style.display = 'none';
+    document.getElementById('circular-upload-section').style.display = 'block';
+    showToast("⚠️ Impossible d'analyser la circulaire — réessaie avec une photo plus claire!");
+  }
+}
+
+function addAllCircularItems() {
+  var items = window._circularItems || [];
+  var store = document.getElementById('circular-store-select').value;
+  if(!items.length || !store) { closeCircularScanner(); return; }
+
+  var userData = JSON.parse(localStorage.getItem('smartgrocer_data') || '{}');
+  var city = (userData.city || '').split(',')[0].trim();
+  var country = userData.country || 'Canada';
+
+  if(STRIPE_API_URL.indexOf('REMPLACE_PAR') !== 0) {
+    fetch(STRIPE_API_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'specialSave', city: city, country: country, magasin: store, items: items })
+    }).then(function(){
+      showToast('🎉 Spéciaux partagés! Merci d\'aider la communauté à économiser!');
+    }).catch(function(e){
+      console.log('Contribution spéciaux échouée:', e);
+      showToast('⚠️ Erreur de connexion — réessaie plus tard.');
+    });
+  }
+
+  addPoints(15);
+  updatePointsUI();
+  setTimeout(function(){ showToast('🎁 +' + (isPremium?30:15) + ' pts pour avoir partagé les spéciaux de la semaine!'); }, 1600);
+
+  closeCircularScanner();
 }
 </script>
 <script>
