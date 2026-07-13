@@ -3026,6 +3026,10 @@ var STRIPE_API_URL = 'https://script.google.com/macros/s/AKfycbyCQ3IMSdpu8LMdnZf
 // Vérifie le vrai statut Premium chez Stripe (via la feuille Google Sheets),
 // peu importe l'appareil ou si le localStorage a été vidé.
 async function syncPremiumStatus(){
+  // Les codes bêta VIP ont priorité absolue — on ne vérifie jamais leur statut chez Stripe.
+  var savedCode = localStorage.getItem('sg_beta_code');
+  if (savedCode && BETA_CODES.includes(savedCode)) return;
+
   var data = JSON.parse(localStorage.getItem('smartgrocer_data') || '{}');
   var email = data.email;
   if(!email || STRIPE_API_URL.indexOf('REMPLACE_PAR') === 0) return; // pas encore configuré
