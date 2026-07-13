@@ -782,6 +782,7 @@ ml('account', '2355363');
     <div class="ld" id="px-ld"><i class="ti ti-refresh"></i> Comparaison en cours...</div>
     <div id="px-res" style="display:none;">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem;"><span id="px-em" style="font-size:24px;"></span><div><div id="px-nm" style="font-size:14px;font-weight:600;"></div><div id="px-bc" style="font-size:10px;color:var(--sub);"></div></div></div>
+      <div id="real-price-banner" style="display:none;background:#dcfce7;border:2px solid #16a34a;border-radius:14px;padding:0.875rem;margin-bottom:1rem;"></div>
       <div class="bd" id="bd">
         <div style="font-size:10px;font-weight:700;color:#166534;text-transform:uppercase;margin-bottom:5px;">🏆 Meilleur prix / Best price</div>
         <div style="display:flex;align-items:center;justify-content:space-between;"><div><div style="font-size:14px;font-weight:700;color:#14532d;" id="bs"></div><div style="font-size:10px;color:#166534;" id="bsv"></div></div><div style="font-size:22px;font-weight:700;color:#14532d;" id="bp"></div></div>
@@ -1132,6 +1133,8 @@ ml('account', '2355363');
         <input type="email" id="pp-email-input" placeholder="ton@email.com" onchange="saveProfile()"/></div>
         <div><label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:3px;">Ville / City</label>
         <input type="text" id="pp-city-input" placeholder="Ex: Joliette, QC" onchange="saveProfile()"/></div>
+        <div><label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:3px;">Pays / Country</label>
+        <select id="pp-country-input" onchange="saveProfile()"><option>Canada</option><option>France</option><option>Belgique</option><option>Suisse</option><option>États-Unis</option><option>Royaume-Uni</option><option>Autre</option></select></div>
 
         <div><label style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:3px;">Régime / Diet</label>
         <select id="pp-diet-input" onchange="saveProfile()"><option>Aucun / None</option><option>Végétarien</option><option>Végétalien</option><option>Sans gluten</option><option>Sans lactose</option></select></div>
@@ -3117,6 +3120,40 @@ const fakeBC=[{bc:'0068100896344',prod:'beurre d\'arachide Kraft 1kg'},{bc:'0055
 function fakeScan(){const f=fakeBC[Math.floor(Math.random()*fakeBC.length)];document.getElementById('prod-in').value=f.prod;document.getElementById('px-bc').textContent='Code barre: '+f.bc;searchProd();}
 function simScan(){stopCam();fakeScan();}
 function setProd(n){document.getElementById('prod-in').value=n;searchProd();}
+// ============================================================
+// BANQUE DE VRAIS PRIX — vérification (alimentée par les reçus scannés)
+// ============================================================
+async function checkRealPriceOverlay(productName){
+  var banner = document.getElementById('real-price-banner');
+  if(!banner) return;
+  banner.style.display = 'none';
+  if(STRIPE_API_URL.indexOf('REMPLACE_PAR') === 0) return; // pas encore configuré
+
+  var userData = JSON.parse(localStorage.getItem('smartgrocer_data') || '{}');
+  var city = (userData.city || '').split(',')[0].trim();
+  var country = userData.country || 'Canada';
+  if(!city) return;
+
+  try {
+    var res = await fetch(STRIPE_API_URL + '?action=priceGet&product=' + encodeURIComponent(productName) + '&city=' + encodeURIComponent(city) + '&country=' + encodeURIComponent(country));
+    var result = await res.json();
+    if(result.found){
+      var d = new Date(result.date);
+      var days = Math.max(0, Math.round((Date.now() - d.getTime()) / 86400000));
+      var when = days === 0 ? "aujourd'hui" : days === 1 ? 'hier' : 'il y a ' + days + ' jours';
+      var precisionTxt = result.precision === 'magasin' ? ('chez ' + result.store) : ('à ' + result.city + ', magasin variable');
+      banner.innerHTML = '<div style="font-size:10px;font-weight:700;color:#166534;text-transform:uppercase;margin-bottom:4px;">✅ Prix réel vérifié par la communauté</div>'
+        + '<div style="display:flex;align-items:center;justify-content:space-between;">'
+        + '<div><div style="font-size:13px;font-weight:700;color:#14532d;">' + precisionTxt + '</div><div style="font-size:10px;color:#166534;">Vu ' + when + '</div></div>'
+        + '<div style="font-size:20px;font-weight:700;color:#14532d;">$' + Number(result.price).toFixed(2) + '</div>'
+        + '</div>';
+      banner.style.display = 'block';
+    }
+  } catch(e) {
+    console.log('Vérification prix réel échouée (silencieux):', e);
+  }
+}
+
 async function searchProd(){
   if(!isPremium&&scansToday>=LIMITS.scans){showPaywall('Limite de scans atteinte!','Tu as utilisé tes 5 scans gratuits. Passe à Premium pour scanner sans limite!');return;}
   const p=document.getElementById('prod-in').value.trim();if(!p)return;
@@ -3158,6 +3195,7 @@ async function searchProd(){
       document.getElementById('fb').style.display='block';
     }
     document.getElementById('px-res').style.display='block';
+    checkRealPriceOverlay(d.nom);
     scansToday++;totalScans++;
     const ps=document.getElementById('prof-scans');if(ps)ps.textContent=totalScans;
     updateLimitDots();
@@ -3848,11 +3886,13 @@ function loadProfileInputs() {
     const nameInput = document.getElementById('pp-name-input');
     const emailInput = document.getElementById('pp-email-input');
     const cityInput = document.getElementById('pp-city-input');
+    const countryInput = document.getElementById('pp-country-input');
     const budgetInput = document.getElementById('pp-budget-input');
     const dietInput = document.getElementById('pp-diet-input');
     if(nameInput && data.name) nameInput.value = data.name;
     if(emailInput && data.email) emailInput.value = data.email;
     if(cityInput && data.city) cityInput.value = data.city;
+    if(countryInput && data.country) countryInput.value = data.country;
     if(budgetInput && data.budget) budgetInput.value = data.budget.replace('$','');
     if(dietInput && data.diet) dietInput.value = data.diet;
     // Charger réseaux sociaux
@@ -3870,15 +3910,17 @@ function loadProfileInputs() {
 <script>
 function saveData() {
   try {
-    // Load existing data first to preserve name/email/city
+    // Load existing data first to preserve name/email/city/country
     const existing = JSON.parse(localStorage.getItem('smartgrocer_data') || '{}');
     const nameEl = document.getElementById('h-name');
     const emailEl = document.getElementById('pp-email-input');
     const cityEl = document.getElementById('pct');
+    const countryEl = document.getElementById('pp-country-input');
     const data = {
       name: (nameEl && nameEl.textContent) ? nameEl.textContent : existing.name || '',
       email: (emailEl && emailEl.value) ? emailEl.value : existing.email || '',
       city: (cityEl && cityEl.textContent) ? cityEl.textContent : existing.city || '',
+      country: (countryEl && countryEl.value) ? countryEl.value : existing.country || 'Canada',
       onboardingDone: true, isPremium: isPremium,
       points: points, totalScans: totalScans,
       groceries: groceries, walletCards: walletCards
@@ -4072,6 +4114,7 @@ async function lookupBarcode(code) {
       return '<div class="sc '+(s.enSpecial?'sale':'')+'"><div style="font-size:11px;font-weight:700;margin-bottom:2px;">'+s.nom+'</div><div style="font-size:16px;font-weight:700;">$'+s.prix.toFixed(2)+'</div>'+(s.enSpecial?'<div style="font-size:9px;color:var(--sub);text-decoration:line-through;">$'+s.prixRegulier.toFixed(2)+'</div><div class="badge bdg" style="margin-top:2px;font-size:9px;">Special!</div>':'')+'<div style="font-size:9px;color:var(--sub);margin-top:2px;">'+s.format+'</div></div>';
     }).join('');
     document.getElementById('px-res').style.display = 'block';
+    checkRealPriceOverlay(d2.nom);
     scansToday++; totalScans++;
     var ps = document.getElementById('prof-scans'); if(ps) ps.textContent = totalScans;
      updateLimitDots(); saveData();
@@ -5556,6 +5599,10 @@ function handleStripeSuccess() {
       <div id="receipt-results" style="display:none;">
         <div style="font-size:14px;font-weight:700;margin-bottom:10px;">📋 Produits détectés</div>
         <div id="receipt-items-list"></div>
+        <div style="margin-top:0.875rem;">
+          <label style="font-size:11px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:4px;">🏪 Épicerie de ce reçu (optionnel — aide la communauté à avoir de vrais prix!)</label>
+          <select id="receipt-store-select"><option value="">Sélectionner...</option><option>IGA</option><option>Maxi</option><option>Metro</option><option>Walmart</option><option>Super C</option><option>Costco</option></select>
+        </div>
         <div style="display:flex;gap:8px;margin-top:1rem;">
           <button onclick="addAllReceiptItems()" class="btn bg bf">🛒 Tout ajouter à ma liste</button>
         <div style="font-size:11px;color:var(--sub);text-align:center;margin-top:6px;">💡 Dans ta liste, appuie sur un article pour voir où c'est le moins cher!</div>
@@ -5641,13 +5688,31 @@ async function analyzeReceipt(input) {
 function addAllReceiptItems() {
   var items = window._receiptItems || [];
   if(!items.length) { closeReceiptScanner(); return; }
+  var store = document.getElementById('receipt-store-select') ? document.getElementById('receipt-store-select').value : '';
   items.forEach(function(it){
     var cat = guessCategory(it.nom);
-    groceries.push({name: it.nom, price: Number(it.prix||0), done: true, category: cat, store: '', uid: Date.now()+Math.random()});
+    groceries.push({name: it.nom, price: Number(it.prix||0), done: true, category: cat, store: store, uid: Date.now()+Math.random()});
   });
   renderGr();
   saveData();
   showToast('✅ ' + items.length + ' articles ajoutés à ta liste!');
+
+  // Contribution à la banque de vrais prix (silencieuse, seulement si un magasin est indiqué)
+  if(store) {
+    var userData = JSON.parse(localStorage.getItem('smartgrocer_data') || '{}');
+    var city = (userData.city || '').split(',')[0].trim(); // garde juste le nom de la ville
+    var country = userData.country || 'Canada';
+    if(STRIPE_API_URL.indexOf('REMPLACE_PAR') !== 0) {
+      fetch(STRIPE_API_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'priceSave', city: city, country: country, items: items.map(function(it){ return {nom: it.nom, prix: it.prix, magasin: store}; }) })
+      }).catch(function(e){ console.log('Contribution prix échouée (silencieux):', e); });
+    }
+    addPoints(5);
+    updatePointsUI();
+    setTimeout(function(){ showToast('🎁 +' + (isPremium?10:5) + ' pts pour avoir aidé la communauté avec de vrais prix!'); }, 1600);
+  }
+
   closeReceiptScanner();
 }
 </script>
