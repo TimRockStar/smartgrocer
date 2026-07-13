@@ -5681,6 +5681,23 @@ function closeReceiptScanner() {
   document.getElementById('receipt-file-input').value = '';
 }
 
+// Extrait le premier bloc JSON complet et équilibré d'un texte, même s'il y a
+// du texte avant/après. Beaucoup plus fiable que la regex gourmande /\{[\s\S]*\}/
+// qui peut inclure du texte parasite entre deux accolades éloignées.
+function extractJSON(text) {
+  var start = text.indexOf('{');
+  if (start === -1) return null;
+  var depth = 0;
+  for (var i = start; i < text.length; i++) {
+    if (text[i] === '{') depth++;
+    else if (text[i] === '}') {
+      depth--;
+      if (depth === 0) return text.substring(start, i + 1);
+    }
+  }
+  return null;
+}
+
 async function analyzeReceipt(input) {
   if(!input.files || !input.files[0]) return;
   var file = input.files[0];
@@ -5713,9 +5730,9 @@ async function analyzeReceipt(input) {
     });
     var data = await res.json();
     var text = data.choices[0].message.content.replace(/```json|```/g,'').trim();
-    var jsonMatch = text.match(/\{[\s\S]*\}/);
-    if(!jsonMatch) throw new Error('No JSON');
-    var result = JSON.parse(jsonMatch[0]);
+    var jsonStr = extractJSON(text);
+    if(!jsonStr) throw new Error('No JSON');
+    var result = JSON.parse(jsonStr);
     var items = (result.items || []).filter(function(it){ return it && it.nom; });
 
     if(items.length === 0) throw new Error('No items detected');
@@ -5831,9 +5848,9 @@ async function analyzeCircular(input) {
     });
     var data = await res.json();
     var text = data.choices[0].message.content.replace(/```json|```/g,'').trim();
-    var jsonMatch = text.match(/\{[\s\S]*\}/);
-    if(!jsonMatch) throw new Error('No JSON');
-    var result = JSON.parse(jsonMatch[0]);
+    var jsonStr = extractJSON(text);
+    if(!jsonStr) throw new Error('No JSON');
+    var result = JSON.parse(jsonStr);
     var items = (result.items || []).filter(function(it){ return it && it.nom && it.prixSpecial; });
 
     if(items.length === 0) throw new Error('No items detected');
