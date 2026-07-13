@@ -516,6 +516,11 @@ ml('account', '2355363');
         <div class="plus-item-text"><div class="plus-item-label">Nutrition & Calories</div><div class="plus-item-sub">Analyse IA de tes repas</div></div>
         <div class="plus-item-arrow">›</div>
       </div>
+      <div class="plus-item" onclick="goExtra('speciaux');closePlus()">
+        <div class="plus-item-icon" style="background:#dcfce7;"><i class="ti ti-flame" style="color:#16a34a;"></i></div>
+        <div class="plus-item-text"><div class="plus-item-label">Spéciaux de la semaine</div><div class="plus-item-sub">Vrais prix, par magasin et catégorie</div></div>
+        <div class="plus-item-arrow">›</div>
+      </div>
       <div class="plus-item" onclick="openCircularScanner();closePlus()">
         <div class="plus-item-icon" style="background:#e8f5e9;"><i class="ti ti-news" style="color:#16a34a;"></i></div>
         <div class="plus-item-text"><div class="plus-item-label">Scanner une circulaire</div><div class="plus-item-sub">Ajoute les vrais spéciaux de la semaine</div></div>
@@ -1061,6 +1066,38 @@ ml('account', '2355363');
         <div style="display:flex;gap:8px;"><input type="number" id="alert-price" placeholder="Prix max ($)" style="flex:1;"/><select id="alert-store" style="flex:1;"><option>Toutes les épiceries</option><option>IGA</option><option>Maxi</option><option>Metro</option><option>Walmart</option></select></div>
         <button class="btn bgold bf" onclick="addAlert()"><i class="ti ti-bell-plus"></i> Créer l'alerte</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- SPÉCIAUX DE LA SEMAINE -->
+<div id="speciaux" class="page">
+  <div class="hero" style="background:linear-gradient(160deg,#16a34a,#0F6E56);">
+    <div class="hc1"></div>
+    <div class="logo-row">
+      <svg class="lsvg" viewBox="0 0 680 500"><use href="#logo-icon"/></svg>
+      <div><div class="lt"><span>Smart</span><span style="color:#C9A227;">Grocer</span></div><div class="ls">🔥 Spéciaux de la semaine — vrais prix</div></div>
+    </div>
+  </div>
+  <div class="px">
+    <div style="margin-bottom:0.875rem;">
+      <label style="font-size:11px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:4px;">🏪 Magasin</label>
+      <select id="speciaux-store-filter" onchange="renderSpeciauxList()"><option value="">Tous les magasins</option></select>
+    </div>
+    <div class="tabs" id="speciaux-category-tabs" style="flex-wrap:wrap;height:auto;">
+      <button class="tab on" data-cat="" onclick="setSpeciauxCategory('',this)">Tous</button>
+      <button class="tab" data-cat="Fruits et légumes" onclick="setSpeciauxCategory('Fruits et légumes',this)">🥦 Fruits & légumes</button>
+      <button class="tab" data-cat="Viandes et poissons" onclick="setSpeciauxCategory('Viandes et poissons',this)">🍗 Viandes</button>
+      <button class="tab" data-cat="Produits laitiers" onclick="setSpeciauxCategory('Produits laitiers',this)">🥛 Laitiers</button>
+      <button class="tab" data-cat="Épicerie sèche" onclick="setSpeciauxCategory('Épicerie sèche',this)">🛒 Épicerie</button>
+      <button class="tab" data-cat="Autres" onclick="setSpeciauxCategory('Autres',this)">📦 Autres</button>
+    </div>
+    <div id="speciaux-list" style="margin-top:1rem;">
+      <div style="text-align:center;color:var(--sub);font-size:13px;padding:2rem 0;"><i class="ti ti-refresh" style="font-size:20px;display:block;margin-bottom:6px;"></i>Chargement des vrais spéciaux...</div>
+    </div>
+    <div style="background:var(--light);border-radius:14px;padding:1rem;margin-top:1rem;text-align:center;">
+      <div style="font-size:12px;color:var(--sub);margin-bottom:8px;">Ton épicerie n'a pas encore de spéciaux ici?</div>
+      <button class="btn bg bf" onclick="openCircularScanner()">📰 Scanner une circulaire</button>
     </div>
   </div>
 </div>
@@ -2271,19 +2308,30 @@ var GROCERY_CATEGORIES = {
   'Surgelés': {icon: '🧊', color: '#0EA5E9'},
   'Boissons': {icon: '🧃', color: '#EC4899'},
   'Collations': {icon: '🍪', color: '#F59E0B'},
+  'Entretien & hygiène': {icon: '🧼', color: '#14b8a6'},
   'Autres': {icon: '🛒', color: '#6b7280'}
 };
 
 function guessCategory(productName) {
   var n = productName.toLowerCase();
-  if(/pomme|banane|carotte|brocoli|laitue|légume|fruit|tomate|oignon|poivron|concombre|fraise|orange|citron|raisin|patate|pomme de terre/.test(n)) return 'Fruits et légumes';
-  if(/poulet|boeuf|porc|poisson|saumon|viande|steak|jambon|bacon|dinde|crevette|thon/.test(n)) return 'Viandes et poissons';
-  if(/lait|fromage|yogourt|yaourt|beurre|crème|creme|oeuf|œuf|café|cafe|charcuterie|saucisse|jambon|tofu|vinaigre|mayonnaise|margarine|kefir|ricotta|mascarpone/.test(n)) return 'Produits laitiers';
+  // 1. Surgelés — vérifié en PREMIER, peu importe le type d'aliment (un fruit congelé va au congélateur, pas aux fruits frais)
+  if(/surgelé|surgele|congelé|congele|glace|crème glacée|creme glacee/.test(n)) return 'Surgelés';
+  // 2. Produits ménagers / hygiène — pas de la nourriture, ne doit jamais tomber dans une catégorie alimentaire
+  if(/savon|vaisselle|nettoyant|détergent|detergent|javellisant|javel|papier hygiénique|papier hygienique|essuie-tout|essuie tout|désinfectant|desinfectant|lessive|shampoing|dentifrice|couche/.test(n)) return 'Entretien & hygiène';
+  // 3. Viandes et poissons (incluant charcuteries — saucisses, jambon, bacon sont de la viande, pas des produits laitiers)
+  if(/poulet|boeuf|bœuf|porc|poisson|saumon|viande|steak|jambon|bacon|dinde|crevette|thon|charcuterie|saucisse|tofu/.test(n)) return 'Viandes et poissons';
+  // 4. Fruits et légumes
+  if(/pomme|banane|carotte|brocoli|laitue|légume|legume|fruit|tomate|oignon|poivron|concombre|fraise|orange|citron|raisin|patate|pomme de terre/.test(n)) return 'Fruits et légumes';
+  // 5. Produits laitiers (vraiment laitiers seulement)
+  if(/lait|fromage|yogourt|yaourt|beurre|crème|creme|oeuf|œuf|kefir|ricotta|mascarpone/.test(n)) return 'Produits laitiers';
+  // 6. Boulangerie
   if(/pain|bagel|croissant|baguette|brioche|muffin/.test(n)) return 'Boulangerie';
-  if(/surgelé|congelé|glace|crème glacée/.test(n)) return 'Surgelés';
-  if(/jus|boisson|soda|eau|café|thé|bière|vin/.test(n)) return 'Boissons';
+  // 7. Boissons
+  if(/jus|boisson|soda|eau|café|cafe|thé|the|bière|biere|vin/.test(n)) return 'Boissons';
+  // 8. Collations
   if(/chips|biscuit|chocolat|bonbon|croustille|collation|cookie/.test(n)) return 'Collations';
-  if(/riz|pâte|pates|farine|sucre|sel|huile|conserve|sauce|céréale/.test(n)) return 'Épicerie sèche';
+  // 9. Épicerie sèche (incluant condiments)
+  if(/riz|pâte|pate|farine|sucre|sel|huile|conserve|sauce|céréale|cereale|vinaigre|mayonnaise|margarine/.test(n)) return 'Épicerie sèche';
   return 'Autres';
 }
 
@@ -2990,7 +3038,7 @@ function goTo(p,btn){ if(p==='liste') setTimeout(checkExpiryAlerts, 100);
   if(btn)btn.classList.add('active');
   else{const idx=['home','prix','recettes','liste','social','points'].indexOf(p);if(idx>=0)document.querySelectorAll('.nb')[idx].classList.add('active');}
 }
-function goExtra(p){if(p==='profil')setTimeout(loadProfileInputs,100);if(p==='carte')setTimeout(loadLocalStores,100);if(p==='planner')setTimeout(renderPlannerDays,100);
+function goExtra(p){if(p==='profil')setTimeout(loadProfileInputs,100);if(p==='carte')setTimeout(loadLocalStores,100);if(p==='planner')setTimeout(renderPlannerDays,100);if(p==='speciaux')setTimeout(loadAllSpeciaux,100);
   closePlus();
   document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
   document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
@@ -4124,6 +4172,95 @@ async function lookupBarcode(code) {
   document.getElementById('scan-btn').disabled = false;
 }
 
+
+// ============================================================
+// PAGE SPÉCIAUX DE LA SEMAINE (complète, filtrable par magasin/catégorie)
+// ============================================================
+var _allSpeciaux = [];
+var _speciauxCategory = '';
+var CATEGORY_EMOJI = {'Fruits et légumes':'🥦','Viandes et poissons':'🍗','Produits laitiers':'🥛','Épicerie sèche':'🛒','Boulangerie':'🍞','Surgelés':'🧊','Boissons':'🥤','Collations':'🍪','Entretien & hygiène':'🧼','Autres':'📦'};
+
+async function loadAllSpeciaux(){
+  var listEl = document.getElementById('speciaux-list');
+  if(!listEl) return;
+  if(STRIPE_API_URL.indexOf('REMPLACE_PAR') === 0) { listEl.innerHTML = '<div style="text-align:center;color:var(--sub);font-size:13px;padding:2rem 0;">Pas encore configuré.</div>'; return; }
+
+  var userData = JSON.parse(localStorage.getItem('smartgrocer_data') || '{}');
+  var city = (userData.city || '').split(',')[0].trim();
+  var country = userData.country || 'Canada';
+  if(!city){ listEl.innerHTML = '<div style="text-align:center;color:var(--sub);font-size:13px;padding:2rem 0;">Ajoute ta ville dans ton profil pour voir les spéciaux!</div>'; return; }
+
+  try {
+    var res = await fetch(STRIPE_API_URL + '?action=specialsGetAll&city=' + encodeURIComponent(city) + '&country=' + encodeURIComponent(country));
+    var data = await res.json();
+    _allSpeciaux = (data.items || []).map(function(it){
+      it.category = guessCategory(it.nom);
+      return it;
+    });
+
+    // Remplit le filtre de magasins avec ceux réellement présents dans les données
+    var storeSelect = document.getElementById('speciaux-store-filter');
+    var stores = Array.from(new Set(_allSpeciaux.map(function(it){ return it.magasin; }).filter(Boolean))).sort();
+    var currentVal = storeSelect.value;
+    storeSelect.innerHTML = '<option value="">Tous les magasins</option>' + stores.map(function(s){ return '<option>'+s+'</option>'; }).join('');
+    storeSelect.value = stores.indexOf(currentVal) !== -1 ? currentVal : '';
+
+    renderSpeciauxList();
+  } catch(e) {
+    console.error('Erreur chargement spéciaux:', e);
+    listEl.innerHTML = '<div style="text-align:center;color:var(--sub);font-size:13px;padding:2rem 0;">Erreur de chargement — réessaie plus tard.</div>';
+  }
+}
+
+function setSpeciauxCategory(cat, btn){
+  _speciauxCategory = cat;
+  document.querySelectorAll('#speciaux-category-tabs .tab').forEach(function(t){ t.classList.remove('on'); });
+  btn.classList.add('on');
+  renderSpeciauxList();
+}
+
+function renderSpeciauxList(){
+  var listEl = document.getElementById('speciaux-list');
+  if(!listEl) return;
+  var store = document.getElementById('speciaux-store-filter').value;
+
+  var filtered = _allSpeciaux.filter(function(it){
+    if(store && it.magasin !== store) return false;
+    if(_speciauxCategory && it.category !== _speciauxCategory) return false;
+    return true;
+  });
+
+  if(filtered.length === 0){
+    listEl.innerHTML = '<div style="text-align:center;color:var(--sub);font-size:13px;padding:2rem 0;">Aucun spécial trouvé pour ce filtre.<br>Sois le premier à en ajouter!</div>';
+    return;
+  }
+
+  listEl.innerHTML = filtered.map(function(it, i){
+    var idx = _allSpeciaux.indexOf(it);
+    var pct = it.prixRegulier > it.prixSpecial ? Math.round((1 - it.prixSpecial/it.prixRegulier)*100) : 0;
+    var emoji = CATEGORY_EMOJI[it.category] || '🛒';
+    return '<div class="card" style="display:flex;align-items:center;gap:10px;padding:0.75rem;margin-bottom:8px;">'
+      + '<div style="font-size:22px;">'+emoji+'</div>'
+      + '<div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+it.nom+'</div>'
+      + '<div style="font-size:10px;color:var(--sub);">'+it.magasin+'</div></div>'
+      + '<div style="text-align:right;">'
+      + (pct>0 ? '<div style="font-size:10px;color:#9ca3af;text-decoration:line-through;">$'+Number(it.prixRegulier).toFixed(2)+'</div>' : '')
+      + '<div style="font-size:15px;font-weight:700;color:var(--g);">$'+Number(it.prixSpecial).toFixed(2)+'</div>'
+      + '</div>'
+      + '<button onclick="addSpecialToList('+idx+')" style="background:var(--g);color:#fff;border:none;border-radius:8px;width:32px;height:32px;font-size:18px;cursor:pointer;flex-shrink:0;">+</button>'
+      + '</div>';
+  }).join('');
+}
+
+function addSpecialToList(idx){
+  var it = _allSpeciaux[idx];
+  if(!it) return;
+  if(!isPremium && groceries.length >= LIMITS.list){ showPaywall('Liste pleine!', 'Tu as atteint la limite de 10 articles. Passe à Premium!'); return; }
+  groceries.push({name: it.nom, price: Number(it.prixSpecial), done: false, category: it.category, store: it.magasin, uid: Date.now()+Math.random()});
+  renderGr();
+  saveData();
+  showToast('✅ "' + it.nom + '" ajouté à ta liste!');
+}
 
 async function loadSpecials() {
   // 1. D'abord, vérifie s'il y a de vrais spéciaux partagés par la communauté (circulaires scannées)
