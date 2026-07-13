@@ -5848,12 +5848,21 @@ async function analyzeCircular(input) {
     });
     var data = await res.json();
     var text = data.choices[0].message.content.replace(/```json|```/g,'').trim();
+    console.log('[Circulaire] Réponse brute de l\'IA:', text); // diagnostic — visible dans F12 > Console
     var jsonStr = extractJSON(text);
-    if(!jsonStr) throw new Error('No JSON');
+    if(!jsonStr) throw new Error('No JSON found in: ' + text.substring(0,200));
     var result = JSON.parse(jsonStr);
-    var items = (result.items || []).filter(function(it){ return it && it.nom && it.prixSpecial; });
+    console.log('[Circulaire] JSON extrait:', result); // diagnostic
+    // Tolère différents noms de champ possibles selon la réponse de l'IA (prixSpecial vs prix)
+    var items = (result.items || []).map(function(it){
+      if(!it) return null;
+      var prixSpecial = it.prixSpecial != null ? it.prixSpecial : it.prix;
+      var prixRegulier = it.prixRegulier != null ? it.prixRegulier : prixSpecial;
+      if(!it.nom || prixSpecial == null) return null;
+      return {nom: it.nom, prixSpecial: prixSpecial, prixRegulier: prixRegulier, dateFin: it.dateFin || ''};
+    }).filter(Boolean);
 
-    if(items.length === 0) throw new Error('No items detected');
+    if(items.length === 0) throw new Error('No items detected — réponse IA: ' + text.substring(0,300));
 
     window._circularItems = items;
     var listEl = document.getElementById('circular-items-list');
