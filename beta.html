@@ -5647,12 +5647,13 @@ async function analyzeReceipt(input) {
       headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
       body: JSON.stringify({
         model: 'meta-llama/llama-4-scout-17b-16e-instruct',
-        max_tokens: 900,
+        max_tokens: 1500,
+        temperature: 0,
         messages: [{
           role: 'user',
           content: [
             {type: 'image_url', image_url: {url: 'data:image/jpeg;base64,' + base64}},
-            {type: 'text', text: 'Analyse ce reçu d\'épicerie. Extrais chaque produit et son prix. JSON seulement, sans texte autour: {"items":[{"nom":"Lait 2% 4L","prix":5.49},{"nom":"Pain blanc","prix":2.99}]}'}
+            {type: 'text', text: 'Tu es un outil de transcription OCR strict, pas un assistant créatif. Regarde uniquement cette image d\'un reçu d\'épicerie et transcris EXACTEMENT ce qui y est imprimé, ligne par ligne.\n\nRègles absolues :\n- N\'invente JAMAIS un produit qui n\'est pas visible sur l\'image. Si tu n\'es pas certain qu\'une ligne existe vraiment sur le reçu, ne l\'inclus PAS.\n- Ne complète PAS la liste avec des produits "typiques" d\'épicerie. Transcris seulement ce que tu vois réellement, même si la liste semble courte ou incomplète.\n- Copie le nom du produit tel qu\'imprimé sur le reçu (abréviations comprises), ne le reformule pas et ne le traduis pas.\n- Ignore les lignes qui ne sont pas des produits (sous-total, taxes, total, mode de paiement, numéro de transaction, points de fidélité, message publicitaire).\n- Si l\'image n\'est pas un reçu lisible ou si aucun produit n\'est visible, réponds avec une liste vide.\n- N\'ajoute AUCUN texte, explication ou commentaire — uniquement le JSON.\n\nFormat de réponse (JSON strict) :\n{"items":[{"nom":"nom exact du produit tel qu\'imprimé","prix":0.00}]}'}
           ]
         }]
       })
