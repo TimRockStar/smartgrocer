@@ -5615,11 +5615,11 @@ function handleStripeSuccess() {
         </div>
         <div style="border:2px dashed var(--border);border-radius:14px;padding:2rem;text-align:center;margin-bottom:1rem;cursor:pointer;" onclick="document.getElementById('circular-file-input').click()">
           <div style="font-size:40px;margin-bottom:8px;">📰</div>
-          <div style="font-size:14px;font-weight:700;margin-bottom:4px;">Prends une photo de la circulaire</div>
+          <div style="font-size:14px;font-weight:700;margin-bottom:4px;">Prends une photo ou choisis une image</div>
           <div style="font-size:12px;color:var(--sub);">ou clique pour choisir une image</div>
         </div>
-        <input type="file" id="circular-file-input" accept="image/*" capture="environment" style="display:none;" onchange="analyzeCircular(this)"/>
-        <div style="font-size:11px;color:var(--sub);text-align:center;">💡 Une page à la fois, bien éclairée et lisible</div>
+        <input type="file" id="circular-file-input" accept="image/*" style="display:none;" onchange="analyzeCircular(this)"/>
+        <div style="font-size:11px;color:var(--sub);text-align:center;">💡 Photo papier, ou capture d'écran de Flipp/Reebee — une page à la fois</div>
       </div>
       <div id="circular-loading" style="display:none;text-align:center;padding:2rem;">
         <div style="font-size:32px;margin-bottom:8px;">⏳</div>
@@ -5652,7 +5652,7 @@ function handleStripeSuccess() {
           <div style="font-size:14px;font-weight:700;margin-bottom:4px;">Prends une photo de ton reçu</div>
           <div style="font-size:12px;color:var(--sub);">ou clique pour choisir une image</div>
         </div>
-        <input type="file" id="receipt-file-input" accept="image/*" capture="environment" style="display:none;" onchange="analyzeReceipt(this)"/>
+        <input type="file" id="receipt-file-input" accept="image/*" style="display:none;" onchange="analyzeReceipt(this)"/>
         <div style="font-size:11px;color:var(--sub);text-align:center;">💡 Assure-toi que le reçu est bien éclairé et lisible</div>
       </div>
       <div id="receipt-loading" style="display:none;text-align:center;padding:2rem;">
