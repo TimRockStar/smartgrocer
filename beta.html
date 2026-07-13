@@ -5762,9 +5762,17 @@ function addAllReceiptItems() {
         body: JSON.stringify({ action: 'priceSave', city: city, country: country, items: items.map(function(it){ return {nom: it.nom, prix: it.prix, magasin: store}; }) })
       }).catch(function(e){ console.log('Contribution prix échouée (silencieux):', e); });
     }
-    addPoints(5);
-    updatePointsUI();
-    setTimeout(function(){ showToast('🎁 +' + (isPremium?10:5) + ' pts pour avoir aidé la communauté avec de vrais prix!'); }, 1600);
+    var today = new Date().toISOString().split('T')[0];
+    var capData = JSON.parse(localStorage.getItem('sg_receipt_points_cap') || '{}');
+    if(capData.date !== today) { capData = { date: today, count: 0 }; }
+    var DAILY_LIMIT = 3; // max de reçus "récompensés" par jour
+    if(capData.count < DAILY_LIMIT) {
+      capData.count++;
+      localStorage.setItem('sg_receipt_points_cap', JSON.stringify(capData));
+      addPoints(5);
+      updatePointsUI();
+      setTimeout(function(){ showToast('🎁 +' + (isPremium?10:5) + ' pts pour avoir aidé la communauté avec de vrais prix!'); }, 1600);
+    }
   }
 
   closeReceiptScanner();
@@ -5852,7 +5860,7 @@ async function analyzeCircular(input) {
   }
 }
 
-function addAllCircularItems() {
+async function addAllCircularItems() {
   var items = window._circularItems || [];
   var store = document.getElementById('circular-store-select').value;
   if(!items.length || !store) { closeCircularScanner(); return; }
@@ -5861,21 +5869,27 @@ function addAllCircularItems() {
   var city = (userData.city || '').split(',')[0].trim();
   var country = userData.country || 'Canada';
 
-  if(STRIPE_API_URL.indexOf('REMPLACE_PAR') !== 0) {
-    fetch(STRIPE_API_URL, {
+  if(STRIPE_API_URL.indexOf('REMPLACE_PAR') === 0) { closeCircularScanner(); return; }
+
+  try {
+    var res = await fetch(STRIPE_API_URL, {
       method: 'POST',
       body: JSON.stringify({ action: 'specialSave', city: city, country: country, magasin: store, items: items })
-    }).then(function(){
-      showToast('🎉 Spéciaux partagés! Merci d\'aider la communauté à économiser!');
-    }).catch(function(e){
-      console.log('Contribution spéciaux échouée:', e);
-      showToast('⚠️ Erreur de connexion — réessaie plus tard.');
     });
-  }
+    var result = await res.json();
 
-  addPoints(15);
-  updatePointsUI();
-  setTimeout(function(){ showToast('🎁 +' + (isPremium?30:15) + ' pts pour avoir partagé les spéciaux de la semaine!'); }, 1600);
+    if(result.duplicate) {
+      // Cette circulaire (ou la majorité de son contenu) a déjà été scannée par quelqu'un d'autre récemment
+      showToast('✅ Cette circulaire a déjà été ajoutée cette semaine — merci quand même!', 4000);
+    } else {
+      addPoints(5);
+      updatePointsUI();
+      showToast('🎉 Spéciaux partagés! +' + (isPremium?10:5) + ' pts — merci d\'aider la communauté!', 4000);
+    }
+  } catch(e) {
+    console.log('Contribution spéciaux échouée:', e);
+    showToast('⚠️ Erreur de connexion — réessaie plus tard.');
+  }
 
   closeCircularScanner();
 }
