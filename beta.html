@@ -4862,7 +4862,7 @@ function addMealToHistory() {
 }
 
 // ===== SYSTÈME DE VERSION =====
-var APP_VERSION = '2.1';
+var APP_VERSION = '2.2';
 
 function checkVersion() {
   var savedVersion = localStorage.getItem('sg_app_version');
@@ -4874,6 +4874,18 @@ function checkVersion() {
     var mealPlan = localStorage.getItem('sg_meal_plan');
     var priceHistory = localStorage.getItem('sg_price_history');
     var mainData = localStorage.getItem('smartgrocer_data');
+
+    // Re-classe les articles déjà dans la liste avec la logique de catégories à jour
+    // (ex: fruits congelés → Surgelés, saucisses → Viandes, savon → Entretien & hygiène)
+    if(mainData) {
+      try {
+        var parsed = JSON.parse(mainData);
+        if(parsed.groceries && parsed.groceries.length) {
+          parsed.groceries.forEach(function(g){ g.category = guessCategory(g.name); });
+          mainData = JSON.stringify(parsed);
+        }
+      } catch(e) { console.error('Erreur re-classement catégories:', e); }
+    }
     
     // Effacer et réappliquer
     localStorage.clear();
