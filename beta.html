@@ -2172,7 +2172,51 @@ async function showPricePicker(productName) {
   document.getElementById('pp-product-name').textContent = productName;
   document.getElementById('pp-prices-list').innerHTML = '<div style="text-align:center;padding:1rem;color:var(--sub);font-size:12px;">⏳ Recherche des prix...</div>';
   document.getElementById('price-picker-modal').style.display = 'flex';
-  
+
+  var realRows = [];
+  var userData = JSON.parse(localStorage.getItem('smartgrocer_data') || '{}');
+  var city = (userData.city || '').split(',')[0].trim();
+  var country = userData.country || 'Canada';
+
+  // 1. Vérifie d'abord s'il y a un vrai spécial ou un vrai prix déjà vu pour ce produit
+  if(city && STRIPE_API_URL.indexOf('REMPLACE_PAR') !== 0){
+    try {
+      var results = await Promise.all([
+        fetch(STRIPE_API_URL + '?action=specialFind&product=' + encodeURIComponent(productName) + '&city=' + encodeURIComponent(city) + '&country=' + encodeURIComponent(country)).then(function(r){return r.json();}).catch(function(){return {found:false};}),
+        fetch(STRIPE_API_URL + '?action=priceGet&product=' + encodeURIComponent(productName) + '&city=' + encodeURIComponent(city) + '&country=' + encodeURIComponent(country)).then(function(r){return r.json();}).catch(function(){return {found:false};})
+      ]);
+      var special = results[0], realPrice = results[1];
+      if(special && special.found){
+        realRows.push({store: special.magasin, price: Number(special.prixSpecial), special: true, real: true, tag: '🔥 Vrai spécial cette semaine'});
+      }
+      if(realPrice && realPrice.found && (!special.found || realPrice.store !== special.magasin)){
+        realRows.push({store: realPrice.store || city, price: Number(realPrice.price), special: false, real: true, tag: '✅ Vrai prix vu récemment'});
+      }
+    } catch(e) { console.log('Vérification prix réel échouée:', e); }
+  }
+
+  // Si on a trouvé de vraies données, on les affiche directement — pas besoin
+  // de payer un appel IA pour deviner ce qu'on sait déjà avec certitude.
+  if(realRows.length > 0){
+    realRows.sort(function(a,b){ return a.price - b.price; });
+    var realHtml = realRows.map(function(p, pi){
+      var isBest = pi === 0;
+      var bg = isBest ? '#dcfce7' : '#f0fdf4';
+      var border = '#86efac';
+      var color = isBest ? '#166534' : 'var(--text)';
+      return '<div onclick="addWithPrice(' + p.price + ',\'' + p.store.replace(/'/g,"\\'") + '\')" style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:14px;cursor:pointer;margin-bottom:8px;background:' + bg + ';border:2px solid ' + border + '">'
+        + '<div style="font-size:24px;">🏪</div>'
+        + '<div style="flex:1;"><div style="font-size:14px;font-weight:700;">' + p.store + '</div>'
+        + '<div style="font-size:10px;color:#166534;font-weight:700;">' + p.tag + '</div></div>'
+        + (isBest ? '<div class="badge bdg" style="margin-right:8px;">Meilleur</div>' : '')
+        + '<div style="font-size:20px;font-weight:700;color:' + color + ';">$' + p.price.toFixed(2) + '</div>'
+        + '</div>';
+    }).join('');
+    document.getElementById('pp-prices-list').innerHTML = realHtml
+      + '<div style="font-size:10px;color:var(--sub);text-align:center;margin-top:6px;">Prix confirmés par la communauté — pas d\'estimation IA nécessaire</div>';
+    return;
+  }
+
   try {
     var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
@@ -2211,7 +2255,8 @@ async function showPricePicker(productName) {
       html += '<div style="font-size:20px;font-weight:700;color:' + color + ';">$' + p.price.toFixed(2) + '</div>';
       html += '</div>';
     }
-    document.getElementById('pp-prices-list').innerHTML = html;
+    document.getElementById('pp-prices-list').innerHTML = html
+      + '<div style="font-size:10px;color:var(--sub);text-align:center;margin-top:6px;">⚠️ Prix estimés par IA — aucune donnée réelle trouvée pour ce produit</div>';
     
   } catch(e) {
     document.getElementById('pp-prices-list').innerHTML = '<div style="text-align:center;padding:1rem;color:var(--sub);font-size:12px;">Prix non disponibles</div>';
