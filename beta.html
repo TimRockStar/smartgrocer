@@ -649,16 +649,6 @@ ml('account', '2355363');
 </div>
 
 <!-- APP -->
-<!-- BETA BANNER -->
-<div id="beta-banner" style="display:none;background:linear-gradient(135deg,#7B0000,#5C0000);padding:10px 16px;position:fixed;top:0;left:0;right:0;z-index:500;max-width:480px;margin:0 auto;">
-  <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
-    <div>
-      <div style="font-size:12px;font-weight:700;color:#fff;">🧪 Version Bêta</div>
-      <div style="font-size:10px;color:rgba(255,255,255,0.85);">Toutes les fonctionnalités débloquées!</div>
-    </div>
-    <button onclick="openFeedback()" style="background:#fff;color:#7B0000;border:none;border-radius:10px;padding:8px 12px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;">📝 Donner mon feedback</button>
-  </div>
-</div>
 <div id="app" style="display:none;">
 
 <div class="trial" id="trial-banner" style="display:none!important;" style="margin:0.75rem 1rem 0;" onclick="goExtra('premium')">
@@ -4502,7 +4492,6 @@ const BETA_CODES = ["SG-BETA-001","SG-BETA-002","SG-BETA-003","SG-BETA-004","SG-
 
 function showApp() {
   document.getElementById('beta-gate').style.display = 'none';
-  document.getElementById('beta-banner').style.display = 'block';
   document.body.style.overflow = '';
   document.getElementById('landing').style.display = 'none';
   var hasData = loadData();
