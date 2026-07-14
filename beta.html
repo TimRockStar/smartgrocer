@@ -3224,7 +3224,7 @@ async function checkRealPriceOverlay(productName, barcode){
 
   try {
     // 1. Priorité absolue : est-ce que ce produit est EN SPÉCIAL cette semaine?
-    var specialRes = await fetch(STRIPE_API_URL + '?action=specialFind&product=' + encodeURIComponent(productName) + '&city=' + encodeURIComponent(city) + '&country=' + encodeURIComponent(country));
+    var specialRes = await fetch(STRIPE_API_URL + '?action=specialFind&product=' + encodeURIComponent(productName) + '&city=' + encodeURIComponent(city) + '&country=' + encodeURIComponent(country) + (barcode ? '&barcode=' + encodeURIComponent(barcode) : ''));
     var special = await specialRes.json();
     if(special.found){
       var pct = special.prixRegulier > special.prixSpecial ? Math.round((1 - special.prixSpecial/special.prixRegulier)*100) : 0;
@@ -4240,7 +4240,7 @@ async function lookupBarcode(code) {
       return '<div class="sc '+(s.enSpecial?'sale':'')+'"><div style="font-size:11px;font-weight:700;margin-bottom:2px;">'+s.nom+'</div><div style="font-size:16px;font-weight:700;">$'+s.prix.toFixed(2)+'</div>'+(s.enSpecial?'<div style="font-size:9px;color:var(--sub);text-decoration:line-through;">$'+s.prixRegulier.toFixed(2)+'</div><div class="badge bdg" style="margin-top:2px;font-size:9px;">Special!</div>':'')+'<div style="font-size:9px;color:var(--sub);margin-top:2px;">'+s.format+'</div></div>';
     }).join('');
     document.getElementById('px-res').style.display = 'block';
-    checkRealPriceOverlay(d2.nom);
+    checkRealPriceOverlay(d2.nom, code);
     scansToday++; totalScans++;
     var ps = document.getElementById('prof-scans'); if(ps) ps.textContent = totalScans;
      updateLimitDots(); saveData();
