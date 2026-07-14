@@ -2953,10 +2953,10 @@ const commRecs=[
 ];
 let cFilt=[...commRecs];
 const rewards=[
-  {icon:'⭐',name:'1 mois Premium gratuit',pts:100,desc:'Code promo envoyé par email'},
-  {icon:'🎁',name:'2 mois Premium gratuits',pts:250,desc:'Code promo envoyé par email'},
-  {icon:'👨‍👩‍👧‍👦',name:'Plan Famille 1 mois',pts:500,desc:'5 comptes Premium gratuits'},
-  {icon:'🏆',name:'1 an Premium gratuit',pts:1000,desc:'Code promo envoyé par email'},
+  {icon:'⭐',name:'1 mois Premium gratuit',pts:300,desc:'Code promo envoyé par email'},
+  {icon:'🎁',name:'2 mois Premium gratuits',pts:750,desc:'Code promo envoyé par email'},
+  {icon:'👨‍👩‍👧‍👦',name:'Plan Famille 1 mois',pts:1500,desc:'5 comptes Premium gratuits'},
+  {icon:'🏆',name:'1 an Premium gratuit',pts:3000,desc:'Code promo envoyé par email'},
 ];
 let walletCards=[];
 let walletCards_DEFAULT=[
@@ -3192,7 +3192,7 @@ function updateLimitDots(){
   const rc=document.getElementById('rec-count-text');if(rc)rc.textContent=recsToday+'/'+LIMITS.recs;
   const lc=document.getElementById('list-count-text');if(lc)lc.textContent=groceries.length+'/'+LIMITS.list;
 }
-function addPoints(n){ /* disabled in beta */ }
+function addPoints(n){ if(!isPremium) return; points += 5; }
 function updatePointsUI(){
   [['pts-home',points+' pts'],['pts-hero',points],['h-pts',points],['prof-pts',points]].forEach(([id,val])=>{const el=document.getElementById(id);if(el)el.textContent=val;});
   const pb=document.getElementById('pts-bar');if(pb)pb.style.width=Math.min(points/500*100,100)+'%';
@@ -3309,9 +3309,9 @@ async function searchProd(){
     if(window._lastScannedCode) {
       saveProductToDB(window._lastScannedCode, d.nom, '', '');
       window._lastScannedCode = null;
-      showToast('✅ '+d.nom+' ajouté à la banque de données! +'+(isPremium?20:10)+' pts');
+      showToast('✅ '+d.nom+' ajouté à la banque de données!');
     } else {
-      showToast('✅ '+d.nom+'! +'+(isPremium?20:10)+' pts');
+      showToast('✅ '+d.nom+'!');
     }
   }catch(e){
     console.error('Scan error:',e);
@@ -3343,7 +3343,7 @@ async function genAll(){
     var parsed=JSON.parse(text);
     curRecs=parsed.recettes;renderRecs(parsed.recettes);renderYT(parsed.youtubeVideos||[]);renderCommVids();
     document.getElementById('rec-res').style.display='block';
-    recsToday++;updateLimitDots();showToast('🍳 Recettes générées! +'+(isPremium?10:5)+' pts');
+    recsToday++;updateLimitDots();showToast('🍳 Recettes générées!');
   }catch(e){
     console.error('Recipe error:',e);
     document.getElementById('rg').innerHTML='<div style="color:var(--sub);font-size:12px;padding:1rem;text-align:center;">Erreur de génération — réessaie!</div>';
@@ -3403,8 +3403,8 @@ function shareRecipeToCommunity(rec) {
   });
   
   filterC();
-  
-  showToast('🎉 Recette partagée dans la communauté! +' + (isPremium?50:25) + ' pts');
+  addPoints(5);
+  showToast('🎉 Recette partagée dans la communauté!' + (isPremium?' +5 pts':''));
   
   // Show confirmation with link to social
   var btn = document.getElementById('share-to-community-btn');
@@ -3613,10 +3613,9 @@ function submitUp(){
   }
   localStorage.setItem('sg_last_share', today);
   
-  // Points: texte = 25pts, avec vidéo = 50pts
-  var pts = hasVideo ? 10 : 5;
-  var ptsDisplay = isPremium ? pts*2 : pts;
-  
+  // Points : 0 sur le tier gratuit, 5 pts fixes sur Premium (aucune variation par action)
+  var pts = 5;
+
   // Add to community
   var userName = document.getElementById('h-name').textContent || 'Moi';
   var initials = userName.substring(0,2).toUpperCase();
@@ -3638,7 +3637,7 @@ function submitUp(){
   });
   filterC();
   addPoints(pts);
-  showToast('🎉 Recette partagée! +' + ptsDisplay + ' pts' + (hasVideo ? ' 🎬' : ' 📝'));
+  showToast('🎉 Recette partagée!' + (isPremium?' +5 pts':'') + (hasVideo ? ' 🎬' : ' 📝'));
   // Clear form
   document.getElementById('up-nm').value='';
   document.getElementById('up-ig').value='';
@@ -4244,7 +4243,7 @@ async function lookupBarcode(code) {
     scansToday++; totalScans++;
     var ps = document.getElementById('prof-scans'); if(ps) ps.textContent = totalScans;
      updateLimitDots(); saveData();
-    showToast(d2.nom + '! +'+(isPremium?20:10)+' pts');
+    showToast(d2.nom + '!');
     
   } catch(e) {
     console.error('Barcode error:', e);
@@ -4534,7 +4533,7 @@ async function submitNewProduct(){
       localStorage.setItem('sg_receipt_points_cap', JSON.stringify(capData));
       addPoints(5);
       updatePointsUI();
-      showToast('✅ "' + fullName + '" et son prix ajoutés! +' + (isPremium?10:5) + ' pts');
+      showToast('✅ "' + fullName + '" et son prix ajoutés!' + (isPremium?' +5 pts':''));
     } else {
       showToast('✅ "' + fullName + '" et son prix ajoutés à la communauté!');
     }
@@ -6070,7 +6069,7 @@ function addAllReceiptItems() {
       localStorage.setItem('sg_receipt_points_cap', JSON.stringify(capData));
       addPoints(5);
       updatePointsUI();
-      setTimeout(function(){ showToast('🎁 +' + (isPremium?10:5) + ' pts pour avoir aidé la communauté avec de vrais prix!'); }, 1600);
+      setTimeout(function(){ showToast((isPremium?'🎁 +5 pts — ':'') + 'merci d\'avoir aidé la communauté avec de vrais prix!'); }, 1600);
     }
   }
 
@@ -6190,9 +6189,22 @@ async function addAllCircularItems() {
       // Cette circulaire (ou la majorité de son contenu) a déjà été scannée par quelqu'un d'autre récemment
       showToast('✅ Cette circulaire a déjà été ajoutée cette semaine — merci quand même!', 4000);
     } else {
-      addPoints(5);
-      updatePointsUI();
-      showToast('🎉 Spéciaux partagés! +' + (isPremium?10:5) + ' pts — merci d\'aider la communauté!', 4000);
+      // Limite quotidienne — évite qu'une circulaire de 20 pages, toutes différentes, donne
+      // trop de points d'un coup dans la même session. La contribution est toujours enregistrée
+      // pour la communauté même une fois la limite atteinte, seuls les points s'arrêtent.
+      var today = new Date().toISOString().split('T')[0];
+      var capData = JSON.parse(localStorage.getItem('sg_circular_points_cap') || '{}');
+      if(capData.date !== today) { capData = { date: today, count: 0 }; }
+      var DAILY_LIMIT = 2;
+      if(capData.count < DAILY_LIMIT){
+        capData.count++;
+        localStorage.setItem('sg_circular_points_cap', JSON.stringify(capData));
+        addPoints(5);
+        updatePointsUI();
+        showToast('🎉 Spéciaux partagés!' + (isPremium?' +5 pts':'') + ' — merci d\'aider la communauté!', 4000);
+      } else {
+        showToast('✅ Spéciaux partagés — merci! (Limite de points quotidienne atteinte, reviens demain)', 4000);
+      }
     }
   } catch(e) {
     console.log('Contribution spéciaux échouée:', e);
