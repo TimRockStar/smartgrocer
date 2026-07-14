@@ -3211,7 +3211,7 @@ function setProd(n){document.getElementById('prod-in').value=n;searchProd();}
 // ============================================================
 // BANQUE DE VRAIS PRIX — vérification (alimentée par les reçus scannés)
 // ============================================================
-async function checkRealPriceOverlay(productName){
+async function checkRealPriceOverlay(productName, barcode){
   var banner = document.getElementById('real-price-banner');
   if(!banner) return;
   banner.style.display = 'none';
@@ -3223,7 +3223,24 @@ async function checkRealPriceOverlay(productName){
   if(!city) return;
 
   try {
-    var res = await fetch(STRIPE_API_URL + '?action=priceGet&product=' + encodeURIComponent(productName) + '&city=' + encodeURIComponent(city) + '&country=' + encodeURIComponent(country));
+    // 1. Priorité absolue : est-ce que ce produit est EN SPÉCIAL cette semaine?
+    var specialRes = await fetch(STRIPE_API_URL + '?action=specialFind&product=' + encodeURIComponent(productName) + '&city=' + encodeURIComponent(city) + '&country=' + encodeURIComponent(country));
+    var special = await specialRes.json();
+    if(special.found){
+      var pct = special.prixRegulier > special.prixSpecial ? Math.round((1 - special.prixSpecial/special.prixRegulier)*100) : 0;
+      banner.innerHTML = '<div style="font-size:10px;font-weight:700;color:#166534;text-transform:uppercase;margin-bottom:4px;">🔥 En spécial cette semaine!</div>'
+        + '<div style="display:flex;align-items:center;justify-content:space-between;">'
+        + '<div><div style="font-size:13px;font-weight:700;color:#14532d;">chez ' + special.magasin + '</div>'
+        + (pct>0 ? '<div style="font-size:10px;color:#166534;">Régulier $'+Number(special.prixRegulier).toFixed(2)+' · -'+pct+'%</div>' : '')
+        + '</div>'
+        + '<div style="font-size:20px;font-weight:700;color:#14532d;">$' + Number(special.prixSpecial).toFixed(2) + '</div>'
+        + '</div>';
+      banner.style.display = 'block';
+      return; // un vrai spécial est plus pertinent qu'un vieux prix, pas besoin de vérifier plus loin
+    }
+
+    // 2. Sinon, un vrai prix déjà vu récemment (via un reçu scanné)
+    var res = await fetch(STRIPE_API_URL + '?action=priceGet&product=' + encodeURIComponent(productName) + '&city=' + encodeURIComponent(city) + '&country=' + encodeURIComponent(country) + (barcode ? '&barcode=' + encodeURIComponent(barcode) : ''));
     var result = await res.json();
     if(result.found){
       var d = new Date(result.date);
@@ -4092,13 +4109,28 @@ function startRealScan() {
     Quagga.start(); quaggaRunning = true;
   });
   var scanDone = false;
+  var REQUIRED_MATCHES = 3; // exige 3 lectures identiques d'affilée avant de confirmer — évite les erreurs de lecture d'un seul frame
+  var lastCode = null;
+  var matchCount = 0;
   Quagga.onDetected(function(result) {
     if(scanDone) return;
     var code = result.codeResult.code;
     if(!code || code.length < 4) return;
-    scanDone = true;
+
+    if(code === lastCode) {
+      matchCount++;
+    } else {
+      lastCode = code;
+      matchCount = 1;
+    }
+
     var status = document.getElementById('scan-status');
-    if(status) status.textContent = 'Code scanne!';
+    if(status) status.textContent = 'Lecture ' + matchCount + '/' + REQUIRED_MATCHES + '...';
+
+    if(matchCount < REQUIRED_MATCHES) return; // pas encore assez confirmé, on continue à écouter
+
+    scanDone = true;
+    if(status) status.textContent = 'Code confirmé!';
     setTimeout(function() { stopRealScan(); document.getElementById('prod-in').value=''; lookupBarcode(code); }, 300);
   });
 }
@@ -4150,26 +4182,32 @@ async function lookupBarcode(code) {
     }
     
     if (!productName) {
-      // Product not found - show helpful message with manual search
+      // Produit non reconnu — formulaire pour l'ajouter directement, synchronisé pour toute la communauté
       document.getElementById('px-ld').classList.remove('on');
       document.getElementById('scan-btn').disabled = false;
-      
-      // Auto-fill the search box with the code and suggest manual entry
-      document.getElementById('prod-in').value = '';
-      document.getElementById('prod-in').placeholder = 'Entre le nom du produit...';
-      document.getElementById('prod-in').focus();
-      // Show add to DB option
-      document.getElementById('sg').innerHTML = '<div style="background:#f3f4f6;border:1px solid #e5e7eb;border-radius:14px;padding:1.25rem;text-align:center;">' +
-        '<div style="font-size:28px;margin-bottom:8px;">📷</div>' +
-        '<div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:6px;">Code barre non reconnu</div>' +
-        '<div style="font-size:12px;color:#6b7280;margin-bottom:10px;line-height:1.6;">Le scanner web peut mal lire les codes barres.<br>Entre le nom du produit ci-dessous!</div>' +
-        '<div style="background:#fff;border-radius:8px;padding:8px;font-size:11px;color:#6b7280;">💡 Bon éclairage · Téléphone à 15-20 cm · Angle droit</div>' +
+      window._lastScannedCode = code;
+
+      document.getElementById('sg').innerHTML = '<div style="background:#f3f4f6;border:1px solid #e5e7eb;border-radius:14px;padding:1.25rem;">' +
+        '<div style="text-align:center;margin-bottom:12px;">' +
+        '<div style="font-size:28px;margin-bottom:6px;">📷</div>' +
+        '<div style="font-size:14px;font-weight:700;color:#1a1a2e;">Code barre non reconnu</div>' +
+        '<div style="font-size:11px;color:#6b7280;margin-top:2px;">Ajoute-le — ça aidera toute la communauté au prochain scan!</div>' +
+        '</div>' +
+        '<input type="text" id="new-prod-name" placeholder="Nom du produit *" style="margin-bottom:8px;"/>' +
+        '<div style="display:flex;gap:8px;margin-bottom:8px;">' +
+        '<input type="text" id="new-prod-brand" placeholder="Marque" style="flex:1;"/>' +
+        '<input type="text" id="new-prod-format" placeholder="Format (ex: 1kg)" style="flex:1;"/>' +
+        '</div>' +
+        '<div style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;margin-bottom:4px;">💰 Prix vu en ce moment (optionnel — aide toute la communauté!)</div>' +
+        '<div style="display:flex;gap:8px;margin-bottom:10px;">' +
+        '<input type="number" step="0.01" id="new-prod-price" placeholder="Prix ($)" style="flex:1;"/>' +
+        '<select id="new-prod-store" style="flex:1;"><option value="">Magasin...</option><option>IGA</option><option>Maxi</option><option>Metro</option><option>Walmart</option><option>Super C</option><option>Costco</option></select>' +
+        '</div>' +
+        '<button class="btn bg bf" onclick="submitNewProduct()">✅ Enregistrer et voir les prix</button>' +
+        '<div style="font-size:10px;color:#9ca3af;text-align:center;margin-top:8px;">Code: ' + code + '</div>' +
         '</div>';
       document.getElementById('px-res').style.display = 'block';
-      window._lastScannedCode = code;
-      showToast('Entre le nom du produit ci-dessous!');
-      document.getElementById('px-ld').classList.remove('on');
-      document.getElementById('scan-btn').disabled = false;
+      showToast('Ajoute le produit pour l\'enregistrer dans la banque partagée!');
       return;
     }
     
@@ -4458,6 +4496,56 @@ async function saveProductToDB(barcode, name, brand, format) {
 }
 
 // Look up product in local DB
+// Sauvegarde un nouveau produit inconnu (nom + code-barre) dans la banque partagée,
+// puis affiche immédiatement les prix (vrais spéciaux, vrais prix, ou estimation IA)
+// exactement comme une recherche normale.
+async function submitNewProduct(){
+  var name = document.getElementById('new-prod-name').value.trim();
+  var brand = document.getElementById('new-prod-brand').value.trim();
+  var format = document.getElementById('new-prod-format').value.trim();
+  var price = document.getElementById('new-prod-price').value.trim();
+  var store = document.getElementById('new-prod-store').value;
+  if(!name){ showToast('⚠️ Le nom du produit est obligatoire!'); return; }
+
+  var fullName = brand && !name.toLowerCase().includes(brand.toLowerCase()) ? (brand + ' ' + name) : name;
+  if(format) fullName += ' ' + format;
+
+  var code = window._lastScannedCode;
+  if(code){
+    saveProductToDB(code, fullName, brand, format); // sync le nom vers la banque de produits — aide tout le monde au prochain scan de ce code
+  }
+
+  // Si un prix a été indiqué, on l'ajoute aussi à la banque de vrais prix (comme un reçu scanné)
+  if(price && store && STRIPE_API_URL.indexOf('REMPLACE_PAR') !== 0){
+    var userData = JSON.parse(localStorage.getItem('smartgrocer_data') || '{}');
+    var city = (userData.city || '').split(',')[0].trim();
+    var country = userData.country || 'Canada';
+    fetch(STRIPE_API_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'priceSave', city: city, country: country, items: [{nom: fullName, prix: Number(price), magasin: store, codeBarre: code || ''}] })
+    }).catch(function(e){ console.log('Contribution prix échouée (silencieux):', e); });
+
+    // Même limite quotidienne que les reçus — évite qu'on puisse gonfler ses points en soumettant des prix en rafale
+    var today = new Date().toISOString().split('T')[0];
+    var capData = JSON.parse(localStorage.getItem('sg_receipt_points_cap') || '{}');
+    if(capData.date !== today) { capData = { date: today, count: 0 }; }
+    if(capData.count < 3){
+      capData.count++;
+      localStorage.setItem('sg_receipt_points_cap', JSON.stringify(capData));
+      addPoints(5);
+      updatePointsUI();
+      showToast('✅ "' + fullName + '" et son prix ajoutés! +' + (isPremium?10:5) + ' pts');
+    } else {
+      showToast('✅ "' + fullName + '" et son prix ajoutés à la communauté!');
+    }
+  } else {
+    showToast('✅ "' + fullName + '" ajouté à la banque partagée!');
+  }
+
+  document.getElementById('prod-in').value = fullName;
+  searchProd(); // réutilise la recherche normale (vrais prix en priorité, sinon estimation IA)
+}
+
 function lookupInDB(barcode) {
   return localProductDB[barcode] || null;
 }
