@@ -5883,12 +5883,18 @@ function handleStripeSuccess() {
           <label style="font-size:11px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:4px;">🏪 Épicerie de cette circulaire</label>
           <select id="circular-store-select"><option value="">Sélectionner...</option><option>IGA</option><option>Maxi</option><option>Metro</option><option>Walmart</option><option>Super C</option><option>Costco</option></select>
         </div>
-        <div style="border:2px dashed var(--border);border-radius:14px;padding:2rem;text-align:center;margin-bottom:1rem;cursor:pointer;" onclick="document.getElementById('circular-file-input').click()">
-          <div style="font-size:40px;margin-bottom:8px;">📰</div>
-          <div style="font-size:14px;font-weight:700;margin-bottom:4px;">Prends une photo ou choisis une image</div>
-          <div style="font-size:12px;color:var(--sub);">ou clique pour choisir une image</div>
+        <div style="display:flex;gap:8px;margin-bottom:1rem;">
+          <div style="flex:1;border:2px dashed var(--border);border-radius:14px;padding:1.25rem 0.5rem;text-align:center;cursor:pointer;" onclick="document.getElementById('circular-camera-input').click()">
+            <div style="font-size:28px;margin-bottom:6px;">📷</div>
+            <div style="font-size:12px;font-weight:700;">Prendre une photo</div>
+          </div>
+          <div style="flex:1;border:2px dashed var(--border);border-radius:14px;padding:1.25rem 0.5rem;text-align:center;cursor:pointer;" onclick="document.getElementById('circular-gallery-input').click()">
+            <div style="font-size:28px;margin-bottom:6px;">🖼️</div>
+            <div style="font-size:12px;font-weight:700;">Choisir depuis la galerie</div>
+          </div>
         </div>
-        <input type="file" id="circular-file-input" accept="image/*" style="display:none;" onchange="analyzeCircular(this)"/>
+        <input type="file" id="circular-camera-input" accept="image/*" capture="environment" style="display:none;" onchange="analyzeCircular(this)"/>
+        <input type="file" id="circular-gallery-input" accept="image/*" style="display:none;" onchange="analyzeCircular(this)"/>
         <div style="font-size:11px;color:var(--sub);text-align:center;">💡 Photo papier, ou capture d'écran de Flipp/Reebee — une page à la fois</div>
       </div>
       <div id="circular-loading" style="display:none;text-align:center;padding:2rem;">
@@ -5917,12 +5923,18 @@ function handleStripeSuccess() {
     </div>
     <div style="padding:1.25rem;">
       <div id="receipt-upload-section">
-        <div style="border:2px dashed var(--border);border-radius:14px;padding:2rem;text-align:center;margin-bottom:1rem;cursor:pointer;" onclick="document.getElementById('receipt-file-input').click()">
-          <div style="font-size:40px;margin-bottom:8px;">🧾</div>
-          <div style="font-size:14px;font-weight:700;margin-bottom:4px;">Prends une photo de ton reçu</div>
-          <div style="font-size:12px;color:var(--sub);">ou clique pour choisir une image</div>
+        <div style="display:flex;gap:8px;margin-bottom:1rem;">
+          <div style="flex:1;border:2px dashed var(--border);border-radius:14px;padding:1.25rem 0.5rem;text-align:center;cursor:pointer;" onclick="document.getElementById('receipt-camera-input').click()">
+            <div style="font-size:28px;margin-bottom:6px;">📷</div>
+            <div style="font-size:12px;font-weight:700;">Prendre une photo</div>
+          </div>
+          <div style="flex:1;border:2px dashed var(--border);border-radius:14px;padding:1.25rem 0.5rem;text-align:center;cursor:pointer;" onclick="document.getElementById('receipt-gallery-input').click()">
+            <div style="font-size:28px;margin-bottom:6px;">🖼️</div>
+            <div style="font-size:12px;font-weight:700;">Choisir depuis la galerie</div>
+          </div>
         </div>
-        <input type="file" id="receipt-file-input" accept="image/*" style="display:none;" onchange="analyzeReceipt(this)"/>
+        <input type="file" id="receipt-camera-input" accept="image/*" capture="environment" style="display:none;" onchange="analyzeReceipt(this)"/>
+        <input type="file" id="receipt-gallery-input" accept="image/*" style="display:none;" onchange="analyzeReceipt(this)"/>
         <div style="font-size:11px;color:var(--sub);text-align:center;">💡 Assure-toi que le reçu est bien éclairé et lisible</div>
       </div>
       <div id="receipt-loading" style="display:none;text-align:center;padding:2rem;">
@@ -5959,7 +5971,8 @@ function openReceiptScanner() {
 
 function closeReceiptScanner() {
   document.getElementById('receipt-modal').style.display = 'none';
-  document.getElementById('receipt-file-input').value = '';
+  document.getElementById('receipt-camera-input').value = '';
+  document.getElementById('receipt-gallery-input').value = '';
 }
 
 // Extrait le premier bloc JSON complet et équilibré d'un texte, même s'il y a
@@ -6088,7 +6101,8 @@ function openCircularScanner() {
 
 function closeCircularScanner() {
   document.getElementById('circular-modal').style.display = 'none';
-  document.getElementById('circular-file-input').value = '';
+  document.getElementById('circular-camera-input').value = '';
+  document.getElementById('circular-gallery-input').value = '';
 }
 
 async function analyzeCircular(input) {
