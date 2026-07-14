@@ -5979,14 +5979,30 @@ function closeReceiptScanner() {
 // du texte avant/après. Beaucoup plus fiable que la regex gourmande /\{[\s\S]*\}/
 // qui peut inclure du texte parasite entre deux accolades éloignées.
 function extractJSON(text) {
-  var start = text.indexOf('{');
-  if (start === -1) return null;
+  // Trouve le premier "{" OU le premier "[", peu importe lequel apparaît en premier —
+  // l'IA répond parfois avec {"items":[...]} et parfois directement avec [...].
+  var startObj = text.indexOf('{');
+  var startArr = text.indexOf('[');
+  var openChar, closeChar, start;
+
+  if (startObj === -1 && startArr === -1) return null;
+  if (startArr !== -1 && (startObj === -1 || startArr < startObj)) {
+    openChar = '['; closeChar = ']'; start = startArr;
+  } else {
+    openChar = '{'; closeChar = '}'; start = startObj;
+  }
+
   var depth = 0;
   for (var i = start; i < text.length; i++) {
-    if (text[i] === '{') depth++;
-    else if (text[i] === '}') {
+    if (text[i] === openChar) depth++;
+    else if (text[i] === closeChar) {
       depth--;
-      if (depth === 0) return text.substring(start, i + 1);
+      if (depth === 0) {
+        var raw = text.substring(start, i + 1);
+        // Normalise toujours vers {"items":[...]} pour que le reste du code n'ait rien à changer
+        if (openChar === '[') return '{"items":' + raw + '}';
+        return raw;
+      }
     }
   }
   return null;
