@@ -5992,6 +5992,34 @@ function extractJSON(text) {
   return null;
 }
 
+// Redimensionne et compresse une image avant de l'envoyer à l'IA — évite les échecs
+// silencieux causés par des photos trop volumineuses (souvent 3-5 Mo directement
+// depuis l'appareil photo d'un cellulaire). 1600px de large est amplement suffisant
+// pour que l'IA lise le texte correctement.
+function resizeImageToBase64(file, maxDim, quality) {
+  maxDim = maxDim || 1600;
+  quality = quality || 0.85;
+  return new Promise(function(resolve, reject) {
+    var img = new Image();
+    var url = URL.createObjectURL(file);
+    img.onload = function() {
+      URL.revokeObjectURL(url);
+      var w = img.width, h = img.height;
+      if(w > maxDim || h > maxDim) {
+        if(w > h) { h = Math.round(h * maxDim / w); w = maxDim; }
+        else { w = Math.round(w * maxDim / h); h = maxDim; }
+      }
+      var canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      var dataUrl = canvas.toDataURL('image/jpeg', quality);
+      resolve(dataUrl.split(',')[1]);
+    };
+    img.onerror = function() { URL.revokeObjectURL(url); reject(new Error('Impossible de charger l\'image')); };
+    img.src = url;
+  });
+}
+
 async function analyzeReceipt(input) {
   if(!input.files || !input.files[0]) return;
   var file = input.files[0];
@@ -5999,12 +6027,7 @@ async function analyzeReceipt(input) {
   document.getElementById('receipt-loading').style.display = 'block';
 
   try {
-    var base64 = await new Promise(function(resolve, reject) {
-      var reader = new FileReader();
-      reader.onload = function(e) { resolve(e.target.result.split(',')[1]); };
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
+    var base64 = await resizeImageToBase64(file);
 
     var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
@@ -6024,12 +6047,14 @@ async function analyzeReceipt(input) {
     });
     var data = await res.json();
     var text = data.choices[0].message.content.replace(/```json|```/g,'').trim();
+    console.log('[Reçu] Réponse brute de l\'IA:', text); // diagnostic — visible dans F12 > Console
     var jsonStr = extractJSON(text);
-    if(!jsonStr) throw new Error('No JSON');
+    if(!jsonStr) throw new Error('No JSON found in: ' + text.substring(0,200));
     var result = JSON.parse(jsonStr);
+    console.log('[Reçu] JSON extrait:', result); // diagnostic
     var items = (result.items || []).filter(function(it){ return it && it.nom; });
 
-    if(items.length === 0) throw new Error('No items detected');
+    if(items.length === 0) throw new Error('No items detected — réponse IA: ' + text.substring(0,300));
 
     window._receiptItems = items;
     var listEl = document.getElementById('receipt-items-list');
@@ -6046,7 +6071,7 @@ async function analyzeReceipt(input) {
     console.error('Receipt analysis error:', e);
     document.getElementById('receipt-loading').style.display = 'none';
     document.getElementById('receipt-upload-section').style.display = 'block';
-    showToast("⚠️ Impossible d'analyser le reçu — réessaie avec une photo plus claire!");
+    showToast("⚠️ Erreur d'analyse du reçu — réessaie dans un instant (détails dans la console)");
   }
 }
 
@@ -6118,12 +6143,7 @@ async function analyzeCircular(input) {
   document.getElementById('circular-loading').style.display = 'block';
 
   try {
-    var base64 = await new Promise(function(resolve, reject) {
-      var reader = new FileReader();
-      reader.onload = function(e) { resolve(e.target.result.split(',')[1]); };
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
+    var base64 = await resizeImageToBase64(file);
 
     var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
@@ -6177,7 +6197,7 @@ async function analyzeCircular(input) {
     console.error('Circular analysis error:', e);
     document.getElementById('circular-loading').style.display = 'none';
     document.getElementById('circular-upload-section').style.display = 'block';
-    showToast("⚠️ Impossible d'analyser la circulaire — réessaie avec une photo plus claire!");
+    showToast("⚠️ Erreur d'analyse de la circulaire — réessaie dans un instant (détails dans la console)");
   }
 }
 
