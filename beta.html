@@ -1086,11 +1086,11 @@ ml('account', '2355363');
     </div>
     <div class="tabs" id="speciaux-category-tabs" style="flex-wrap:wrap;height:auto;">
       <button class="tab on" data-cat="" onclick="setSpeciauxCategory('',this)">Tous</button>
-      <button class="tab" data-cat="Fruits et légumes" onclick="setSpeciauxCategory('Fruits et légumes',this)">🥦 Fruits & légumes</button>
-      <button class="tab" data-cat="Viandes et poissons" onclick="setSpeciauxCategory('Viandes et poissons',this)">🍗 Viandes</button>
-      <button class="tab" data-cat="Produits laitiers" onclick="setSpeciauxCategory('Produits laitiers',this)">🥛 Laitiers</button>
-      <button class="tab" data-cat="Épicerie sèche" onclick="setSpeciauxCategory('Épicerie sèche',this)">🛒 Épicerie</button>
-      <button class="tab" data-cat="Autres" onclick="setSpeciauxCategory('Autres',this)">📦 Autres</button>
+      <button class="tab" data-cat="fruits_veg" onclick="setSpeciauxCategory('fruits_veg',this)">🥦 Fruits & légumes</button>
+      <button class="tab" data-cat="meat_fish" onclick="setSpeciauxCategory('meat_fish',this)">🍗 Viandes</button>
+      <button class="tab" data-cat="dairy" onclick="setSpeciauxCategory('dairy',this)">🥛 Laitiers</button>
+      <button class="tab" data-cat="dry_goods" onclick="setSpeciauxCategory('dry_goods',this)">🛒 Épicerie</button>
+      <button class="tab" data-cat="other" onclick="setSpeciauxCategory('other',this)">📦 Autres</button>
     </div>
     <div id="speciaux-list" style="margin-top:1rem;">
       <div style="text-align:center;color:var(--sub);font-size:13px;padding:2rem 0;"><i class="ti ti-refresh" style="font-size:20px;display:block;margin-bottom:6px;"></i>Chargement des vrais spéciaux...</div>
@@ -2344,40 +2344,64 @@ function renderStoresList(stores) {
 
 
 
+// ============================================================
+// SYSTÈME DE CATÉGORIES — clés internes stables (jamais affichées
+// directement), traduites à l'affichage seulement via CATEGORY_LABELS.
+// Ça permet de changer de langue sans jamais casser la logique interne
+// (classement, budget, filtres) qui compare toujours les mêmes clés.
+// ============================================================
 var GROCERY_CATEGORIES = {
-  'Fruits et légumes': {icon: '🥦', color: '#1D9E75'},
-  'Viandes et poissons': {icon: '🍗', color: '#D85A30'},
-  'Produits laitiers': {icon: '🥛', color: '#378ADD'},
-  'Boulangerie': {icon: '🍞', color: '#C9A227'},
-  'Épicerie sèche': {icon: '🥫', color: '#534AB7'},
-  'Surgelés': {icon: '🧊', color: '#0EA5E9'},
-  'Boissons': {icon: '🧃', color: '#EC4899'},
-  'Collations': {icon: '🍪', color: '#F59E0B'},
-  'Entretien & hygiène': {icon: '🧼', color: '#14b8a6'},
-  'Autres': {icon: '🛒', color: '#6b7280'}
+  fruits_veg: {icon: '🥦', color: '#1D9E75'},
+  meat_fish: {icon: '🍗', color: '#D85A30'},
+  dairy: {icon: '🥛', color: '#378ADD'},
+  bakery: {icon: '🍞', color: '#C9A227'},
+  dry_goods: {icon: '🥫', color: '#534AB7'},
+  frozen: {icon: '🧊', color: '#0EA5E9'},
+  beverages: {icon: '🧃', color: '#EC4899'},
+  snacks: {icon: '🍪', color: '#F59E0B'},
+  household: {icon: '🧼', color: '#14b8a6'},
+  other: {icon: '🛒', color: '#6b7280'}
 };
+
+var CATEGORY_LABELS = {
+  fr: {
+    fruits_veg: 'Fruits et légumes', meat_fish: 'Viandes et poissons', dairy: 'Produits laitiers',
+    bakery: 'Boulangerie', dry_goods: 'Épicerie sèche', frozen: 'Surgelés',
+    beverages: 'Boissons', snacks: 'Collations', household: 'Entretien & hygiène', other: 'Autres'
+  },
+  en: {
+    fruits_veg: 'Fruits & Vegetables', meat_fish: 'Meat & Fish', dairy: 'Dairy',
+    bakery: 'Bakery', dry_goods: 'Dry Goods', frozen: 'Frozen',
+    beverages: 'Beverages', snacks: 'Snacks', household: 'Household & Hygiene', other: 'Other'
+  }
+};
+
+function categoryLabel(key) {
+  var lang = (typeof currentLang !== 'undefined' && currentLang === 'en') ? 'en' : 'fr';
+  return (CATEGORY_LABELS[lang] && CATEGORY_LABELS[lang][key]) || key;
+}
 
 function guessCategory(productName) {
   var n = productName.toLowerCase();
-  // 1. Surgelés — vérifié en PREMIER, peu importe le type d'aliment (un fruit congelé va au congélateur, pas aux fruits frais)
-  if(/surgelé|surgele|congelé|congele|glace|crème glacée|creme glacee/.test(n)) return 'Surgelés';
-  // 2. Produits ménagers / hygiène — pas de la nourriture, ne doit jamais tomber dans une catégorie alimentaire
-  if(/savon|vaisselle|nettoyant|détergent|detergent|javellisant|javel|papier hygiénique|papier hygienique|essuie-tout|essuie tout|désinfectant|desinfectant|lessive|shampoing|dentifrice|couche/.test(n)) return 'Entretien & hygiène';
-  // 3. Viandes et poissons (incluant charcuteries — saucisses, jambon, bacon sont de la viande, pas des produits laitiers)
-  if(/poulet|boeuf|bœuf|porc|poisson|saumon|viande|steak|jambon|bacon|dinde|crevette|thon|charcuterie|saucisse|tofu/.test(n)) return 'Viandes et poissons';
-  // 4. Fruits et légumes
-  if(/pomme|banane|carotte|brocoli|laitue|légume|legume|fruit|tomate|oignon|poivron|concombre|fraise|orange|citron|raisin|patate|pomme de terre/.test(n)) return 'Fruits et légumes';
-  // 5. Produits laitiers (vraiment laitiers seulement)
-  if(/lait|fromage|yogourt|yaourt|beurre|crème|creme|oeuf|œuf|kefir|ricotta|mascarpone/.test(n)) return 'Produits laitiers';
-  // 6. Boulangerie
-  if(/pain|bagel|croissant|baguette|brioche|muffin/.test(n)) return 'Boulangerie';
-  // 7. Boissons
-  if(/jus|boisson|soda|eau|café|cafe|thé|the|bière|biere|vin/.test(n)) return 'Boissons';
-  // 8. Collations
-  if(/chips|biscuit|chocolat|bonbon|croustille|collation|cookie/.test(n)) return 'Collations';
-  // 9. Épicerie sèche (incluant condiments)
-  if(/riz|pâte|pate|farine|sucre|sel|huile|conserve|sauce|céréale|cereale|vinaigre|mayonnaise|margarine/.test(n)) return 'Épicerie sèche';
-  return 'Autres';
+  // 1. Surgelés/Frozen — vérifié en PREMIER, peu importe le type d'aliment
+  if(/surgelé|surgele|congelé|congele|glace|crème glacée|creme glacee|frozen|ice cream/.test(n)) return 'frozen';
+  // 2. Produits ménagers / hygiène — jamais dans une catégorie alimentaire
+  if(/savon|vaisselle|nettoyant|détergent|detergent|javellisant|javel|papier hygiénique|papier hygienique|essuie-tout|essuie tout|désinfectant|desinfectant|lessive|shampoing|dentifrice|couche|soap|detergent|cleaner|bleach|toilet paper|paper towel|diaper|toothpaste/.test(n)) return 'household';
+  // 3. Viandes et poissons / Meat & fish
+  if(/poulet|boeuf|bœuf|porc|poisson|saumon|viande|steak|jambon|bacon|dinde|crevette|thon|charcuterie|saucisse|tofu|chicken|beef|pork|fish|salmon|meat|ham|turkey|shrimp|tuna|sausage/.test(n)) return 'meat_fish';
+  // 4. Fruits et légumes / Fruits & vegetables
+  if(/pomme|banane|carotte|brocoli|laitue|légume|legume|fruit|tomate|oignon|poivron|concombre|fraise|orange|citron|raisin|patate|pomme de terre|apple|banana|carrot|broccoli|lettuce|vegetable|tomato|onion|pepper|cucumber|strawberry|lemon|grape|potato/.test(n)) return 'fruits_veg';
+  // 5. Produits laitiers / Dairy
+  if(/lait|fromage|yogourt|yaourt|beurre|crème|creme|oeuf|œuf|kefir|ricotta|mascarpone|milk|cheese|yogurt|butter|cream|egg/.test(n)) return 'dairy';
+  // 6. Boulangerie / Bakery
+  if(/pain|bagel|croissant|baguette|brioche|muffin|bread/.test(n)) return 'bakery';
+  // 7. Boissons / Beverages
+  if(/jus|boisson|soda|eau|café|cafe|thé|the|bière|biere|vin|juice|drink|water|coffee|tea|beer|wine/.test(n)) return 'beverages';
+  // 8. Collations / Snacks
+  if(/chips|biscuit|chocolat|bonbon|croustille|collation|cookie|candy|snack|chocolate/.test(n)) return 'snacks';
+  // 9. Épicerie sèche / Dry goods (incluant condiments)
+  if(/riz|pâte|pate|farine|sucre|sel|huile|conserve|sauce|céréale|cereale|vinaigre|mayonnaise|margarine|rice|pasta|flour|sugar|salt|oil|canned|cereal|vinegar|mayonnaise/.test(n)) return 'dry_goods';
+  return 'other';
 }
 
 
@@ -3476,7 +3500,7 @@ function renderGr(){
     
     var grouped = {};
     toBuy.forEach(function(g) {
-      var cat = g.category || 'Autres';
+      var cat = g.category || 'other';
       if(!grouped[cat]) grouped[cat] = [];
       grouped[cat].push(g);
     });
@@ -3487,7 +3511,7 @@ function renderGr(){
       var catInfo = GROCERY_CATEGORIES[catName];
       html += '<div style="display:flex;align-items:center;gap:6px;padding:8px 0 4px;margin-top:4px;">' +
         '<span style="font-size:14px;">' + catInfo.icon + '</span>' +
-        '<span style="font-size:11px;font-weight:700;color:' + catInfo.color + ';">' + catName + '</span>' +
+        '<span style="font-size:11px;font-weight:700;color:' + catInfo.color + ';">' + categoryLabel(catName) + '</span>' +
         '</div>';
       
       grouped[catName].forEach(function(g) {
@@ -4260,7 +4284,7 @@ async function lookupBarcode(code) {
 // ============================================================
 var _allSpeciaux = [];
 var _speciauxCategory = '';
-var CATEGORY_EMOJI = {'Fruits et légumes':'🥦','Viandes et poissons':'🍗','Produits laitiers':'🥛','Épicerie sèche':'🛒','Boulangerie':'🍞','Surgelés':'🧊','Boissons':'🥤','Collations':'🍪','Entretien & hygiène':'🧼','Autres':'📦'};
+var CATEGORY_EMOJI = {'fruits_veg':'🥦','meat_fish':'🍗','dairy':'🥛','dry_goods':'🛒','bakery':'🍞','frozen':'🧊','beverages':'🥤','snacks':'🍪','household':'🧼','other':'📦'};
 
 async function loadAllSpeciaux(){
   var listEl = document.getElementById('speciaux-list');
@@ -4994,7 +5018,7 @@ function addMealToHistory() {
 }
 
 // ===== SYSTÈME DE VERSION =====
-var APP_VERSION = '2.2';
+var APP_VERSION = '2.3';
 
 function checkVersion() {
   var savedVersion = localStorage.getItem('sg_app_version');
