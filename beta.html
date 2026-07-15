@@ -680,27 +680,27 @@ ml('account', '2355363');
     </div>
   </div>
   <div class="px">
-    <div class="sl">Accès rapide</div>
+    <div class="sl" data-i18n="home_quick">Accès rapide</div>
     <div class="qgrid">
       <div class="qc" onclick="goTo('prix',null)" style="min-height:100px;">
         <div class="qc-photo" style="background-image:url('https://images.unsplash.com/photo-1534723328310-e82dad3ee43f?w=300&q=70');"></div>
         <div class="qc-overlay"></div>
-        <div class="qc-info"><div class="qc-t">Scanner prix</div><div class="qc-s" id="ql-scan">Illimité ⭐</div></div>
+        <div class="qc-info"><div class="qc-t" data-i18n="home_scanner">Scanner prix</div><div class="qc-s" id="ql-scan">Illimité ⭐</div></div>
       </div>
       <div class="qc" onclick="goTo('recettes',null)" style="min-height:100px;">
         <div class="qc-photo" style="background-image:url('https://images.unsplash.com/photo-1466637574441-749b8f19452f?w=300&q=70');"></div>
         <div class="qc-overlay"></div>
-        <div class="qc-info"><div class="qc-t">Recettes IA</div><div class="qc-s">+ Vidéos YouTube</div></div>
+        <div class="qc-info"><div class="qc-t" data-i18n="home_recettes">Recettes IA</div><div class="qc-s">+ Vidéos YouTube</div></div>
       </div>
       <div class="qc" onclick="goTo('liste',null)" style="min-height:100px;">
         <div class="qc-photo" style="background-image:url('https://images.unsplash.com/photo-1542838132-92c53300491e?w=300&q=70');"></div>
         <div class="qc-overlay"></div>
-        <div class="qc-info"><div class="qc-t">Ma liste</div><div class="qc-s" id="ql-list">0 article</div></div>
+        <div class="qc-info"><div class="qc-t" data-i18n="home_liste">Ma liste</div><div class="qc-s" id="ql-list">0 article</div></div>
       </div>
       <div class="qc" onclick="goExtra('wallet')" style="min-height:100px;">
         <div class="qc-photo" style="background-image:url('https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&q=70');"></div>
         <div class="qc-overlay"></div>
-        <div class="qc-info"><div class="qc-t">Portefeuille</div><div class="qc-s" id="ql-wallet">3 cartes</div></div>
+        <div class="qc-info"><div class="qc-t" data-i18n="home_wallet">Portefeuille</div><div class="qc-s" id="ql-wallet">3 cartes</div></div>
       </div>
     </div>
     <div class="pts-card" onclick="goTo('points',null)">
@@ -743,7 +743,7 @@ ml('account', '2355363');
     <div class="hc1"></div>
     <div class="logo-row">
       <svg class="lsvg" viewBox="0 0 680 500"><use href="#logo-icon"/></svg>
-      <div><div class="lt"><span>Smart</span><span style="color:#C9A227;">Grocer</span></div><div class="ls">Comparateur de prix</div></div>
+      <div><div class="lt"><span>Smart</span><span style="color:#C9A227;">Grocer</span></div><div class="ls" data-i18n="page_prix_sub">Comparateur de prix</div></div>
       <div class="badge bdgold" id="scan-badge" style="margin-left:auto;">⭐ Illimité</div>
     </div>
   </div>
@@ -807,7 +807,7 @@ ml('account', '2355363');
     <div class="hc1"></div>
     <div class="logo-row">
       <svg class="lsvg" viewBox="0 0 680 500"><use href="#logo-icon"/></svg>
-      <div><div class="lt"><span>Smart</span><span style="color:#C9A227;">Grocer</span></div><div class="ls">Recettes IA + Vidéos virales</div></div>
+      <div><div class="lt"><span>Smart</span><span style="color:#C9A227;">Grocer</span></div><div class="ls" data-i18n="page_rec_sub">Recettes IA + Vidéos virales</div></div>
       <div class="badge bdgold" id="rec-badge" style="margin-left:auto;">⭐ Illimitées</div>
     </div>
   </div>
@@ -816,7 +816,7 @@ ml('account', '2355363');
     <div class="sl2">Tes ingrédients</div>
     <div class="sr"><input type="text" id="ing-in" placeholder="Ex: poulet, riz, tomates..." data-i18n="rec_ing_placeholder"/><button class="btn bg" id="voice-ing-in" onclick="startVoice('ing-in')" style="padding:8px 12px;font-size:18px;line-height:1;">🎤</button><button class="btn bg" onclick="addIng()"><i class="ti ti-plus"></i></button></div>
     <div id="ing-tags" style="margin-bottom:1rem;min-height:28px;"><span style="font-size:11px;color:var(--sub);">Ajoute des ingrédients / Add ingredients...</span></div>
-    <button class="btn bg bf" id="gen-btn" onclick="genAll()"><i class="ti ti-wand"></i> Générer recettes + vidéos virales</button>
+    <button class="btn bg bf" id="gen-btn" onclick="genAll()"><i class="ti ti-wand"></i> <span data-i18n="rec_gen_btn">Générer recettes + vidéos virales</span></button>
     <div class="ld" id="rec-ld" style="margin-top:1rem;"><i class="ti ti-refresh"></i> Génération en cours...</div>
     <div id="rec-res" style="display:block;margin-top:1.25rem;">
       <div class="tabs">
@@ -842,13 +842,13 @@ ml('account', '2355363');
     <div class="hc1"></div>
     <div class="logo-row">
       <svg class="lsvg" viewBox="0 0 680 500"><use href="#logo-icon"/></svg>
-      <div><div class="lt"><span>Smart</span><span style="color:#C9A227;">Grocer</span></div><div class="ls">Liste d'épicerie</div></div>
+      <div><div class="lt"><span>Smart</span><span style="color:#C9A227;">Grocer</span></div><div class="ls" data-i18n="page_liste_sub">Liste d'épicerie</div></div>
       <div class="badge bdgold" id="list-badge" style="margin-left:auto;">⭐ Illimitée</div>
     </div>
   </div>
   <div class="px">
     <div class="limit-bar" id="list-limit-bar" style="display:none;"><div style="font-size:11px;flex:1;">Articles (max 10 gratuit)</div><div style="font-size:11px;font-weight:700;" id="list-count-text">0/10</div></div>
-    <div class="sr"><input type="text" id="gr-in" placeholder="Ajouter un article / Add item..." data-i18n="liste_placeholder"/><button class="btn bg" id="voice-gr-in" onclick="startVoice('gr-in')" style="padding:8px 12px;font-size:18px;line-height:1;">🎤</button><button class="btn bg" onclick="addGr()"><i class="ti ti-plus"></i> Ajouter</button></div>
+    <div class="sr"><input type="text" id="gr-in" placeholder="Ajouter un article / Add item..." data-i18n="liste_placeholder"/><button class="btn bg" id="voice-gr-in" onclick="startVoice('gr-in')" style="padding:8px 12px;font-size:18px;line-height:1;">🎤</button><button class="btn bg" onclick="addGr()"><i class="ti ti-plus"></i> <span data-i18n="liste_add_btn">Ajouter</span></button></div>
     <button class="btn bo" style="width:100%;margin-bottom:10px;" onclick="openReceiptScanner()">🧾 Scanner un reçu / Scan a receipt</button>
     <div class="card"><div id="gr-items"><div style="color:var(--sub);font-size:12px;padding:8px 0;">Ta liste est vide / Your list is empty!</div></div></div>
     <div id="gr-foot" style="display:none;">
@@ -961,7 +961,7 @@ ml('account', '2355363');
     <div class="hc1"></div>
     <div class="logo-row">
       <svg class="lsvg" viewBox="0 0 680 500"><use href="#logo-icon"/></svg>
-      <div><div class="lt"><span>Smart</span><span style="color:#C9A227;">Grocer</span></div><div class="ls">Portefeuille numérique</div></div>
+      <div><div class="lt"><span>Smart</span><span style="color:#C9A227;">Grocer</span></div><div class="ls" data-i18n="page_wallet_sub">Portefeuille numérique</div></div>
     </div>
     <div class="hstats">
       <div class="hs"><div class="hs-n" id="w-count">0</div><div class="hs-l">Cartes</div></div>
@@ -1047,7 +1047,7 @@ ml('account', '2355363');
     <div class="hc1"></div>
     <div class="logo-row">
       <svg class="lsvg" viewBox="0 0 680 500"><use href="#logo-icon"/></svg>
-      <div><div class="lt"><span>Smart</span><span style="color:#C9A227;">Grocer</span></div><div class="ls">Alertes spéciaux</div></div>
+      <div><div class="lt"><span>Smart</span><span style="color:#C9A227;">Grocer</span></div><div class="ls" data-i18n="page_alertes_sub">Alertes spéciaux</div></div>
     </div>
   </div>
   <div class="px">
@@ -1076,7 +1076,7 @@ ml('account', '2355363');
     <div class="hc1"></div>
     <div class="logo-row">
       <svg class="lsvg" viewBox="0 0 680 500"><use href="#logo-icon"/></svg>
-      <div><div class="lt"><span>Smart</span><span style="color:#C9A227;">Grocer</span></div><div class="ls">🔥 Spéciaux de la semaine — vrais prix</div></div>
+      <div><div class="lt"><span>Smart</span><span style="color:#C9A227;">Grocer</span></div><div class="ls" data-i18n="page_speciaux_sub">🔥 Spéciaux de la semaine — vrais prix</div></div>
     </div>
   </div>
   <div class="px">
@@ -1137,7 +1137,7 @@ ml('account', '2355363');
     <div style="position:absolute;top:-40px;right:-40px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,0.05);"></div>
     <div class="logo-row" style="margin-bottom:1.25rem;">
       <svg class="lsvg" viewBox="0 0 680 500"><use href="#logo-icon"/></svg>
-      <div><div class="lt"><span>Smart</span><span style="color:#C9A227;">Grocer</span></div><div class="ls">Mon profil</div></div>
+      <div><div class="lt"><span>Smart</span><span style="color:#C9A227;">Grocer</span></div><div class="ls" data-i18n="page_profil_sub">Mon profil</div></div>
     </div>
     <div style="display:flex;align-items:center;gap:14px;">
       <div class="prof-avatar" id="pav">TR</div>
@@ -1197,7 +1197,7 @@ ml('account', '2355363');
             <input type="url" id="pp-twitter" placeholder="x.com/moncompte" onchange="saveProfile()"/>
           </div>
         </div></div>
-        <button class="btn bg bf" onclick="saveProfile();showToast('✅ Profil sauvegardé!')"><i class="ti ti-check"></i> Sauvegarder</button>
+        <button class="btn bg bf" onclick="saveProfile();showToast('✅ ' + t('prof_saved_toast'))"><i class="ti ti-check"></i> <span data-i18n="prof_save_btn">Sauvegarder</span></button>
         <button class="btn bo bf" onclick="showInstallInstructions()" style="margin-top:8px;"><i class="ti ti-device-mobile"></i> 📱 Installer sur mon téléphone</button>
       </div>
     </div>
@@ -1214,14 +1214,14 @@ ml('account', '2355363');
     <div class="hc1"></div>
     <div class="logo-row">
       <svg class="lsvg" viewBox="0 0 680 500"><use href="#logo-icon"/></svg>
-      <div><div class="lt"><span>Smart</span><span style="color:#C9A227;">Grocer</span></div><div class="ls">Plans & Abonnements</div></div>
+      <div><div class="lt"><span>Smart</span><span style="color:#C9A227;">Grocer</span></div><div class="ls" data-i18n="page_premium_sub">Plans & Abonnements</div></div>
     </div>
   </div>
   <div class="px">
     <div class="card" style="border:2px solid var(--border);">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.875rem;"><div style="font-size:14px;font-weight:700;">🆓 Gratuit / Free</div><div style="font-size:18px;font-weight:700;">$0<span style="font-size:11px;font-weight:400;color:var(--sub);">/mois</span></div></div>
       <div style="display:flex;flex-direction:column;gap:4px;margin-bottom:1rem;"><div style="font-size:12px;">📷 5 scans/jour · 🍳 3 recettes/jour</div><div style="font-size:12px;">🔔 2 alertes · 🛒 10 articles liste</div><div style="font-size:12px;color:var(--sub);">📢 Publicités incluses</div></div>
-      <button class="btn bo bf" onclick="openBillingPortal()">Gérer / annuler mon abonnement</button>
+      <button class="btn bo bf" onclick="openBillingPortal()" data-i18n="premium_manage_btn">Gérer / annuler mon abonnement</button>
     </div>
     <div class="card" style="border:2px solid var(--p);position:relative;">
       <div style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--p);color:#fff;font-size:10px;font-weight:700;padding:3px 12px;border-radius:999px;">⭐ POPULAIRE</div>
@@ -1238,21 +1238,21 @@ ml('account', '2355363');
         <div class="prem-feature"><span style="color:var(--g);font-weight:700;">✓</span>Portefeuille numérique illimité</div>
       </div>
       <div style="display:flex;flex-direction:column;gap:6px;">
-        <a href="https://buy.stripe.com/8x2fZhdLzgF83yr8dd5gc00" class="btn bp bf" style="text-decoration:none;">⭐ S'abonner — 4,99$/mois</a>
-        <a href="https://buy.stripe.com/aFa28r9vjcoSb0T1OP5gc01" class="btn bo bf" style="text-decoration:none;position:relative;">S'abonner — 39,99$/an <span style="color:var(--g);font-weight:700;">(économise 33%)</span></a>
+        <a href="https://buy.stripe.com/8x2fZhdLzgF83yr8dd5gc00" class="btn bp bf" style="text-decoration:none;"><span data-i18n="premium_sub_monthly">⭐ S'abonner — 4,99$/mois</span></a>
+        <a href="https://buy.stripe.com/aFa28r9vjcoSb0T1OP5gc01" class="btn bo bf" style="text-decoration:none;position:relative;"><span data-i18n="premium_sub_annual">S'abonner — 39,99$/an</span> <span style="color:var(--g);font-weight:700;" data-i18n="premium_save33">(économise 33%)</span></a>
       </div>
       <div style="text-align:center;margin-top:8px;font-size:10px;color:var(--sub);">
-        <a href="https://timrockstar.github.io/smartgrocer/privacy.html" target="_blank" style="color:var(--sub);">Confidentialité</a> · 
-        <a href="https://timrockstar.github.io/smartgrocer/terms.html" target="_blank" style="color:var(--sub);">Conditions</a>
+        <a href="https://timrockstar.github.io/smartgrocer/privacy.html" target="_blank" style="color:var(--sub);" data-i18n="footer_privacy">Confidentialité</a> · 
+        <a href="https://timrockstar.github.io/smartgrocer/terms.html" target="_blank" style="color:var(--sub);" data-i18n="footer_terms">Conditions</a>
       </div>
     </div>
     <div class="card" style="border:2px solid var(--gold);">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.875rem;"><div style="font-size:14px;font-weight:700;">👨‍👩‍👧‍👦 Famille</div><div style="font-size:18px;font-weight:700;color:var(--gold);">$8.99<span style="font-size:11px;font-weight:400;color:var(--sub);">/mois</span></div></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.875rem;"><div style="font-size:14px;font-weight:700;" data-i18n="premium_family_title">👨‍👩‍👧‍👦 Famille</div><div style="font-size:18px;font-weight:700;color:var(--gold);">$8.99<span style="font-size:11px;font-weight:400;color:var(--sub);">/mois</span></div></div>
       <div style="display:flex;flex-direction:column;gap:4px;margin-bottom:1rem;">
-        <div style="font-size:12px;"><span style="color:var(--gold);font-weight:700;">✓</span> Tout Premium + jusqu'à 5 comptes</div>
-        <div style="font-size:12px;"><span style="color:var(--gold);font-weight:700;">✓</span> Liste partagée en temps réel</div>
+        <div style="font-size:12px;"><span style="color:var(--gold);font-weight:700;">✓</span> <span data-i18n="premium_family_f1">Tout Premium + jusqu'à 5 comptes</span></div>
+        <div style="font-size:12px;"><span style="color:var(--gold);font-weight:700;">✓</span> <span data-i18n="premium_family_f2">Liste partagée en temps réel</span></div>
       </div>
-      <button class="btn bgold bf" onclick="showToast('🚀 Bientôt disponible / Coming soon!')">Choisir Famille</button>
+      <button class="btn bgold bf" onclick="showToast('🚀 Bientôt disponible / Coming soon!')" data-i18n="premium_family_btn">Choisir Famille</button>
     </div>
   </div>
 </div>
@@ -1263,7 +1263,7 @@ ml('account', '2355363');
     <div class="hc1"></div>
     <div class="logo-row">
       <svg class="lsvg" viewBox="0 0 680 500"><use href="#logo-icon"/></svg>
-      <div><div class="lt"><span>Smart</span><span style="color:#C9A227;">Grocer</span></div><div class="ls">📅 Planificateur de repas</div></div>
+      <div><div class="lt"><span>Smart</span><span style="color:#C9A227;">Grocer</span></div><div class="ls" data-i18n="page_planner_sub">📅 Planificateur de repas</div></div>
     </div>
   </div>
   <div class="px">
@@ -1311,7 +1311,7 @@ ml('account', '2355363');
     <div class="hc1"></div>
     <div class="logo-row">
       <svg class="lsvg" viewBox="0 0 680 500"><use href="#logo-icon"/></svg>
-      <div><div class="lt"><span>Smart</span><span style="color:#C9A227;">Grocer</span></div><div class="ls">🍎 Analyse Nutritionnelle IA</div></div>
+      <div><div class="lt"><span>Smart</span><span style="color:#C9A227;">Grocer</span></div><div class="ls" data-i18n="page_nutrition_sub">🍎 Analyse Nutritionnelle IA</div></div>
     </div>
     <div class="hstats">
       <div class="hs"><div class="hs-n" id="nut-cal-today">0</div><div class="hs-l">Cal. aujourd'hui</div></div>
@@ -1775,6 +1775,21 @@ var translations = {
     toast_scan_ok: 'Scan réussi!',
     toast_added: 'ajouté à ta liste!',
     toast_speak: '🎤 Parle maintenant...',
+    // Sous-titres de page
+    page_prix_sub: 'Comparateur de prix', page_rec_sub: 'Recettes IA + Vidéos virales',
+    page_liste_sub: "Liste d'épicerie", page_wallet_sub: 'Portefeuille numérique',
+    page_alertes_sub: 'Alertes spéciaux', page_speciaux_sub: '🔥 Spéciaux de la semaine — vrais prix',
+    page_profil_sub: 'Mon profil', page_premium_sub: 'Plans & Abonnements',
+    page_planner_sub: '📅 Planificateur de repas', page_nutrition_sub: '🍎 Analyse Nutritionnelle IA',
+    // Profil
+    prof_saved_toast: 'Profil sauvegardé!',
+    // Premium
+    premium_manage_btn: 'Gérer / annuler mon abonnement',
+    premium_sub_monthly: "⭐ S'abonner — 4,99$/mois", premium_sub_annual: "S'abonner — 39,99$/an",
+    premium_save33: '(économise 33%)', premium_family_title: '👨‍👩‍👧‍👦 Famille',
+    premium_family_f1: "Tout Premium + jusqu'à 5 comptes", premium_family_f2: 'Liste partagée en temps réel',
+    premium_family_btn: 'Choisir Famille',
+    footer_privacy: 'Confidentialité', footer_terms: 'Conditions',
   },
   en: {
     // Nav
@@ -1816,6 +1831,21 @@ var translations = {
     toast_scan_ok: 'Scan successful!',
     toast_added: 'added to your list!',
     toast_speak: '🎤 Speak now...',
+    // Page subtitles
+    page_prix_sub: 'Price comparison', page_rec_sub: 'AI Recipes + Viral Videos',
+    page_liste_sub: 'Grocery list', page_wallet_sub: 'Digital wallet',
+    page_alertes_sub: 'Price alerts', page_speciaux_sub: '🔥 Specials this week — real prices',
+    page_profil_sub: 'My profile', page_premium_sub: 'Plans & Subscriptions',
+    page_planner_sub: '📅 Meal planner', page_nutrition_sub: '🍎 AI Nutrition Analysis',
+    // Profile
+    prof_saved_toast: 'Profile saved!',
+    // Premium
+    premium_manage_btn: 'Manage / cancel subscription',
+    premium_sub_monthly: '⭐ Subscribe — $4.99/month', premium_sub_annual: 'Subscribe — $39.99/year',
+    premium_save33: '(save 33%)', premium_family_title: '👨‍👩‍👧‍👦 Family',
+    premium_family_f1: 'Everything in Premium + up to 5 accounts', premium_family_f2: 'Real-time shared list',
+    premium_family_btn: 'Choose Family',
+    footer_privacy: 'Privacy', footer_terms: 'Terms',
   }
 };
 
@@ -1827,75 +1857,21 @@ function t(key) {
 function setLang(lang) {
   currentLang = lang;
   localStorage.setItem('sg_lang', lang);
-  
+
   var fr = lang === 'fr';
-  
-  // Update lang buttons
   var lf = document.getElementById('lang-fr');
   var le = document.getElementById('lang-en');
   if(lf) lf.className = 'lang-btn' + (fr ? ' active' : '');
   if(le) le.className = 'lang-btn' + (!fr ? ' active' : '');
-  
-  // Nav buttons
-  var nbs = document.querySelectorAll('.nb');
-  var navFR = ['Accueil','Prix','Recettes','Liste','Social','Points','Plus'];
-  var navEN = ['Home','Prices','Recipes','List','Social','Points','More'];
-  nbs.forEach(function(btn, i) {
-    var icon = btn.querySelector('i');
-    var iconHTML = icon ? icon.outerHTML : '';
-    btn.innerHTML = iconHTML + (fr ? (navFR[i]||'') : (navEN[i]||''));
-  });
-  
-  // Page subtitles
-  var subMap = {
-    'Comparateur de prix': 'Price comparison',
-    'Price comparison': 'Comparateur de prix',
-    'Recettes IA + Vidéos virales': 'AI Recipes + Viral Videos',
-    'AI Recipes + Viral Videos': 'Recettes IA + Vidéos virales',
-    "Liste d'épicerie": 'Grocery list',
-    'Grocery list': "Liste d'épicerie",
-    'Portefeuille numérique': 'Digital wallet',
-    'Digital wallet': 'Portefeuille numérique',
-  };
-  
-  // Placeholders
-  var prodIn = document.getElementById('prod-in');
-  if(prodIn) prodIn.placeholder = fr ? 'Nom du produit...' : 'Product name...';
-  
-  var ingIn = document.getElementById('ing-in');
-  if(ingIn) ingIn.placeholder = fr ? 'Ex: poulet, riz, tomates...' : 'Ex: chicken, rice, tomatoes...';
-  
-  var grIn = document.getElementById('gr-in');
-  if(grIn) grIn.placeholder = fr ? 'Ajouter un article...' : 'Add an item...';
-  
-  var cs = document.getElementById('cs');
-  if(cs) cs.placeholder = fr ? 'Rechercher...' : 'Search...';
-  
-  // Section labels
-  var homeQuick = document.querySelector('#home .sl');
-  if(homeQuick) homeQuick.textContent = fr ? 'Accès rapide' : 'Quick access';
-  
-  // Quick cards
-  var qcts = document.querySelectorAll('.qc-t');
-  var qcsFR = ['Scanner prix','Recettes IA','Ma liste','Portefeuille'];
-  var qcsEN = ['Price scanner','AI Recipes','My list','Wallet'];
-  qcts.forEach(function(el, i) {
-    el.textContent = fr ? qcsFR[i] : qcsEN[i];
-  });
-  
-  // Gen button
-  var genBtn = document.getElementById('gen-btn');
-  if(genBtn) genBtn.innerHTML = '<i class="ti ti-wand"></i> ' + (fr ? 'Générer recettes + vidéos virales' : 'Generate recipes + viral videos');
-  
-  // Beta banner
-  var betaLabel = document.querySelector('#beta-banner div div:first-child');
-  if(betaLabel) betaLabel.textContent = fr ? '🧪 Version Bêta' : '🧪 Beta Version';
-  var betaSub = document.querySelector('#beta-banner div div:last-child');  
-  if(betaSub && betaSub !== betaLabel) betaSub.textContent = fr ? 'Toutes les fonctionnalités débloquées!' : 'All features unlocked!';
-  
-  // Trending title
-  var trendTitle = document.querySelector('#home .sl:last-of-type');
-  
+
+  applyTranslations();
+
+  // Re-rend le contenu généré dynamiquement en JS (dépend de currentLang à l'affichage)
+  if(typeof renderGr === 'function') renderGr();
+  if(typeof renderRewards === 'function') renderRewards();
+  if(typeof renderSpeciauxList === 'function') renderSpeciauxList();
+  if(typeof updatePointsUI === 'function') updatePointsUI();
+
   showToast(fr ? '🇫🇷 Français activé' : '🇬🇧 English activated');
 }
 
