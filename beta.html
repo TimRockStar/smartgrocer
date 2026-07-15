@@ -4379,6 +4379,7 @@ document.addEventListener('DOMContentLoaded', function() {
 let quaggaRunning = false;
 
 var _quaggaDetectedHandler = null;
+var _quaggaProcessedHandler = null;
 var _quaggaTimeoutId = null;
 
 function startRealScan() {
@@ -4393,21 +4394,33 @@ function startRealScan() {
     decoder: { readers:['ean_reader','ean_8_reader','upc_reader','upc_e_reader','code_128_reader'] },
     locate: true
   }, function(err) {
-    if(err){ showToast('Camera non disponible'); stopRealScan(); return; }
+    if(err){ console.error('[Scanner] Erreur Quagga.init:', err); showToast('Camera non disponible'); stopRealScan(); return; }
+    console.log('[Scanner] Quagga initialisé avec succès, démarrage...');
     Quagga.start(); quaggaRunning = true;
   });
   var scanDone = false;
   var REQUIRED_MATCHES = 3; // exige 3 lectures identiques d'affilée avant de confirmer — évite les erreurs de lecture d'un seul frame
   var lastCode = null;
   var matchCount = 0;
+  var frameCount = 0;
 
   // Retire l'ancien écouteur avant d'en ajouter un nouveau — évite l'empilement
   // d'écouteurs à chaque tentative de scan, qui brouillait la détection.
   if(_quaggaDetectedHandler) { try{ Quagga.offDetected(_quaggaDetectedHandler); }catch(e){} }
+  if(_quaggaProcessedHandler) { try{ Quagga.offProcessed(_quaggaProcessedHandler); }catch(e){} }
+
+  // Confirme si Quagga reçoit et analyse vraiment des images de la caméra —
+  // si ce compteur reste à 0, le problème est en amont du décodage lui-même.
+  _quaggaProcessedHandler = function(result) {
+    frameCount++;
+    if(frameCount % 30 === 0) console.log('[Scanner] Images analysées:', frameCount, result ? '(image reçue)' : '(vide)');
+  };
+  Quagga.onProcessed(_quaggaProcessedHandler);
 
   _quaggaDetectedHandler = function(result) {
     if(scanDone) return;
     var code = result.codeResult.code;
+    console.log('[Scanner] Code détecté (brut, avant confirmation):', code, 'confiance:', result.codeResult.decodedCodes ? 'ok' : 'inconnue');
     if(!code || code.length < 4) return;
 
     if(code === lastCode) {
