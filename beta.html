@@ -6043,14 +6043,14 @@ async function analyzeReceipt(input) {
   document.getElementById('receipt-loading').style.display = 'block';
 
   try {
-    var base64 = await resizeImageToBase64(file);
+    var base64 = await resizeImageToBase64(file, 2000);
 
     var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
       body: JSON.stringify({
         model: 'meta-llama/llama-4-scout-17b-16e-instruct',
-        max_tokens: 1500,
+        max_tokens: 3000,
         temperature: 0,
         messages: [{
           role: 'user',
