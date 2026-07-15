@@ -430,9 +430,6 @@ n=d.getElementsByTagName(e)[0],n.parentNode.insertBefore(l,n);})
 (window,document,'script','https://assets.mailerlite.com/js/universal.js','ml');
 ml('account', '2355363');
 </script>
-<!-- ⚠️ TEMPORAIRE — Console de débogage mobile (Eruda). À RETIRER avant la publication sur Google Play. -->
-<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-<script>eruda.init();</script>
 </head>
 <body>
 <div class="toast" id="toast"></div>
@@ -4385,6 +4382,27 @@ var _quaggaTimeoutId = null;
 var _nativeStream = null;
 var _nativeScanInterval = null;
 
+// Vérifie le chiffre de contrôle standard des codes EAN-13/UPC-A — un vrai code-barres
+// respecte toujours cette formule mathématique, une mauvaise lecture presque jamais.
+// Rejette silencieusement ce qu'on ne peut pas valider (autres formats), sans bloquer.
+function isValidBarcodeChecksum(code) {
+  if(!/^\d+$/.test(code)) return true; // pas purement numérique (ex: Code128 alphanumérique) — pas de validation possible, on laisse passer
+  if(code.length !== 13 && code.length !== 12) return true; // seuls EAN-13 et UPC-A sont vérifiés ici
+
+  var digits = code.split('').map(Number);
+  var checkDigit = digits.pop();
+  var sum = 0;
+  if(code.length === 13) {
+    // EAN-13 : positions impaires ×1, positions paires ×3 (en partant de la gauche, 0-indexé)
+    digits.forEach(function(d, i) { sum += (i % 2 === 0) ? d : d * 3; });
+  } else {
+    // UPC-A (12 chiffres) : positions impaires ×3, positions paires ×1
+    digits.forEach(function(d, i) { sum += (i % 2 === 0) ? d * 3 : d; });
+  }
+  var computed = (10 - (sum % 10)) % 10;
+  return computed === checkDigit;
+}
+
 function startRealScan() {
   document.getElementById('scan-idle').style.display = 'none';
   document.getElementById('scan-active').style.display = 'block';
@@ -4429,15 +4447,34 @@ async function startNativeBarcodeScan() {
   var lastCode = null;
   var matchCount = 0;
 
+  // Découpe l'image pour n'analyser QUE la zone du rectangle vert visible à l'écran —
+  // évite qu'un code QR ou un autre code-barres tout proche sur l'emballage
+  // vienne brouiller la lecture du bon code.
+  var cropCanvas = document.createElement('canvas');
+  var cropCtx = cropCanvas.getContext('2d');
+
   if(_nativeScanInterval) clearInterval(_nativeScanInterval);
   _nativeScanInterval = setInterval(async function() {
     if(scanDone) return;
+    if(!video.videoWidth) return; // vidéo pas encore prête
     try {
-      var barcodes = await detector.detect(video);
+      // Zone correspondant au rectangle vert : 75% de largeur, 80px de hauteur, centré
+      var vw = video.videoWidth, vh = video.videoHeight;
+      var cropW = vw * 0.75;
+      var cropH = Math.min(vh * 0.25, 200); // proportionnel, plafonné
+      var cropX = (vw - cropW) / 2;
+      var cropY = (vh - cropH) / 2;
+
+      cropCanvas.width = cropW;
+      cropCanvas.height = cropH;
+      cropCtx.drawImage(video, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
+
+      var barcodes = await detector.detect(cropCanvas);
       if(!barcodes.length) return;
       var code = barcodes[0].rawValue;
-      console.log('[Scanner] Code détecté (natif):', code);
+      console.log('[Scanner] Code détecté (natif, zone recadrée):', code);
       if(!code || code.length < 4) return;
+      if(!isValidBarcodeChecksum(code)) { console.log('[Scanner] Code rejeté — échec de la validation du chiffre de contrôle'); return; }
 
       if(code === lastCode) { matchCount++; } else { lastCode = code; matchCount = 1; }
       var status = document.getElementById('scan-status');
