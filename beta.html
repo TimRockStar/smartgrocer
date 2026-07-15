@@ -4389,7 +4389,7 @@ function startRealScan() {
   if(typeof Quagga === 'undefined') { showToast('Scanner non disponible'); stopRealScan(); return; }
   Quagga.init({
     inputStream: { type:'LiveStream', target:document.getElementById('quagga-container'), constraints:{facingMode:'environment',width:{ideal:1280},height:{ideal:720}} },
-    locator: {patchSize:'medium',halfSample:true},
+    locator: {patchSize:'large',halfSample:false},
     numOfWorkers: 2, frequency: 10,
     decoder: { readers:['ean_reader','ean_8_reader','upc_reader','upc_e_reader','code_128_reader'] },
     locate: true
