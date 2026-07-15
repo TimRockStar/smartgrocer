@@ -4382,10 +4382,88 @@ var _quaggaDetectedHandler = null;
 var _quaggaProcessedHandler = null;
 var _quaggaTimeoutId = null;
 
+var _nativeStream = null;
+var _nativeScanInterval = null;
+
 function startRealScan() {
   document.getElementById('scan-idle').style.display = 'none';
   document.getElementById('scan-active').style.display = 'block';
   document.getElementById('quagga-container').innerHTML = '';
+
+  // Priorité au décodeur natif du téléphone (bien plus fiable qu'une lecture en JavaScript) —
+  // Quagga sert seulement de filet de sécurité si l'appareil/navigateur ne le supporte pas.
+  if ('BarcodeDetector' in window) {
+    console.log('[Scanner] BarcodeDetector natif disponible — utilisation du décodeur du téléphone.');
+    startNativeBarcodeScan();
+  } else {
+    console.log('[Scanner] BarcodeDetector non supporté — repli sur Quagga (JS).');
+    startQuaggaScan();
+  }
+}
+
+async function startNativeBarcodeScan() {
+  var video = document.createElement('video');
+  video.setAttribute('playsinline', ''); // évite le plein écran automatique sur iOS/certains Android
+  video.autoplay = true;
+  video.style.width = '100%';
+  video.style.borderRadius = '14px';
+  document.getElementById('quagga-container').innerHTML = '';
+  document.getElementById('quagga-container').appendChild(video);
+
+  try {
+    _nativeStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'environment', width: {ideal:1280}, height: {ideal:720} }
+    });
+    video.srcObject = _nativeStream;
+    await video.play();
+  } catch(e) {
+    console.error('[Scanner] Erreur caméra native:', e);
+    showToast('Camera non disponible');
+    stopRealScan();
+    return;
+  }
+
+  var detector = new BarcodeDetector({ formats: ['ean_13','ean_8','upc_a','upc_e','code_128'] });
+  var scanDone = false;
+  var REQUIRED_MATCHES = 2; // le décodeur natif est fiable — 2 lectures identiques suffisent (au lieu de 3 pour Quagga)
+  var lastCode = null;
+  var matchCount = 0;
+
+  if(_nativeScanInterval) clearInterval(_nativeScanInterval);
+  _nativeScanInterval = setInterval(async function() {
+    if(scanDone) return;
+    try {
+      var barcodes = await detector.detect(video);
+      if(!barcodes.length) return;
+      var code = barcodes[0].rawValue;
+      console.log('[Scanner] Code détecté (natif):', code);
+      if(!code || code.length < 4) return;
+
+      if(code === lastCode) { matchCount++; } else { lastCode = code; matchCount = 1; }
+      var status = document.getElementById('scan-status');
+      if(status) status.textContent = 'Lecture ' + matchCount + '/' + REQUIRED_MATCHES + '...';
+      if(matchCount < REQUIRED_MATCHES) return;
+
+      scanDone = true;
+      if(status) status.textContent = 'Code confirmé!';
+      if(_quaggaTimeoutId) { clearTimeout(_quaggaTimeoutId); _quaggaTimeoutId = null; }
+      setTimeout(function() { stopRealScan(); document.getElementById('prod-in').value=''; lookupBarcode(code); }, 300);
+    } catch(e) {
+      console.error('[Scanner] Erreur détection native:', e);
+    }
+  }, 200); // ~5 lectures par seconde, largement suffisant pour un décodeur natif rapide
+
+  if(_quaggaTimeoutId) clearTimeout(_quaggaTimeoutId);
+  _quaggaTimeoutId = setTimeout(function() {
+    if(scanDone) return;
+    var status = document.getElementById('scan-status');
+    if(status) status.textContent = currentLang === 'en'
+      ? '📷 Trouble scanning? Try better lighting or use manual search below'
+      : '📷 Difficulté à scanner? Essaie plus de lumière ou la recherche manuelle plus bas';
+  }, 12000);
+}
+
+function startQuaggaScan() {
   if(typeof Quagga === 'undefined') { showToast('Scanner non disponible'); stopRealScan(); return; }
   Quagga.init({
     inputStream: { type:'LiveStream', target:document.getElementById('quagga-container'), constraints:{facingMode:'environment',width:{ideal:1280},height:{ideal:720}} },
@@ -4456,10 +4534,13 @@ function startRealScan() {
 
 function stopRealScan() {
   if(quaggaRunning){ try{Quagga.stop();}catch(e){} quaggaRunning=false; }
+  if(_nativeScanInterval) { clearInterval(_nativeScanInterval); _nativeScanInterval = null; }
+  if(_nativeStream) { try{ _nativeStream.getTracks().forEach(function(t){ t.stop(); }); }catch(e){} _nativeStream = null; }
   if(_quaggaTimeoutId) { clearTimeout(_quaggaTimeoutId); _quaggaTimeoutId = null; }
   document.getElementById('scan-idle').style.display='block';
   document.getElementById('scan-active').style.display='none';
 }
+
 
 async function lookupBarcode(code) {
   document.getElementById('scan-btn').disabled = true;
