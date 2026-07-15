@@ -1847,6 +1847,18 @@ var translations = {
     nut_cal_today_full: "Calories aujourd'hui", nut_protein: 'Protéines', nut_fat: 'Gras', nut_carbs: 'Glucides',
     nut_analyze_title: '📸 Analyser un repas', nut_take_photo: 'Prendre une photo de ton repas',
     nut_ai_desc: "L'IA identifie les aliments et calcule les calories", nut_or_manual: 'ou entre manuellement',
+    // Menu Plus (clés manquantes trouvées à la vérification finale)
+    plus_header: "Plus d'options",
+    plus_carte: 'Carte des épiceries', plus_carte_sub: '5 épiceries près de toi',
+    plus_wallet: 'Portefeuille numérique',
+    plus_alertes: 'Alertes spéciaux', plus_alertes_sub: 'Prix & spéciaux',
+    plus_budget: 'Budget épicerie', plus_budget_sub: 'Suivi mensuel',
+    plus_planner: 'Planificateur de repas', plus_planner_sub: 'Menu de la semaine',
+    plus_nutrition: 'Nutrition & Calories', plus_nutrition_sub: 'Analyse IA de tes repas',
+    plus_speciaux: 'Spéciaux de la semaine', plus_speciaux_sub: 'Vrais prix, par magasin et catégorie',
+    plus_circular: 'Scanner une circulaire', plus_circular_sub: 'Ajoute les vrais spéciaux de la semaine',
+    plus_profil: 'Mon profil',
+    plus_premium: 'Premium', plus_premium_sub: 'Plans et abonnements',
   },
   en: {
     // Nav
@@ -1960,6 +1972,18 @@ var translations = {
     nut_cal_today_full: 'Calories today', nut_protein: 'Protein', nut_fat: 'Fat', nut_carbs: 'Carbs',
     nut_analyze_title: '📸 Analyze a meal', nut_take_photo: 'Take a photo of your meal',
     nut_ai_desc: 'AI identifies foods and calculates calories', nut_or_manual: 'or enter manually',
+    // Plus menu (missing keys found during final verification)
+    plus_header: 'More options',
+    plus_carte: 'Store map', plus_carte_sub: '5 stores near you',
+    plus_wallet: 'Digital wallet',
+    plus_alertes: 'Price alerts', plus_alertes_sub: 'Prices & specials',
+    plus_budget: 'Grocery budget', plus_budget_sub: 'Monthly tracking',
+    plus_planner: 'Meal planner', plus_planner_sub: "This week's menu",
+    plus_nutrition: 'Nutrition & Calories', plus_nutrition_sub: 'AI analysis of your meals',
+    plus_speciaux: 'This week\'s specials', plus_speciaux_sub: 'Real prices, by store and category',
+    plus_circular: 'Scan a flyer', plus_circular_sub: "Add this week's real specials",
+    plus_profil: 'My profile',
+    plus_premium: 'Premium', plus_premium_sub: 'Plans and subscriptions',
   }
 };
 
@@ -4903,7 +4927,10 @@ function showApp() {
     renderPlannerDays();
     loadNutritionData();
     applyTranslations();
-    showToast('Bon retour sur SmartGrocer!');
+    var lfInit = document.getElementById('lang-fr'), leInit = document.getElementById('lang-en');
+    if(lfInit) lfInit.className = 'lang-btn' + (currentLang !== 'en' ? ' active' : '');
+    if(leInit) leInit.className = 'lang-btn' + (currentLang === 'en' ? ' active' : '');
+    showToast(t('toast_welcome'));
   } else {
     document.getElementById('onboarding').style.display = 'block';
     document.getElementById('app').style.display = 'none';
