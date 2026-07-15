@@ -709,24 +709,24 @@ ml('account', '2355363');
       <div style="background:rgba(255,255,255,0.2);color:#fff;font-size:10px;font-weight:700;padding:4px 10px;border-radius:999px;" id="h-level">Bronze</div>
     </div>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-      <div class="sl" style="margin-bottom:0;">🔥 Spéciaux cette semaine</div>
-      <div style="font-size:10px;color:var(--sub);">⚠️ Prix estimés par IA</div>
+      <div class="sl" style="margin-bottom:0;" data-i18n="home_specials">🔥 Spéciaux cette semaine</div>
+      <div style="font-size:10px;color:var(--sub);" data-i18n="home_ai_est">⚠️ Prix estimés par IA</div>
     </div>
     <div class="dscroll" id="specials-scroll">
       <div class="dc" style="display:flex;align-items:center;justify-content:center;min-width:150px;">
-        <div style="text-align:center;color:var(--sub);font-size:12px;"><i class="ti ti-refresh" style="font-size:20px;display:block;margin-bottom:4px;"></i>Chargement...</div>
+        <div style="text-align:center;color:var(--sub);font-size:12px;"><i class="ti ti-refresh" style="font-size:20px;display:block;margin-bottom:4px;"></i><span data-i18n="loading">Chargement...</span></div>
       </div>
     </div>
-    <button class="btn bg bf" onclick="genRecipesFromSpecials()" style="margin-bottom:1rem;">
+    <button class="btn bg bf" onclick="genRecipesFromSpecials()" style="margin-bottom:1rem;" data-i18n="home_specials_recipes_btn">
       🔥 Recettes avec les spéciaux de cette semaine
     </button>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-      <div class="sl" style="margin-bottom:0;">🍳 Recettes tendances</div>
-      <div style="font-size:10px;color:var(--sub);">Générées par IA</div>
+      <div class="sl" style="margin-bottom:0;" data-i18n="home_trending">🍳 Recettes tendances</div>
+      <div style="font-size:10px;color:var(--sub);" data-i18n="home_ai_generated">Générées par IA</div>
     </div>
     <div id="trending-recipes" style="display:flex;flex-direction:column;gap:10px;margin-bottom:1rem;">
       <div style="text-align:center;padding:1rem;color:var(--sub);font-size:12px;">
-        <i class="ti ti-refresh" style="font-size:20px;display:block;margin-bottom:4px;"></i>Chargement...
+        <i class="ti ti-refresh" style="font-size:20px;display:block;margin-bottom:4px;"></i><span data-i18n="loading">Chargement...</span>
       </div>
     </div>
   </div>
@@ -736,7 +736,7 @@ ml('account', '2355363');
 <div id="prix" class="page">
   <div style="background:#fff3cd;border-bottom:2px solid #C9A227;padding:8px 16px;display:flex;align-items:center;gap:8px;position:sticky;top:52px;z-index:10;">
     <span style="font-size:16px;">⚠️</span>
-    <span style="font-size:11px;color:#7a5c00;line-height:1.4;"><strong>Version Bêta</strong> — Prix estimés par IA. Les vrais prix en temps réel arrivent avec la version native sur App Store et Google Play.</span>
+    <span style="font-size:11px;color:#7a5c00;line-height:1.4;" data-i18n="prix_beta_banner"><strong>Version Bêta</strong> — Prix vérifiés par la communauté quand disponibles, sinon estimés par IA.</span>
   </div>
   <div class="hero" style="background:linear-gradient(160deg,#1a3a6e,#2d5fa8);position:relative;overflow:hidden;">
     <div style="position:absolute;top:0;left:0;right:0;bottom:0;background-image:url('https://images.unsplash.com/photo-1534723328310-e82dad3ee43f?w=600&q=70');background-size:cover;background-position:center;opacity:0.25;"></div>
@@ -792,8 +792,8 @@ ml('account', '2355363');
       <div style="background:#dcfce7;border:1px solid #86efac;border-radius:14px;padding:0.875rem;margin-bottom:1rem;">
         <div style="font-size:12px;font-weight:700;color:#166534;margin-bottom:8px;">➕ Ajouter à ta liste / Add to list</div>
         <div style="display:flex;gap:8px;">
-          <button class="btn bg" style="flex:1;" onclick="addScannedToList()"><i class="ti ti-shopping-cart"></i> Ajouter</button>
-          <button class="btn bo" style="flex:1;" onclick="goTo('liste',null)"><i class="ti ti-list"></i> Voir liste</button>
+          <button class="btn bg" style="flex:1;" onclick="addScannedToList()"><i class="ti ti-shopping-cart"></i> <span data-i18n="prix_add_btn">Ajouter</span></button>
+          <button class="btn bo" style="flex:1;" onclick="goTo('liste',null)"><i class="ti ti-list"></i> <span data-i18n="prix_see_btn">Voir liste</span></button>
         </div>
       </div>
     </div>
@@ -1272,19 +1272,19 @@ ml('account', '2355363');
       <div style="display:flex;align-items:center;gap:10px;">
         <div style="font-size:28px;">🔥</div>
         <div style="flex:1;">
-          <div style="font-size:13px;font-weight:700;color:#fff;">Planifier selon les spéciaux</div>
-          <div style="font-size:11px;color:rgba(255,255,255,0.8);margin-top:2px;">L'IA génère ton menu avec les produits en rabais cette semaine</div>
+          <div style="font-size:13px;font-weight:700;color:#fff;" data-i18n="planner_smart_title">Planifier selon les spéciaux</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.8);margin-top:2px;" data-i18n="planner_smart_desc">L'IA génère ton menu avec les produits en rabais cette semaine</div>
         </div>
-        <button class="btn" style="background:rgba(255,255,255,0.2);color:#fff;border:1px solid rgba(255,255,255,0.4);white-space:nowrap;" onclick="generateMenuFromSpecials()">
+        <button class="btn" style="background:rgba(255,255,255,0.2);color:#fff;border:1px solid rgba(255,255,255,0.4);white-space:nowrap;" onclick="generateMenuFromSpecials()" data-i18n="planner_generate_btn">
           Générer 🎯
         </button>
       </div>
     </div>
 
-    <div class="sl">Cette semaine</div>
+    <div class="sl" data-i18n="planner_this_week">Cette semaine</div>
     <div id="planner-days"></div>
     <button class="btn bg bf" onclick="generatePlannerList()" style="margin-top:1rem;">
-      <i class="ti ti-shopping-cart"></i> Générer ma liste d'épicerie
+      <i class="ti ti-shopping-cart"></i> <span data-i18n="planner_gen_list_btn">Générer ma liste d'épicerie</span>
     </button>
   </div>
 </div>
@@ -1297,9 +1297,9 @@ ml('account', '2355363');
       <button onclick="closeDayPicker()" style="background:var(--light);border:none;border-radius:8px;padding:6px 10px;cursor:pointer;font-size:14px;">✕</button>
     </div>
     <button class="btn bg bf" onclick="generateNewRecipeForDay()" style="margin-bottom:1rem;">
-      <i class="ti ti-wand"></i> Générer une nouvelle recette IA
+      <i class="ti ti-wand"></i> <span data-i18n="planner_new_recipe_btn">Générer une nouvelle recette IA</span>
     </button>
-    <div class="sl2">Ou choisis dans tes favoris</div>
+    <div class="sl2" data-i18n="planner_or_favorites">Ou choisis dans tes favoris</div>
     <div id="dp-favorites-list"></div>
   </div>
 </div>
@@ -1314,9 +1314,9 @@ ml('account', '2355363');
       <div><div class="lt"><span>Smart</span><span style="color:#C9A227;">Grocer</span></div><div class="ls" data-i18n="page_nutrition_sub">🍎 Analyse Nutritionnelle IA</div></div>
     </div>
     <div class="hstats">
-      <div class="hs"><div class="hs-n" id="nut-cal-today">0</div><div class="hs-l">Cal. aujourd'hui</div></div>
-      <div class="hs"><div class="hs-n" id="nut-goal">2000</div><div class="hs-l">Objectif</div></div>
-      <div class="hs"><div class="hs-n" id="nut-meals-count">0</div><div class="hs-l">Repas</div></div>
+      <div class="hs"><div class="hs-n" id="nut-cal-today">0</div><div class="hs-l" data-i18n="nut_cal_today">Cal. aujourd'hui</div></div>
+      <div class="hs"><div class="hs-n" id="nut-goal">2000</div><div class="hs-l" data-i18n="nut_goal">Objectif</div></div>
+      <div class="hs"><div class="hs-n" id="nut-meals-count">0</div><div class="hs-l" data-i18n="nut_meals">Repas</div></div>
     </div>
   </div>
   <div class="px">
@@ -1324,7 +1324,7 @@ ml('account', '2355363');
     <!-- Barre progression calorique -->
     <div class="card" style="margin-bottom:10px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-        <div style="font-size:13px;font-weight:700;">Calories aujourd'hui</div>
+        <div style="font-size:13px;font-weight:700;" data-i18n="nut_cal_today_full">Calories aujourd'hui</div>
         <div style="font-size:12px;color:var(--sub);" id="nut-cal-display">0 / 2000 kcal</div>
       </div>
       <div style="background:var(--light);border-radius:999px;height:10px;overflow:hidden;">
@@ -1347,13 +1347,13 @@ ml('account', '2355363');
     </div>
 
     <!-- Analyser un repas -->
-    <div class="sl">📸 Analyser un repas</div>
+    <div class="sl" data-i18n="nut_analyze_title">📸 Analyser un repas</div>
     <div class="card">
       <div style="display:flex;flex-direction:column;gap:10px;">
         <div style="background:var(--light);border-radius:12px;padding:1.25rem;text-align:center;cursor:pointer;border:2px dashed var(--border);" onclick="document.getElementById('nut-photo-input').click()">
           <div style="font-size:36px;margin-bottom:6px;">📷</div>
-          <div style="font-size:13px;font-weight:700;">Prendre une photo de ton repas</div>
-          <div style="font-size:11px;color:var(--sub);margin-top:4px;">L'IA identifie les aliments et calcule les calories</div>
+          <div style="font-size:13px;font-weight:700;" data-i18n="nut_take_photo">Prendre une photo de ton repas</div>
+          <div style="font-size:11px;color:var(--sub);margin-top:4px;" data-i18n="nut_ai_desc">L'IA identifie les aliments et calcule les calories</div>
         </div>
         <input type="file" id="nut-photo-input" accept="image/*" capture="environment" style="display:none;" onchange="analyzeNutritionPhoto(this)"/>
         <div style="display:flex;align-items:center;gap:8px;">
@@ -1832,6 +1832,21 @@ var translations = {
     newprod_price_label: '💰 Prix vu en ce moment (optionnel — aide toute la communauté!)',
     newprod_price_ph: 'Prix ($)', newprod_store_ph: 'Magasin...', newprod_save_btn: '✅ Enregistrer et voir les prix',
     newprod_toast: "Ajoute le produit pour l'enregistrer dans la banque partagée!",
+    // Accueil (suite)
+    home_ai_est: '⚠️ Prix estimés par IA', home_ai_generated: 'Générées par IA', loading: 'Chargement...',
+    home_specials_recipes_btn: '🔥 Recettes avec les spéciaux de cette semaine',
+    prix_beta_banner: '<strong>Version Bêta</strong> — Prix vérifiés par la communauté quand disponibles, sinon estimés par IA.',
+    // Planificateur
+    planner_smart_title: 'Planifier selon les spéciaux',
+    planner_smart_desc: "L'IA génère ton menu avec les produits en rabais cette semaine",
+    planner_generate_btn: 'Générer 🎯', planner_this_week: 'Cette semaine',
+    planner_gen_list_btn: "Générer ma liste d'épicerie",
+    planner_new_recipe_btn: 'Générer une nouvelle recette IA', planner_or_favorites: 'Ou choisis dans tes favoris',
+    // Nutrition
+    nut_cal_today: "Cal. aujourd'hui", nut_goal: 'Objectif', nut_meals: 'Repas',
+    nut_cal_today_full: "Calories aujourd'hui", nut_protein: 'Protéines', nut_fat: 'Gras', nut_carbs: 'Glucides',
+    nut_analyze_title: '📸 Analyser un repas', nut_take_photo: 'Prendre une photo de ton repas',
+    nut_ai_desc: "L'IA identifie les aliments et calcule les calories", nut_or_manual: 'ou entre manuellement',
   },
   en: {
     // Nav
@@ -1930,6 +1945,21 @@ var translations = {
     newprod_price_label: '💰 Price seen right now (optional — helps everyone!)',
     newprod_price_ph: 'Price ($)', newprod_store_ph: 'Store...', newprod_save_btn: '✅ Save and see prices',
     newprod_toast: "Add the product to save it to the shared database!",
+    // Home (continued)
+    home_ai_est: '⚠️ AI-estimated prices', home_ai_generated: 'AI-generated', loading: 'Loading...',
+    home_specials_recipes_btn: "🔥 Recipes with this week's specials",
+    prix_beta_banner: '<strong>Beta Version</strong> — Community-verified prices when available, otherwise AI-estimated.',
+    // Meal planner
+    planner_smart_title: 'Plan around specials',
+    planner_smart_desc: "AI builds your menu with this week's discounted products",
+    planner_generate_btn: 'Generate 🎯', planner_this_week: 'This week',
+    planner_gen_list_btn: 'Generate my grocery list',
+    planner_new_recipe_btn: 'Generate a new AI recipe', planner_or_favorites: 'Or choose from your favorites',
+    // Nutrition
+    nut_cal_today: 'Cal. today', nut_goal: 'Goal', nut_meals: 'Meals',
+    nut_cal_today_full: 'Calories today', nut_protein: 'Protein', nut_fat: 'Fat', nut_carbs: 'Carbs',
+    nut_analyze_title: '📸 Analyze a meal', nut_take_photo: 'Take a photo of your meal',
+    nut_ai_desc: 'AI identifies foods and calculates calories', nut_or_manual: 'or enter manually',
   }
 };
 
@@ -2340,7 +2370,7 @@ async function loadLocalStores() {
   var country = window.userCountry || 'CA';
   
   var carteCity = document.getElementById('carte-city');
-  if(carteCity) carteCity.textContent = 'Épiceries · ' + city + ' · 5 km';
+  if(carteCity) carteCity.textContent = (currentLang === 'en' ? 'Groceries · ' : 'Épiceries · ') + city + ' · 5 km';
   
   var mapLabel = document.querySelector('.map-ph div:last-child');
   if(mapLabel) mapLabel.textContent = '📍 ' + city;
@@ -2382,15 +2412,16 @@ function renderStoresList(stores) {
   var storesList = document.querySelector('#carte .px');
   if(!storesList) return;
   
-  var storesHTML = '<div class="sl">' + stores.length + ' épiceries dans un rayon de 5 km</div>';
+  var fr = currentLang !== 'en';
+  var storesHTML = '<div class="sl">' + stores.length + (fr ? ' épiceries dans un rayon de 5 km' : ' grocery stores within 5 km') + '</div>';
   for(var si=0; si<stores.length; si++) {
     var s = stores[si];
     storesHTML += '<div class="store-item" onclick="openLocalStore(' + si + ')">';
     storesHTML += '<div style="font-size:22px;">' + s.icone + '</div>';
     storesHTML += '<div style="flex:1"><div style="font-size:13px;font-weight:700;">' + s.nom + '</div>';
     storesHTML += '<div style="font-size:10px;color:var(--sub);">' + s.distance + ' · ' + s.adresse + '</div></div>';
-    storesHTML += '<div style="text-align:right;"><div class="badge ' + (s.ouvert?'bdg':'bdc') + '">' + (s.ouvert?'Ouvert':'Fermé') + '</div>';
-    storesHTML += '<div style="font-size:10px;color:var(--sub);margin-top:3px;">' + s.specials + ' spéciaux</div></div>';
+    storesHTML += '<div style="text-align:right;"><div class="badge ' + (s.ouvert?'bdg':'bdc') + '">' + (s.ouvert ? (fr?'Ouvert':'Open') : (fr?'Fermé':'Closed')) + '</div>';
+    storesHTML += '<div style="font-size:10px;color:var(--sub);margin-top:3px;">' + s.specials + (fr?' spéciaux':' specials') + '</div></div>';
     storesHTML += '</div>';
   }
   
