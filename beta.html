@@ -1054,9 +1054,7 @@ ml('account', '2355363');
     <div class="sl" data-i18n="alertes_configured">Alertes configurées</div>
     <div class="card">
       <div id="alerts-list">
-        <div class="al"><div style="font-size:20px;">🥜</div><div style="flex:1"><div style="font-size:13px;font-weight:700;">Beurre d'arachide Kraft</div><div style="font-size:11px;color:var(--sub);">Alerte si prix &lt; $6.50</div></div><label class="atog"><input type="checkbox" checked><div class="ts"></div></label></div>
-        <div class="al"><div style="font-size:20px;">🥛</div><div style="flex:1"><div style="font-size:13px;font-weight:700;">Lait 2% 4L</div><div style="font-size:11px;color:var(--sub);">Alerte si prix &lt; $5.99</div></div><label class="atog"><input type="checkbox" checked><div class="ts"></div></label></div>
-        <div class="al"><div style="font-size:20px;">🍗</div><div style="flex:1"><div style="font-size:13px;font-weight:700;">Poulet entier</div><div style="font-size:11px;color:var(--sub);">Alerte si prix &lt; $8.00</div></div><label class="atog"><input type="checkbox" checked><div class="ts"></div></label></div>
+        <div id="alerts-empty" style="text-align:center;color:var(--sub);font-size:12px;padding:1rem 0;" data-i18n="alertes_empty">Aucune alerte configurée — ajoute-en une ci-dessous!</div>
       </div>
     </div>
     <div class="sl" data-i18n="alertes_add">Ajouter une alerte</div>
@@ -1859,6 +1857,14 @@ var translations = {
     plus_circular: 'Scanner une circulaire', plus_circular_sub: 'Ajoute les vrais spéciaux de la semaine',
     plus_profil: 'Mon profil',
     plus_premium: 'Premium', plus_premium_sub: 'Plans et abonnements',
+    // Alertes (suite)
+    alertes_empty: 'Aucune alerte configurée — ajoute-en une ci-dessous!',
+    alertes_add_product: '⚠️ Ajoute un produit!', alertes_created: 'Alerte créée!',
+    // Photo de produit (nouveau)
+    newprod_photo_btn: "Prendre une photo de l'emballage",
+    newprod_photo_analyzing: 'Analyse en cours...',
+    newprod_photo_done: 'Infos remplies automatiquement!',
+    newprod_photo_error: "Impossible de lire l'emballage — remplis manuellement",
   },
   en: {
     // Nav
@@ -1984,6 +1990,14 @@ var translations = {
     plus_circular: 'Scan a flyer', plus_circular_sub: "Add this week's real specials",
     plus_profil: 'My profile',
     plus_premium: 'Premium', plus_premium_sub: 'Plans and subscriptions',
+    // Alerts (continued)
+    alertes_empty: 'No alerts configured — add one below!',
+    alertes_add_product: '⚠️ Add a product!', alertes_created: 'Alert created!',
+    // Product photo (new)
+    newprod_photo_btn: 'Take a photo of the packaging',
+    newprod_photo_analyzing: 'Analyzing...',
+    newprod_photo_done: 'Info filled in automatically!',
+    newprod_photo_error: "Couldn't read the packaging — fill in manually",
   }
 };
 
@@ -2008,6 +2022,7 @@ function setLang(lang) {
   if(typeof renderGr === 'function') renderGr();
   if(typeof renderRewards === 'function') renderRewards();
   if(typeof renderSpeciauxList === 'function') renderSpeciauxList();
+  if(typeof renderAlerts === 'function') renderAlerts();
   if(typeof updatePointsUI === 'function') updatePointsUI();
 
   showToast(fr ? '🇫🇷 Français activé' : '🇬🇧 English activated');
@@ -3791,7 +3806,129 @@ function renderRewards(){ /* Récompenses désactivées — en attente de parten
 function claimReward(pts,name){
   showToast('🔜 Récompenses bientôt disponibles — accumule tes points!', 3000);
 }
-function addAlert(){const p=document.getElementById('alert-prod').value.trim();const pr=document.getElementById('alert-price').value;const s=document.getElementById('alert-store').value;if(!p){showToast('⚠️ Ajoute un produit!');return;}const emojis=['🛒','🍎','🥦','🍞','🧃','🥩'];const emoji=emojis[Math.floor(Math.random()*emojis.length)];const div=document.createElement('div');div.className='al';div.innerHTML=`<div style="font-size:20px;">${emoji}</div><div style="flex:1"><div style="font-size:13px;font-weight:700;">${p}</div><div style="font-size:11px;color:var(--sub);">Alerte si prix &lt; $${pr||'?'} · ${s}</div></div><label class="atog"><input type="checkbox" checked><div class="ts"></div></label>`;document.getElementById('alerts-list').appendChild(div);document.getElementById('alert-prod').value='';document.getElementById('alert-price').value='';showToast('✅ Alerte créée!');}
+// ============================================================
+// ALERTES DE PRIX — sauvegardées réellement, vérifiées contre les
+// vrais spéciaux à chaque ouverture de l'app (notification dans l'app).
+// ============================================================
+function getAlerts() {
+  try { return JSON.parse(localStorage.getItem('sg_price_alerts') || '[]'); } catch(e) { return []; }
+}
+function saveAlerts(alerts) {
+  localStorage.setItem('sg_price_alerts', JSON.stringify(alerts));
+}
+
+function addAlert(){
+  const p=document.getElementById('alert-prod').value.trim();
+  const pr=document.getElementById('alert-price').value;
+  const s=document.getElementById('alert-store').value;
+  if(!p){showToast(t('alertes_add_product'));return;}
+  const emojis=['🛒','🍎','🥦','🍞','🧃','🥩'];
+  const emoji=emojis[Math.floor(Math.random()*emojis.length)];
+
+  const alerts = getAlerts();
+  alerts.push({ id: Date.now()+Math.random(), product: p, emoji: emoji, maxPrice: pr ? Number(pr) : null, store: s, enabled: true });
+  saveAlerts(alerts);
+  renderAlerts();
+
+  document.getElementById('alert-prod').value='';
+  document.getElementById('alert-price').value='';
+  showToast('✅ ' + t('alertes_created'));
+}
+
+function toggleAlert(id){
+  const alerts = getAlerts();
+  const a = alerts.find(function(x){ return x.id === id; });
+  if(a) { a.enabled = !a.enabled; saveAlerts(alerts); }
+}
+
+function deleteAlert(id){
+  const alerts = getAlerts().filter(function(x){ return x.id !== id; });
+  saveAlerts(alerts);
+  renderAlerts();
+}
+
+function renderAlerts(){
+  const listEl = document.getElementById('alerts-list');
+  if(!listEl) return;
+  const alerts = getAlerts();
+  const emptyMsg = t('alertes_empty');
+
+  if(alerts.length === 0){
+    listEl.innerHTML = '<div id="alerts-empty" style="text-align:center;color:var(--sub);font-size:12px;padding:1rem 0;">' + emptyMsg + '</div>';
+    return;
+  }
+
+  const fr = currentLang !== 'en';
+  listEl.innerHTML = alerts.map(function(a){
+    const priceTxt = a.maxPrice
+      ? (fr ? ('Alerte si prix &lt; $' + a.maxPrice.toFixed(2)) : ('Alert if price &lt; $' + a.maxPrice.toFixed(2)))
+      : (fr ? 'Alerte sur tout spécial' : 'Alert on any special');
+    const storeTxt = (a.store && a.store !== 'Toutes les épiceries' && a.store !== 'All stores') ? (' · ' + a.store) : '';
+    return '<div class="al">'
+      + '<div style="font-size:20px;">' + a.emoji + '</div>'
+      + '<div style="flex:1"><div style="font-size:13px;font-weight:700;">' + a.product + '</div>'
+      + '<div style="font-size:11px;color:var(--sub);">' + priceTxt + storeTxt + '</div></div>'
+      + '<label class="atog"><input type="checkbox" ' + (a.enabled?'checked':'') + ' onchange="toggleAlert(' + a.id + ')"><div class="ts"></div></label>'
+      + '<button onclick="deleteAlert(' + a.id + ')" style="background:none;border:none;color:#d1d5db;font-size:18px;cursor:pointer;margin-left:6px;">×</button>'
+      + '</div>';
+  }).join('');
+}
+
+// Vérifie les alertes actives contre les vrais spéciaux — appelée au chargement de l'app.
+// Ne renotifie jamais deux fois pour le même spécial (mémoire des correspondances déjà vues).
+async function checkAlertMatches(){
+  const alerts = getAlerts().filter(function(a){ return a.enabled; });
+  if(alerts.length === 0) return;
+  if(STRIPE_API_URL.indexOf('REMPLACE_PAR') === 0) return;
+
+  const userData = JSON.parse(localStorage.getItem('smartgrocer_data') || '{}');
+  const city = (userData.city || '').split(',')[0].trim();
+  const country = userData.country || 'Canada';
+  if(!city) return;
+
+  try {
+    const res = await fetch(STRIPE_API_URL + '?action=specialsGetAll&city=' + encodeURIComponent(city) + '&country=' + encodeURIComponent(country));
+    const data = await res.json();
+    const specials = data.items || [];
+    if(!specials.length) return;
+
+    const seen = JSON.parse(localStorage.getItem('sg_alert_seen') || '{}');
+    const newSeen = Object.assign({}, seen);
+    const matches = [];
+
+    alerts.forEach(function(a){
+      const targetNorm = a.product.toLowerCase().trim();
+      specials.forEach(function(s){
+        const nameNorm = s.nom.toLowerCase();
+        const nameMatches = nameNorm.indexOf(targetNorm) !== -1 || targetNorm.indexOf(nameNorm) !== -1;
+        if(!nameMatches) return;
+        if(a.maxPrice && Number(s.prixSpecial) > a.maxPrice) return;
+        if(a.store && a.store !== 'Toutes les épiceries' && a.store !== 'All stores' && s.magasin !== a.store) return;
+
+        const matchKey = a.id + '|' + s.nom + '|' + s.magasin + '|' + s.prixSpecial;
+        if(seen[matchKey]) return; // déjà notifié pour exactement ce spécial
+
+        newSeen[matchKey] = true;
+        matches.push({ product: s.nom, store: s.magasin, price: s.prixSpecial });
+      });
+    });
+
+    localStorage.setItem('sg_alert_seen', JSON.stringify(newSeen));
+
+    if(matches.length > 0){
+      const fr = currentLang !== 'en';
+      if(matches.length === 1){
+        const m = matches[0];
+        showToast('🔔 ' + (fr ? (m.product + ' à $' + Number(m.price).toFixed(2) + ' chez ' + m.store + '!') : (m.product + ' at $' + Number(m.price).toFixed(2) + ' at ' + m.store + '!')), 6000);
+      } else {
+        showToast('🔔 ' + matches.length + (fr ? ' de tes alertes correspondent à des spéciaux cette semaine!' : ' of your alerts match specials this week!'), 6000);
+      }
+    }
+  } catch(e) {
+    console.log('Vérification des alertes échouée (silencieux):', e);
+  }
+}
+
 function updBudget(v){['budget-val','bmd'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='$'+v;});const pct=Math.round(247/v*100);document.getElementById('bbar').style.width=Math.min(pct,100)+'%';document.getElementById('bpct').textContent=pct+'% utilisé';}
 function renderBCats(){const cats=[{n:'Viandes & poissons',a:89,p:36,c:'#D85A30'},{n:'Fruits & légumes',a:54,p:22,c:'#1D9E75'},{n:'Produits laitiers',a:38,p:15,c:'#378ADD'},{n:'Épicerie sèche',a:42,p:17,c:'#534AB7'},{n:'Autres',a:24,p:10,c:'#C9A227'}];const el=document.getElementById('bcc');if(el)el.innerHTML=cats.map(c=>`<div class="bcat"><div class="bdot" style="background:${c.c};"></div><div style="flex:1;font-size:12px;">${c.n}</div><div class="bcbw"><div class="bcb" style="width:${c.p}%;background:${c.c};"></div></div><div style="font-size:12px;font-weight:700;min-width:30px;text-align:right;">$${c.a}</div></div>`).join('');}
 function genBarcode(container,count=40){container.innerHTML='';for(let i=0;i<count;i++){const bar=document.createElement('div');bar.style.cssText=`background:rgba(255,255,255,0.9);width:${Math.random()>0.5?2:1}px;height:${Math.random()>0.3?40:25}px;border-radius:1px;flex-shrink:0;`;container.appendChild(bar);}}
@@ -4238,6 +4375,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
 let quaggaRunning = false;
 
+var _quaggaDetectedHandler = null;
+var _quaggaTimeoutId = null;
+
 function startRealScan() {
   document.getElementById('scan-idle').style.display = 'none';
   document.getElementById('scan-active').style.display = 'block';
@@ -4257,7 +4397,12 @@ function startRealScan() {
   var REQUIRED_MATCHES = 3; // exige 3 lectures identiques d'affilée avant de confirmer — évite les erreurs de lecture d'un seul frame
   var lastCode = null;
   var matchCount = 0;
-  Quagga.onDetected(function(result) {
+
+  // Retire l'ancien écouteur avant d'en ajouter un nouveau — évite l'empilement
+  // d'écouteurs à chaque tentative de scan, qui brouillait la détection.
+  if(_quaggaDetectedHandler) { try{ Quagga.offDetected(_quaggaDetectedHandler); }catch(e){} }
+
+  _quaggaDetectedHandler = function(result) {
     if(scanDone) return;
     var code = result.codeResult.code;
     if(!code || code.length < 4) return;
@@ -4276,12 +4421,26 @@ function startRealScan() {
 
     scanDone = true;
     if(status) status.textContent = 'Code confirmé!';
+    if(_quaggaTimeoutId) { clearTimeout(_quaggaTimeoutId); _quaggaTimeoutId = null; }
     setTimeout(function() { stopRealScan(); document.getElementById('prod-in').value=''; lookupBarcode(code); }, 300);
-  });
+  };
+  Quagga.onDetected(_quaggaDetectedHandler);
+
+  // Après 12 secondes sans aucune détection, suggère une alternative plutôt que
+  // de laisser la personne fixer un écran qui ne réagit jamais.
+  if(_quaggaTimeoutId) clearTimeout(_quaggaTimeoutId);
+  _quaggaTimeoutId = setTimeout(function() {
+    if(scanDone) return;
+    var status = document.getElementById('scan-status');
+    if(status) status.textContent = currentLang === 'en'
+      ? '📷 Trouble scanning? Try better lighting or use manual search below'
+      : '📷 Difficulté à scanner? Essaie plus de lumière ou la recherche manuelle plus bas';
+  }, 12000);
 }
 
 function stopRealScan() {
   if(quaggaRunning){ try{Quagga.stop();}catch(e){} quaggaRunning=false; }
+  if(_quaggaTimeoutId) { clearTimeout(_quaggaTimeoutId); _quaggaTimeoutId = null; }
   document.getElementById('scan-idle').style.display='block';
   document.getElementById('scan-active').style.display='none';
 }
@@ -4338,6 +4497,9 @@ async function lookupBarcode(code) {
         '<div style="font-size:14px;font-weight:700;color:#1a1a2e;">' + t('newprod_title') + '</div>' +
         '<div style="font-size:11px;color:#6b7280;margin-top:2px;">' + t('newprod_desc') + '</div>' +
         '</div>' +
+        '<button class="btn bo bf" onclick="document.getElementById(\'new-prod-photo-input\').click()" style="margin-bottom:8px;">📸 ' + t('newprod_photo_btn') + '</button>' +
+        '<input type="file" id="new-prod-photo-input" accept="image/*" capture="environment" style="display:none;" onchange="analyzeProductPhoto(this)"/>' +
+        '<div id="new-prod-photo-status" style="font-size:11px;color:var(--sub);text-align:center;margin-bottom:10px;display:none;"></div>' +
         '<input type="text" id="new-prod-name" placeholder="' + t('newprod_name_ph') + '" style="margin-bottom:8px;"/>' +
         '<div style="display:flex;gap:8px;margin-bottom:8px;">' +
         '<input type="text" id="new-prod-brand" placeholder="' + t('newprod_brand_ph') + '" style="flex:1;"/>' +
@@ -4641,6 +4803,51 @@ async function saveProductToDB(barcode, name, brand, format) {
 }
 
 // Look up product in local DB
+// Lit une photo d'emballage de produit (marque, nom, format) et remplit
+// automatiquement le formulaire — complémentaire au scan de code-barre
+// (Quagga lit le numéro, l'IA lit le texte de l'emballage).
+async function analyzeProductPhoto(input) {
+  if(!input.files || !input.files[0]) return;
+  var file = input.files[0];
+  var statusEl = document.getElementById('new-prod-photo-status');
+  if(statusEl) { statusEl.style.display = 'block'; statusEl.textContent = '⏳ ' + t('newprod_photo_analyzing'); }
+
+  try {
+    var base64 = await resizeImageToBase64(file, 1200);
+    var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
+      body: JSON.stringify({
+        model: 'meta-llama/llama-4-scout-17b-16e-instruct',
+        max_tokens: 300,
+        temperature: 0,
+        messages: [{
+          role: 'user',
+          content: [
+            {type: 'image_url', image_url: {url: 'data:image/jpeg;base64,' + base64}},
+            {type: 'text', text: 'Regarde cette photo d\'emballage de produit d\'épicerie. Transcris EXACTEMENT ce qui est imprimé — n\'invente rien. Si une information n\'est pas visible, laisse le champ vide. JSON seulement: {"nom":"nom du produit tel qu\'imprimé","marque":"marque telle qu\'imprimée","format":"format/poids/quantité tel qu\'imprimé, ex: 500g"}'}
+          ]
+        }]
+      })
+    });
+    var data = await res.json();
+    var text = data.choices[0].message.content.replace(/```json|```/g,'').trim();
+    var jsonStr = extractJSON(text);
+    if(!jsonStr) throw new Error('No JSON');
+    var result = JSON.parse(jsonStr);
+
+    if(result.nom) document.getElementById('new-prod-name').value = result.nom;
+    if(result.marque) document.getElementById('new-prod-brand').value = result.marque;
+    if(result.format) document.getElementById('new-prod-format').value = result.format;
+
+    if(statusEl) { statusEl.textContent = '✅ ' + t('newprod_photo_done'); }
+    showToast('✅ ' + t('newprod_photo_done'));
+  } catch(e) {
+    console.error('Product photo analysis error:', e);
+    if(statusEl) { statusEl.textContent = '⚠️ ' + t('newprod_photo_error'); }
+  }
+}
+
 // Sauvegarde un nouveau produit inconnu (nom + code-barre) dans la banque partagée,
 // puis affiche immédiatement les prix (vrais spéciaux, vrais prix, ou estimation IA)
 // exactement comme une recherche normale.
@@ -4926,6 +5133,8 @@ function showApp() {
     loadMealPlan();
     renderPlannerDays();
     loadNutritionData();
+    renderAlerts();
+    checkAlertMatches();
     applyTranslations();
     var lfInit = document.getElementById('lang-fr'), leInit = document.getElementById('lang-en');
     if(lfInit) lfInit.className = 'lang-btn' + (currentLang !== 'en' ? ' active' : '');
