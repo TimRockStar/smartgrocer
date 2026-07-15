@@ -2633,7 +2633,7 @@ async function generateNewRecipeForDay() {
         body: JSON.stringify({
           model: 'llama-3.3-70b-versatile',
           max_completion_tokens: 200,
-          messages: [{role:'user',content:'Reponds UNIQUEMENT en JSON valide sans texte avant ou apres. Recette economique de ' + randomType + ' avec ' + randomProtein + ' pour ' + day + '. ' + avoidText + ' JSON: {"emoji":"🍝","nom":"Nom court","ingredients":"ingredient1, ingredient2, ingredient3, ingredient4"}'}]
+          messages: [{role:'user',content:'Reponds UNIQUEMENT en JSON valide sans texte avant ou apres. Langue de reponse: '+(currentLang==="en"?"English":"francais")+'. Recette economique de ' + randomType + ' avec ' + randomProtein + ' pour ' + day + '. ' + avoidText + ' JSON: {"emoji":"🍝","nom":"Nom court","ingredients":"ingredient1, ingredient2, ingredient3, ingredient4"}'}]
         })
       });
       var data = await res.json();
@@ -2719,7 +2719,7 @@ async function generatePlannerList() {
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
         max_completion_tokens: 1000,
-        messages: [{role:'user',content:'Reponds UNIQUEMENT en JSON valide. Pour chaque ingredient donne le prix le moins cher et l epicerie. Epiceries disponibles: '+localStores+'. Ingredients: '+allIngredients.slice(0,10).join(', ')+'. Format strict: [{"nom":"boeuf hache","prix":6.99,"store":"Maxi"},{"nom":"pates","prix":2.49,"store":"IGA"}]'}]
+        messages: [{role:'user',content:'Reponds UNIQUEMENT en JSON valide. Langue pour "nom": '+(currentLang==="en"?"English":"francais")+'. Pour chaque ingredient donne le prix le moins cher et l epicerie. Epiceries disponibles: '+localStores+'. Ingredients: '+allIngredients.slice(0,10).join(', ')+'. Format strict: [{"nom":"boeuf hache","prix":6.99,"store":"Maxi"},{"nom":"pates","prix":2.49,"store":"IGA"}]'}]
       })
     });
     
@@ -2815,7 +2815,7 @@ async function genRecipesFromSpecials() {
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
         max_completion_tokens: 1200,
-        messages: [{role:'user',content:'Ces produits sont EN SPÉCIAL cette semaine: ' + specialsList + '. Génère 3 recettes économiques qui utilisent UN OU PLUSIEURS de ces produits en spécial. Mesures nord-américaines. JSON seulement: {"recettes":[{"emoji":"🍳","nom":"Nom recette","temps":"30 min","portions":"4 portions","match":"Utilise: poulet en spécial chez Maxi","etapes":["Étape 1","Étape 2","Étape 3"]}]}'}]
+        messages: [{role:'user',content:'Langue de reponse: '+(currentLang==="en"?"English":"francais")+'. Ces produits sont EN SPÉCIAL cette semaine: ' + specialsList + '. Génère 3 recettes économiques qui utilisent UN OU PLUSIEURS de ces produits en spécial. Mesures nord-américaines. JSON seulement: {"recettes":[{"emoji":"🍳","nom":"Nom recette","temps":"30 min","portions":"4 portions","match":"Utilise: poulet en spécial chez Maxi","etapes":["Étape 1","Étape 2","Étape 3"]}]}'}]
       })
     });
     var data = await res.json();
@@ -2873,7 +2873,7 @@ async function getHealthScore(productName) {
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
         max_completion_tokens: 150,
-        messages: [{role:'user',content:'Score sante pour "'+productName+'". JSON seulement: {"score":75,"niveau":"bon","couleur":"vert","conseil":"Bonne source de proteines"}. Niveau: excellent(90-100,vert), bon(70-89,vert), moyen(50-69,jaune), mediocre(30-49,orange), mauvais(0-29,rouge).'}]
+        messages: [{role:'user',content:'Score sante pour "'+productName+'". Le champ "conseil" doit etre en '+(currentLang==="en"?"English":"francais")+'. Le champ "couleur" doit TOUJOURS etre un de ces mots exacts en francais peu importe la langue de reponse: vert, jaune, orange, rouge. JSON seulement: {"score":75,"niveau":"bon","couleur":"vert","conseil":"Bonne source de proteines"}. Niveau: excellent(90-100,vert), bon(70-89,vert), moyen(50-69,jaune), mediocre(30-49,orange), mauvais(0-29,rouge).'}]
       })
     });
     var data = await res.json();
@@ -2898,7 +2898,7 @@ function renderHealthScore(score) {
   
   return '<div style="background:'+c.bg+';border-radius:14px;padding:12px;margin-bottom:1rem;">' +
     '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">' +
-    '<div style="font-size:13px;font-weight:700;color:'+c.color+';">' + emoji + ' Score santé</div>' +
+    '<div style="font-size:13px;font-weight:700;color:'+c.color+';">' + emoji + ' ' + (typeof currentLang !== 'undefined' && currentLang === 'en' ? 'Health score' : 'Score santé') + '</div>' +
     '<div style="font-size:22px;font-weight:700;color:'+c.color+';">' + score.score + '/100</div>' +
     '</div>' +
     '<div style="background:rgba(255,255,255,0.5);border-radius:999px;height:8px;margin-bottom:6px;overflow:hidden;">' +
@@ -3942,13 +3942,16 @@ async function showRecipeModal(nom, emoji, recipeObj) {
   document.getElementById('rm-emoji').textContent = emoji || '🍳';
   document.getElementById('rm-title').textContent = nom;
   document.getElementById('rm-meta').textContent = 'Génération en cours...';
-  document.getElementById('rm-content').innerHTML = '<div style="text-align:center;padding:2rem;color:#6b7280;"><div style="font-size:32px;margin-bottom:8px;">⏳</div><div style="font-size:14px;">Génération de la recette...</div></div>';
+  document.getElementById('rm-content').innerHTML = '<div style="text-align:center;padding:2rem;color:#6b7280;"><div style="font-size:32px;margin-bottom:8px;">⏳</div><div style="font-size:14px;">' + (currentLang === 'en' ? 'Generating recipe...' : 'Génération de la recette...') + '</div></div>';
 
   window._currentModalRecipe = recipeObj || {nom: nom, emoji: emoji||'🍳'};
   var favBtn = document.getElementById('rm-fav-btn');
   if(favBtn) favBtn.textContent = isFavorite(nom) ? '⭐' : '☆';
 
-  var prompt = 'Recette complete de ' + nom + '. Reponds en francais avec ces 2 sections exactement. INGRÉDIENTS: liste avec tirets et quantites en mesures nord-americaines. PRÉPARATION: etapes numerotees.';
+  var fr = currentLang !== 'en';
+  var prompt = fr
+    ? ('Recette complete de ' + nom + '. Reponds en francais avec ces 2 sections exactement. INGRÉDIENTS: liste avec tirets et quantites en mesures nord-americaines. PRÉPARATION: etapes numerotees.')
+    : ('Full recipe for ' + nom + '. Reply in English with these 2 sections exactly. INGREDIENTS: dashed list with North American measurements. PREPARATION: numbered steps.');
 
   try {
     var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -4789,7 +4792,7 @@ async function loadTrendingRecipes() {
   if(cached) {
     try {
       var cacheData = JSON.parse(cached);
-      if(cacheData.date === today && cacheData.recipes) {
+      if(cacheData.date === today && cacheData.lang === currentLang && cacheData.recipes) {
         window.trendingRecipes = cacheData.recipes;
         renderTrendingRecipes(cacheData.recipes, colors);
         return;
@@ -4804,7 +4807,7 @@ async function loadTrendingRecipes() {
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
         max_completion_tokens: 400,
-        messages: [{role:'user',content:'Génère 3 recettes québécoises tendances et virales différentes. JSON seulement: [{"emoji":"🍝","nom":"Nom recette","auteur":"Prénom N.","temps":"30 min","likes":1284},{"emoji":"🥘","nom":"Nom recette 2","auteur":"Prénom N.","temps":"45 min","likes":893},{"emoji":"🍜","nom":"Nom recette 3","auteur":"Prénom N.","temps":"20 min","likes":654}]'}]
+        messages: [{role:'user',content:(currentLang==='en' ? 'Generate 3 different trending, viral Quebec-style recipes. Reply in English. JSON only: ' : 'Génère 3 recettes québécoises tendances et virales différentes. JSON seulement: ')+'[{"emoji":"🍝","nom":"Nom recette","auteur":"Prénom N.","temps":"30 min","likes":1284},{"emoji":"🥘","nom":"Nom recette 2","auteur":"Prénom N.","temps":"45 min","likes":893},{"emoji":"🍜","nom":"Nom recette 3","auteur":"Prénom N.","temps":"20 min","likes":654}]'}]
       })
     });
     var data = await res.json();
@@ -4814,7 +4817,7 @@ async function loadTrendingRecipes() {
     var recipes = JSON.parse(jsonMatch[0]);
     
     // Save to cache
-    localStorage.setItem('sg_trending', JSON.stringify({date: today, recipes: recipes}));
+    localStorage.setItem('sg_trending', JSON.stringify({date: today, lang: currentLang, recipes: recipes}));
     window.trendingRecipes = recipes;
     renderTrendingRecipes(recipes, colors);
     
@@ -5041,7 +5044,7 @@ async function analyzeNutritionPhoto(input) {
           role: 'user',
           content: [
             {type: 'image_url', image_url: {url: 'data:image/jpeg;base64,' + base64}},
-            {type: 'text', text: 'Analyse ce repas et donne les infos nutritionnelles. JSON seulement: {"emoji":"🍗","nom":"Poulet grillé avec riz","calories":520,"proteines":38,"gras":12,"glucides":55,"details":"Poitrine de poulet grillée (~150g), riz blanc (~150g). Bonne source de protéines."}'}
+            {type: 'text', text: 'Analyse ce repas et donne les infos nutritionnelles. Langue de reponse pour "nom" et "details": '+(currentLang==="en"?"English":"francais")+'. JSON seulement: {"emoji":"🍗","nom":"Poulet grillé avec riz","calories":520,"proteines":38,"gras":12,"glucides":55,"details":"Poitrine de poulet grillée (~150g), riz blanc (~150g). Bonne source de protéines."}'}
           ]
         }]
       })
@@ -5070,7 +5073,7 @@ async function analyzeNutritionText() {
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
         max_tokens: 300,
-        messages: [{role:'user',content:'Infos nutritionnelles pour "'+food+'". JSON seulement: {"emoji":"🍗","nom":"'+food+'","calories":520,"proteines":38,"gras":12,"glucides":55,"details":"Description courte et conseil nutritionnel."}'}]
+        messages: [{role:'user',content:'Infos nutritionnelles pour "'+food+'". Langue de reponse pour "details": '+(currentLang==="en"?"English":"francais")+'. JSON seulement: {"emoji":"🍗","nom":"'+food+'","calories":520,"proteines":38,"gras":12,"glucides":55,"details":"Description courte et conseil nutritionnel."}'}]
       })
     });
     var data = await res.json();
@@ -5662,7 +5665,7 @@ async function generateMenuFromSpecials() {
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
         max_completion_tokens: 1500,
-        messages: [{role:'user',content:'Ces produits sont EN SPECIAL cette semaine: ' + specialsList + '. Genere un menu pour 7 jours qui utilise au maximum ces produits en special pour economiser. Un repas principal par jour. JSON seulement: {"menu":[{"jour":"Lundi","emoji":"🍗","repas":"Poulet roti aux herbes","special":"Utilise: poulet en special","temps":"45 min"},{"jour":"Mardi","emoji":"🥘","repas":"Soupe aux legumes","special":"Utilise: carottes en special","temps":"30 min"}]}'}]
+        messages: [{role:'user',content:'Langue de reponse pour "repas" et "special": '+(currentLang==="en"?"English":"francais")+'. Ces produits sont EN SPECIAL cette semaine: ' + specialsList + '. Genere un menu pour 7 jours qui utilise au maximum ces produits en special pour economiser. Un repas principal par jour. JSON seulement: {"menu":[{"jour":"Lundi","emoji":"🍗","repas":"Poulet roti aux herbes","special":"Utilise: poulet en special","temps":"45 min"},{"jour":"Mardi","emoji":"🥘","repas":"Soupe aux legumes","special":"Utilise: carottes en special","temps":"30 min"}]}'}]
       })
     });
 
