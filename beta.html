@@ -404,6 +404,7 @@ input:focus,select:focus{outline:none;border-color:var(--g);box-shadow:0 0 0 3px
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.6/JsBarcode.all.min.js"></script>
 
 <style>
 #quagga-container video {
@@ -566,7 +567,9 @@ ml('account', '2355363');
 <div class="bc-full" id="bc-full">
   <div style="font-size:22px;font-weight:700;color:var(--text);margin-bottom:4px;" id="bf-name"></div>
   <div style="font-size:12px;color:var(--sub);margin-bottom:2rem;" id="bf-type"></div>
-  <div style="display:flex;gap:2px;justify-content:center;align-items:center;height:100px;background:#fff;padding:1rem;border-radius:12px;border:1px solid var(--light);margin-bottom:1rem;width:100%;" id="bf-bars"></div>
+  <div style="display:flex;justify-content:center;align-items:center;background:#fff;padding:1rem;border-radius:12px;border:1px solid var(--light);margin-bottom:1rem;width:100%;overflow-x:auto;">
+    <svg id="bf-bars"></svg>
+  </div>
   <div style="font-size:18px;font-weight:700;color:var(--text);letter-spacing:4px;margin-bottom:2rem;" id="bf-number"></div>
   <button class="btn bg bf" onclick="hideBc()">Fermer</button>
 </div>
@@ -3960,8 +3963,8 @@ function renderWallet(){
 
   const c=walletCards[activeCard];const display=document.getElementById('active-card-display');if(!display)return;
   display.style.background=c.gradient;display.style.boxShadow=`0 12px 32px ${c.shadow}`;
-  display.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;"><div><div style="font-size:20px;font-weight:800;color:#fff;">${c.name}</div><div style="font-size:10px;color:rgba(255,255,255,0.8);">${c.type}</div></div><div style="font-size:30px;">${c.icon}</div></div><div style="background:rgba(255,255,255,0.15);border-radius:12px;padding:12px;margin-bottom:10px;text-align:center;"><div style="font-size:12px;font-weight:700;color:#fff;letter-spacing:3px;margin-bottom:8px;">${c.number}</div><div style="display:flex;gap:1.5px;justify-content:center;align-items:center;height:44px;" id="wbc"></div><div style="font-size:10px;color:rgba(255,255,255,0.7);margin-top:6px;">Appuie pour agrandir le code</div></div><div style="display:flex;align-items:center;justify-content:space-between;"><div><div style="font-size:20px;font-weight:700;color:#fff;">${c.pts.toLocaleString()} pts</div><div style="font-size:10px;color:rgba(255,255,255,0.8);">≈ $${(c.pts/100).toFixed(2)} en récompenses</div></div><div style="background:rgba(255,255,255,0.2);color:#fff;font-size:10px;font-weight:700;padding:5px 12px;border-radius:999px;">Niveau Or 🏆</div></div>`;
-  setTimeout(()=>{const wbc=document.getElementById('wbc');if(wbc)genBarcode(wbc);},50);
+  display.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;"><div><div style="font-size:20px;font-weight:800;color:#fff;">${c.name}</div><div style="font-size:10px;color:rgba(255,255,255,0.8);">${c.type}</div></div><div style="font-size:30px;">${c.icon}</div></div><div style="background:rgba(255,255,255,0.15);border-radius:12px;padding:12px;margin-bottom:10px;text-align:center;"><div style="font-size:12px;font-weight:700;color:#fff;letter-spacing:3px;margin-bottom:8px;">${c.number}</div><div style="display:flex;justify-content:center;align-items:center;height:44px;overflow:hidden;"><svg id="wbc"></svg></div><div style="font-size:10px;color:rgba(255,255,255,0.7);margin-top:6px;">Appuie pour agrandir le code</div></div><div style="display:flex;align-items:center;justify-content:space-between;"><div><div style="font-size:20px;font-weight:700;color:#fff;">${c.pts.toLocaleString()} pts</div><div style="font-size:10px;color:rgba(255,255,255,0.8);">≈ $${(c.pts/100).toFixed(2)} en récompenses</div></div><div style="background:rgba(255,255,255,0.2);color:#fff;font-size:10px;font-weight:700;padding:5px 12px;border-radius:999px;">Niveau Or 🏆</div></div>`;
+  setTimeout(()=>{const wbc=document.getElementById('wbc');if(wbc && c.number && typeof JsBarcode !== 'undefined'){ try{ JsBarcode(wbc, c.number, { format:'CODE128', width:1.5, height:40, displayValue:false, margin:0 }); }catch(e){} }},50);
   const wd=document.getElementById('w-dots');if(wd)wd.innerHTML=walletCards.map((x,i)=>`<div onclick="setActiveCard(${i})" style="width:${i===activeCard?20:8}px;height:8px;border-radius:999px;background:${i===activeCard?'var(--g)':'#e5e7eb'};cursor:pointer;transition:all 0.2s;"></div>`).join('');
   const mcl=document.getElementById('mini-cards-list');if(mcl)mcl.innerHTML=walletCards.map((card,i)=>`<div class="mini-card ${i===activeCard?'active-mini':''}" onclick="setActiveCard(${i})"><div style="font-size:24px;">${card.icon}</div><div style="flex:1"><div style="font-size:12px;font-weight:700;">${card.name} — ${card.type}</div><div style="font-size:10px;color:var(--sub);">${card.pts.toLocaleString()} pts · ≈ $${(card.pts/100).toFixed(2)}</div></div><div style="display:flex;align-items:center;gap:8px;"><div style="width:6px;height:6px;border-radius:50%;background:${i===activeCard?'var(--g)':'#e5e7eb'};"></div><button onclick="event.stopPropagation();removeWCard(${i})" style="background:none;border:none;cursor:pointer;color:#9ca3af;font-size:16px;padding:0;">×</button></div></div>`).join('');
   const totalPts=walletCards.reduce((s,x)=>s+x.pts,0);
@@ -3969,7 +3972,27 @@ function renderWallet(){
   const ql=document.getElementById('ql-wallet');if(ql)ql.textContent=walletCards.length+' carte'+(walletCards.length>1?'s':'')+' fidélité';
 }
 function setActiveCard(idx){activeCard=idx;renderWallet();}
-function showBc(){const c=walletCards[activeCard];document.getElementById('bf-name').textContent=c.name;document.getElementById('bf-type').textContent=c.type;document.getElementById('bf-number').textContent=c.number;genBarcode(document.getElementById('bf-bars'),60);document.getElementById('bc-full').classList.add('open');}
+function showBc(){
+  const c=walletCards[activeCard];
+  document.getElementById('bf-name').textContent=c.name;
+  document.getElementById('bf-type').textContent=c.type;
+  document.getElementById('bf-number').textContent=c.number;
+
+  var svg = document.getElementById('bf-bars');
+  if(c.number && typeof JsBarcode !== 'undefined') {
+    try {
+      // CODE128 accepte n'importe quelle longueur de chiffres et reste lisible
+      // par la grande majorité des lecteurs de caisse, peu importe le format original.
+      JsBarcode(svg, c.number, { format: 'CODE128', width: 2, height: 80, displayValue: false, margin: 0 });
+    } catch(e) {
+      console.error('Erreur génération code-barres:', e);
+      svg.innerHTML = '';
+    }
+  } else {
+    svg.innerHTML = '';
+  }
+  document.getElementById('bc-full').classList.add('open');
+}
 function hideBc(){document.getElementById('bc-full').classList.remove('open');}
 function openWalletModal(){document.getElementById('wallet-modal').classList.add('open');}
 function closeWalletModal(){document.getElementById('wallet-modal').classList.remove('open');}
