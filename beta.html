@@ -5207,6 +5207,7 @@ async function submitNewProduct(){
   var code = window._lastScannedCode;
   if(code){
     saveProductToDB(code, fullName, brand, format); // sync le nom vers la banque de produits — aide tout le monde au prochain scan de ce code
+    window._lastScannedCode = null; // empêche searchProd() de re-sauvegarder ce même produit une deuxième fois plus bas
   }
 
   // Si un prix a été indiqué, on l'ajoute aussi à la banque de vrais prix (comme un reçu scanné)
