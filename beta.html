@@ -4380,6 +4380,11 @@ function startCardScan() {
   // Quagga sert de filet de sécurité si l'appareil ne le supporte pas.
   if ('BarcodeDetector' in window) {
     console.log('[Scanner carte] BarcodeDetector natif disponible.');
+    if (BarcodeDetector.getSupportedFormats) {
+      BarcodeDetector.getSupportedFormats().then(function(formats) {
+        console.log('[Scanner carte] Formats vraiment supportés par ce téléphone:', formats);
+      });
+    }
     startCardNativeScan();
   } else {
     console.log('[Scanner carte] BarcodeDetector non supporté — repli sur Quagga.');
@@ -4409,8 +4414,9 @@ async function startCardNativeScan() {
     return;
   }
 
-  // Les cartes de fidélité utilisent divers formats, pas seulement EAN/UPC comme les produits
-  var detector = new BarcodeDetector({ formats: ['ean_13','ean_8','upc_a','upc_e','code_128','code_39','codabar'] });
+  // Test : liste de formats identique au scanner de produits (qui fonctionne),
+  // pour isoler si les formats additionnels (code_39/codabar) causaient le problème.
+  var detector = new BarcodeDetector({ formats: ['ean_13','ean_8','upc_a','upc_e','code_128'] });
   var scanDone = false;
   var REQUIRED_MATCHES = 2;
   var lastCode = null;
