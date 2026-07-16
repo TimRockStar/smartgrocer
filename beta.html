@@ -430,6 +430,9 @@ n=d.getElementsByTagName(e)[0],n.parentNode.insertBefore(l,n);})
 (window,document,'script','https://assets.mailerlite.com/js/universal.js','ml');
 ml('account', '2355363');
 </script>
+<!-- ⚠️ TEMPORAIRE — Console de débogage mobile (Eruda). À RETIRER avant la publication sur Google Play. -->
+<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+<script>eruda.init();</script>
 </head>
 <body>
 <div class="toast" id="toast"></div>
@@ -4376,8 +4379,10 @@ function startCardScan() {
   // Priorité au décodeur natif du téléphone (même système fiable que pour les produits) —
   // Quagga sert de filet de sécurité si l'appareil ne le supporte pas.
   if ('BarcodeDetector' in window) {
+    console.log('[Scanner carte] BarcodeDetector natif disponible.');
     startCardNativeScan();
   } else {
+    console.log('[Scanner carte] BarcodeDetector non supporté — repli sur Quagga.');
     startCardQuaggaScan();
   }
 }
@@ -4396,6 +4401,7 @@ async function startCardNativeScan() {
     });
     video.srcObject = _cardNativeStream;
     await video.play();
+    console.log('[Scanner carte] Caméra native démarrée avec succès.');
   } catch(e) {
     console.error('[Scanner carte] Erreur caméra native:', e);
     showToast('Camera non disponible');
@@ -4413,8 +4419,11 @@ async function startCardNativeScan() {
   var cropCtx = cropCanvas.getContext('2d');
 
   if(_cardNativeScanInterval) clearInterval(_cardNativeScanInterval);
+  var tickCount = 0;
   _cardNativeScanInterval = setInterval(async function() {
     if(scanDone) return;
+    tickCount++;
+    if(tickCount % 15 === 0) console.log('[Scanner carte] Boucle active, tick', tickCount, '- videoWidth:', video.videoWidth, 'videoHeight:', video.videoHeight);
     if(!video.videoWidth) return;
     try {
       var vw = video.videoWidth, vh = video.videoHeight;
@@ -4426,6 +4435,7 @@ async function startCardNativeScan() {
       var barcodes = await detector.detect(cropCanvas);
       if(!barcodes.length) return;
       var code = barcodes[0].rawValue;
+      console.log('[Scanner carte] Code détecté (natif, brut):', code);
       if(!code || code.length < 4) return;
 
       if(code === lastCode) { matchCount++; } else { lastCode = code; matchCount = 1; }
