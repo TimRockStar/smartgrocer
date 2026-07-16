@@ -4427,7 +4427,6 @@ async function startCardNativeScan() {
       if(!barcodes.length) return;
       var code = barcodes[0].rawValue;
       if(!code || code.length < 4) return;
-      if(!isValidBarcodeChecksum(code)) return;
 
       if(code === lastCode) { matchCount++; } else { lastCode = code; matchCount = 1; }
       var status = document.getElementById('w-scan-status');
@@ -4476,7 +4475,6 @@ function startCardQuaggaScan() {
     if(scanDone) return;
     var code = result.codeResult.code;
     if(!code || code.length < 4) return;
-    if(!isValidBarcodeChecksum(code)) return;
 
     if(code === lastCode) { matchCount++; } else { lastCode = code; matchCount = 1; }
     var status = document.getElementById('w-scan-status');
