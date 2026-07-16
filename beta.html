@@ -4415,9 +4415,9 @@ async function startCardNativeScan() {
   var REQUIRED_MATCHES = 2;
   var lastCode = null;
   var matchCount = 0;
-  var cropCanvas = document.createElement('canvas');
-  var cropCtx = cropCanvas.getContext('2d');
-
+  // Les cartes de fidélité n'ont généralement pas de code QR adjacent qui pourrait
+  // brouiller la lecture — on analyse l'image complète plutôt que de recadrer,
+  // pour éviter tout risque de mauvais alignement de la zone recadrée.
   if(_cardNativeScanInterval) clearInterval(_cardNativeScanInterval);
   var tickCount = 0;
   _cardNativeScanInterval = setInterval(async function() {
@@ -4426,13 +4426,7 @@ async function startCardNativeScan() {
     if(tickCount % 15 === 0) console.log('[Scanner carte] Boucle active, tick', tickCount, '- videoWidth:', video.videoWidth, 'videoHeight:', video.videoHeight);
     if(!video.videoWidth) return;
     try {
-      var vw = video.videoWidth, vh = video.videoHeight;
-      var cropW = vw * 0.75, cropH = Math.min(vh * 0.2, 160);
-      var cropX = (vw - cropW) / 2, cropY = (vh - cropH) / 2;
-      cropCanvas.width = cropW; cropCanvas.height = cropH;
-      cropCtx.drawImage(video, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
-
-      var barcodes = await detector.detect(cropCanvas);
+      var barcodes = await detector.detect(video);
       if(!barcodes.length) return;
       var code = barcodes[0].rawValue;
       console.log('[Scanner carte] Code détecté (natif, brut):', code);
