@@ -996,6 +996,8 @@ ml('account', '2355363');
         <div class="store-chip" onclick="quickAddCard('RONA','🔨','linear-gradient(135deg,#E65100,#BF360C)','rgba(230,81,0,0.35)')"><span class="store-chip-icon">🔨</span><div class="store-chip-name">RONA</div></div>
       </div>
       <button class="btn bo bf" onclick="quickAddCustomCard()" data-i18n="wallet_other_card">+ Autre carte</button>
+      <button class="btn bo bf" onclick="document.getElementById('card-photo-input').click()" style="margin-top:8px;">🖼️ <span data-i18n="wallet_import_photo">Importer une photo ou capture d'écran</span></button>
+      <input type="file" id="card-photo-input" accept="image/*" style="display:none;" onchange="analyzeCardPhoto(this)"/>
     </div>
     <div id="w-scan-active" style="display:none;">
       <div style="position:relative;width:100%;border-radius:14px;overflow:hidden;margin-bottom:0.875rem;background:#000;">
@@ -1804,6 +1806,7 @@ var translations = {
     wallet_scanner_desc: 'Scanne le vrai code-barres de ta carte pour l\'ajouter!',
     wallet_soon: '🚀 Bientôt disponible sur iOS et Android',
     wallet_add_manual: 'Ajouter une carte manuellement', wallet_other_card: '+ Autre carte',
+    wallet_import_photo: "Importer une photo ou capture d'écran",
     // Alertes
     alertes_configured: 'Alertes configurées', alertes_add: 'Ajouter une alerte', alertes_create_btn: "Créer l'alerte",
     // Budget
@@ -1937,6 +1940,7 @@ var translations = {
     wallet_scanner_desc: 'Scan your card\'s real barcode to add it!',
     wallet_soon: '🚀 Coming soon on iOS and Android',
     wallet_add_manual: 'Add a card manually', wallet_other_card: '+ Other card',
+    wallet_import_photo: 'Import a photo or screenshot',
     // Alerts
     alertes_configured: 'Configured alerts', alertes_add: 'Add an alert', alertes_create_btn: 'Create alert',
     // Budget
@@ -4345,7 +4349,7 @@ function loadData() {
   } catch(e) { return false; }
 }
 
-function quickAddCard(name, icon, gradient, shadow) {
+function quickAddCard(name, icon, gradient, shadow, number) {
   const existingIdx = walletCards.findIndex(function(c){ return c.name===name; });
   if(existingIdx >= 0) {
     activeCard = existingIdx;
@@ -4353,7 +4357,10 @@ function quickAddCard(name, icon, gradient, shadow) {
     showToast('Carte ' + name + ' selectionnee!');
     return;
   }
-  walletCards.push({name:name,type:name,icon:icon,gradient:gradient,number:'',pts:0,shadow:shadow,isReal:false});
+  if(number === undefined) {
+    number = prompt('Numéro de la carte ' + name + ' (lis-le sur ta carte, ou laisse vide pour l\'ajouter plus tard):');
+  }
+  walletCards.push({name:name,type:name,icon:icon,gradient:gradient,number:number?number.trim():'',pts:0,shadow:shadow,isReal:!!(number&&number.trim())});
   activeCard = walletCards.length - 1;
   renderWallet(); saveData();
   showToast('Carte ' + name + ' ajoutee!');
@@ -4362,13 +4369,49 @@ function quickAddCard(name, icon, gradient, shadow) {
 function quickAddCustomCard() {
   const name = prompt('Nom de ta carte:');
   if(!name || !name.trim()) return;
-  quickAddCard(name.trim(), '💳', 'linear-gradient(135deg,#1D9E75,#0F6E56)', 'rgba(29,158,117,0.35)');
+  const number = prompt('Numéro de la carte (lis-le directement sur ta carte):');
+  quickAddCard(name.trim(), '💳', 'linear-gradient(135deg,#1D9E75,#0F6E56)', 'rgba(29,158,117,0.35)', number ? number.trim() : '');
 }
 
 var _cardNativeStream = null;
 var _cardNativeScanInterval = null;
 var _cardQuaggaTimeoutId = null;
 var _cardQuaggaDetectedHandler = null;
+
+// Analyse une photo/capture d'écran statique (pas une vidéo en direct) — une vraie
+// photo est souvent bien plus nette qu'un flux vidéo compressé, et ça permet aussi
+// d'importer une capture d'écran d'une autre app, comme Stocard le fait.
+async function analyzeCardPhoto(input) {
+  if(!input.files || !input.files[0]) return;
+  var file = input.files[0];
+  showToast('⏳ Analyse de la photo...');
+
+  try {
+    var img = new Image();
+    var base64 = await resizeImageToBase64(file, 2000);
+    await new Promise(function(resolve, reject) {
+      img.onload = resolve;
+      img.onerror = reject;
+      img.src = 'data:image/jpeg;base64,' + base64;
+    });
+
+    if('BarcodeDetector' in window) {
+      var detector = new BarcodeDetector({ formats: ['ean_13','ean_8','upc_a','upc_e','code_128','code_39','codabar','pdf417','itf'] });
+      var barcodes = await detector.detect(img);
+      console.log('[Carte - import photo] Résultat détection:', barcodes);
+      if(barcodes.length > 0) {
+        showCardNameModal(barcodes[0].rawValue);
+        input.value = '';
+        return;
+      }
+    }
+    showToast('⚠️ Aucun code-barres trouvé sur cette photo — essaie l\'ajout manuel');
+  } catch(e) {
+    console.error('[Carte - import photo] Erreur:', e);
+    showToast('⚠️ Erreur d\'analyse — essaie l\'ajout manuel');
+  }
+  input.value = '';
+}
 
 function startCardScan() {
   document.getElementById('w-scan-idle').style.display = 'none';
