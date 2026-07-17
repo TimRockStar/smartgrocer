@@ -1206,6 +1206,10 @@ ml('account', '2355363');
           </div>
         </div></div>
         <button class="btn bg bf" onclick="saveProfile();showToast('✅ ' + t('prof_saved_toast'))"><i class="ti ti-check"></i> <span data-i18n="prof_save_btn">Sauvegarder</span></button>
+        <div style="margin-top:2rem;padding-top:1rem;border-top:1px solid var(--border);">
+          <button class="btn bo" style="border-color:#dc2626;color:#dc2626;" onclick="confirmDeleteAccount()"><i class="ti ti-trash"></i> <span data-i18n="prof_delete_btn">Supprimer mon compte</span></button>
+          <div style="font-size:10px;color:var(--sub);text-align:center;margin-top:6px;" data-i18n="prof_delete_hint">Efface définitivement ton compte et toutes tes données de cet appareil</div>
+        </div>
         <button class="btn bo bf" onclick="showInstallInstructions()" style="margin-top:8px;"><i class="ti ti-device-mobile"></i> 📱 Installer sur mon téléphone</button>
       </div>
     </div>
@@ -1887,6 +1891,8 @@ var translations = {
     nut_analyze_title: '📸 Analyser un repas', nut_take_photo: 'Prendre une photo de ton repas',
     nut_ai_desc: "L'IA identifie les aliments et calcule les calories", nut_or_manual: 'ou entre manuellement',
     twa_upgrade_msg: 'Visite smartgrocer.health pour passer à Premium',
+    prof_delete_btn: 'Supprimer mon compte',
+    prof_delete_hint: 'Efface définitivement ton compte et toutes tes données de cet appareil',
     // Menu Plus (clés manquantes trouvées à la vérification finale)
     plus_header: "Plus d'options",
     plus_carte: 'Carte des épiceries', plus_carte_sub: '5 épiceries près de toi',
@@ -2022,6 +2028,8 @@ var translations = {
     nut_analyze_title: '📸 Analyze a meal', nut_take_photo: 'Take a photo of your meal',
     nut_ai_desc: 'AI identifies foods and calculates calories', nut_or_manual: 'or enter manually',
     twa_upgrade_msg: 'Visit smartgrocer.health to upgrade to Premium',
+    prof_delete_btn: 'Delete my account',
+    prof_delete_hint: 'Permanently erases your account and all data from this device',
     // Plus menu (missing keys found during final verification)
     plus_header: 'More options',
     plus_carte: 'Store map', plus_carte_sub: '5 stores near you',
@@ -4329,6 +4337,47 @@ function saveProfile() {
     const ppd=document.getElementById('pp-diet');if(ppd)ppd.textContent=diet;
   }
   saveData();
+}
+
+// Supprime le compte : demande confirmation claire (action irréversible), efface
+// l'entrée serveur (statut Premium) si un courriel est connu, puis efface toutes
+// les données locales de l'appareil et retourne à l'écran de départ.
+function confirmDeleteAccount() {
+  var fr = currentLang !== 'en';
+  var msg = fr
+    ? "Es-tu certain de vouloir supprimer ton compte? Ceci efface définitivement ton profil, ta liste, tes points et tout ton historique de cet appareil. Cette action est irréversible."
+    : "Are you sure you want to delete your account? This permanently erases your profile, list, points, and all history from this device. This action cannot be undone.";
+  if(!confirm(msg)) return;
+
+  var msg2 = fr
+    ? "Dernière confirmation — vraiment tout supprimer?"
+    : "Final confirmation — really delete everything?";
+  if(!confirm(msg2)) return;
+
+  performAccountDeletion();
+}
+
+async function performAccountDeletion() {
+  var userData = JSON.parse(localStorage.getItem('smartgrocer_data') || '{}');
+  var email = userData.email || '';
+
+  // Efface le statut du compte côté serveur (abonnement Premium lié à ce courriel)
+  if(email && STRIPE_API_URL.indexOf('REMPLACE_PAR') !== 0) {
+    try {
+      await fetch(STRIPE_API_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'deleteAccount', email: email })
+      });
+    } catch(e) {
+      console.log('Suppression côté serveur échouée (on continue quand même localement):', e);
+    }
+  }
+
+  // Efface toutes les données locales de l'appareil
+  localStorage.clear();
+
+  showToast(currentLang === 'en' ? 'Account deleted' : 'Compte supprimé');
+  setTimeout(function(){ location.reload(); }, 1200);
 }
 
 function loadProfileInputs() {
