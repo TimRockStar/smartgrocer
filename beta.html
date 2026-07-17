@@ -3784,11 +3784,21 @@ function renderC(){
     '<div style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:8px;">'+r.tags.map(function(t){return '<span style="background:var(--light);color:var(--sub);font-size:9px;padding:2px 6px;border-radius:999px;">#'+t+'</span>';}).join('')+'</div>' +
     '<div style="display:flex;gap:5px;align-items:center;border-top:1px solid var(--light);padding-top:8px;">' +
     '<button style="font-size:11px;color:'+(r.liked?'var(--c)':'var(--sub)')+';background:none;border:none;cursor:pointer;padding:3px 6px;" onclick="likeC('+r.id+')">❤️ '+r.likes+'</button>' +
+    '<button style="font-size:10px;color:var(--sub);background:none;border:none;cursor:pointer;padding:3px 6px;" onclick="reportRecipe('+r.id+',&quot;'+safeNom+'&quot;)" title="Signaler">🚩</button>' +
     '<button style="margin-left:auto;font-size:10px;color:var(--c);background:none;border:none;cursor:pointer;font-weight:700;" onclick="showRecipeModal(&quot;'+safeNom+'&quot;,&quot;'+safeEmoji+'&quot;)">Voir ↗</button>' +
     '</div></div>';
   }).join('');
 }
-function likeC(id){const r=commRecs.find(x=>x.id===id);r.liked=!r.liked;r.likes+=r.liked?1:-1;filterC();}
+function likeC(id){
+  const r=commRecs.find(x=>x.id===id);
+  if(!r) return;
+  r.liked=!r.liked;
+  r.likes+=r.liked?1:-1;
+  filterC();
+  if(r.liked && STRIPE_API_URL.indexOf('REMPLACE_PAR') !== 0) {
+    fetch(STRIPE_API_URL, { method: 'POST', body: JSON.stringify({ action: 'recipeLike', id: id }) }).catch(function(e){ console.log('Like échoué (silencieux):', e); });
+  }
+}
 function filterC(){const q=document.getElementById('cs').value.toLowerCase();cFilt=q?commRecs.filter(r=>r.nom.toLowerCase().includes(q)||r.tags.some(t=>t.includes(q))):[...commRecs];renderC();}
 function switchCT(t,btn){document.querySelectorAll('#social .tab').forEach(x=>x.classList.remove('on','onc'));btn.classList.add('onc');if(btn.textContent.includes('Partager')){document.getElementById('comm-feed').style.display='none';document.getElementById('comm-upload').style.display='block';}else{document.getElementById('comm-feed').style.display='block';document.getElementById('comm-upload').style.display='none';}}
 function checkUpload(){
@@ -3800,7 +3810,7 @@ function checkUpload(){
     document.getElementById('premium-upload-lock').style.display='none';
     document.getElementById('upload-zone').style.opacity='1';
   }}
-function submitUp(){
+async function submitUp(){
   if(!isPremium){
     document.getElementById('share-premium-msg').style.display='block';
     document.getElementById('share-btn').style.opacity='0.4';
@@ -3822,15 +3832,40 @@ function submitUp(){
     showToast('⚠️ Maximum 1 partage par jour!');
     return;
   }
+
+  // Modération légère avant publication — bloque le contenu manifestement
+  // inapproprié (haine, contenu sexuel, spam) avant qu'il soit visible par
+  // la communauté. Complète le bouton "Signaler" après publication.
+  showToast('⏳ Vérification en cours...');
+  var isClean = await moderateContent(n + ' ' + ig + ' ' + prep);
+  if(!isClean) {
+    showToast('⚠️ Ce contenu ne peut pas être publié — révise ta recette');
+    return;
+  }
+
   localStorage.setItem('sg_last_share', today);
-  
+
   // Points : 0 sur le tier gratuit, 5 pts fixes sur Premium (aucune variation par action)
   var pts = 5;
 
-  // Add to community
   var userName = document.getElementById('h-name').textContent || 'Moi';
   var initials = userName.substring(0,2).toUpperCase();
   var userSocial = JSON.parse(localStorage.getItem('sg_social') || '{}');
+  var igHandle = userSocial.instagram || ig || '';
+
+  // Envoi réel au serveur — visible par toute la communauté, pas juste cet appareil
+  try {
+    await fetch(STRIPE_API_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'recipeSave', nom: n, auteur: userName, instagram: igHandle, ingredients: ig, preparation: prep, youtube: yt })
+    });
+  } catch(e) {
+    console.log('Partage de recette échoué:', e);
+    showToast('⚠️ Erreur — réessaie plus tard');
+    return;
+  }
+
+  // Ajout immédiat à l'affichage locale (évite d'attendre un rechargement pour se voir soi-même)
   commRecs.unshift({
     id: Date.now(),
     emoji: '🍳',
@@ -3848,12 +3883,82 @@ function submitUp(){
   });
   filterC();
   addPoints(pts);
-  showToast('🎉 Recette partagée!' + (isPremium?' +5 pts':'') + (hasVideo ? ' 🎬' : ' 📝'));
+  showToast('🎉 Recette partagée avec la communauté!' + (isPremium?' +5 pts':'') + (hasVideo ? ' 🎬' : ' 📝'));
   // Clear form
   document.getElementById('up-nm').value='';
   document.getElementById('up-ig').value='';
   document.getElementById('up-prep').value='';
   document.getElementById('up-yt').value='';
+}
+
+// Vérifie le contenu via IA avant publication publique — anti-abus léger.
+// En cas de doute ou d'erreur technique, on laisse passer plutôt que de
+// bloquer injustement une vraie recette (le bouton Signaler reste le filet
+// de sécurité pour ce qui échapperait à cette vérification).
+async function moderateContent(text) {
+  try {
+    var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
+      body: JSON.stringify({
+        model: 'meta-llama/llama-4-scout-17b-16e-instruct',
+        max_tokens: 20,
+        temperature: 0,
+        messages: [{role:'user', content: 'Ce texte est-il approprié pour une communauté publique de recettes de cuisine (pas de haine, contenu sexuel, spam, ou langage abusif)? Reponds UNIQUEMENT par "OUI" ou "NON". Texte: "' + text.substring(0, 500) + '"'}]
+      })
+    });
+    var data = await res.json();
+    var answer = (data.choices[0].message.content || '').toUpperCase();
+    return answer.indexOf('NON') === -1; // laisse passer sauf si clairement rejeté
+  } catch(e) {
+    console.log('Modération IA indisponible, on laisse passer:', e);
+    return true;
+  }
+}
+
+// Charge les vraies recettes de la communauté depuis le serveur — appelée
+// au chargement de l'app pour remplacer les recettes de démonstration.
+async function loadCommunityRecipes() {
+  if(STRIPE_API_URL.indexOf('REMPLACE_PAR') === 0) return;
+  try {
+    var res = await fetch(STRIPE_API_URL + '?action=recipesGet');
+    var data = await res.json();
+    var items = data.items || [];
+    if(!items.length) return; // garde les recettes de démo si rien n'a encore été partagé
+
+    var real = items.map(function(r){
+      return {
+        id: r.id, emoji: '🍳', nom: r.nom, auteur: r.auteur,
+        ini: (r.auteur||'?').substring(0,2).toUpperCase(), temps: '?',
+        tags: [], likes: Number(r.likes)||0, viral: false, liked: false,
+        prep: r.preparation, youtube: r.youtube, social: {instagram: r.instagram}
+      };
+    });
+    // Remplace les recettes de démo par les vraies, une fois qu'il y en a
+    commRecs.length = 0;
+    real.forEach(function(r){ commRecs.push(r); });
+    filterC();
+  } catch(e) {
+    console.log('Chargement des recettes communautaires échoué (silencieux):', e);
+  }
+}
+
+// Signale une recette inappropriée — accessible à tous, sans besoin de compte.
+// N'efface rien automatiquement (évite les abus); accumule dans un onglet
+// séparé que le fondateur révise manuellement.
+async function reportRecipe(id, nom) {
+  var fr = currentLang !== 'en';
+  var reason = prompt(fr ? 'Pourquoi signales-tu cette recette?' : 'Why are you reporting this recipe?');
+  if(!reason || !reason.trim()) return;
+  try {
+    await fetch(STRIPE_API_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'recipeReport', id: id, nom: nom, reason: reason.trim() })
+    });
+    showToast(fr ? '✅ Signalement envoyé, merci' : '✅ Report sent, thank you');
+  } catch(e) {
+    console.log('Signalement échoué:', e);
+  }
 }
 function renderRewards(){ /* Récompenses désactivées — en attente de partenariats */ }
 function claimReward(pts,name){
@@ -5563,6 +5668,7 @@ function showApp() {
     loadNutritionData();
     renderAlerts();
     checkAlertMatches();
+    loadCommunityRecipes();
     applyTranslations();
     applyPlayStorePaymentRules();
     var lfInit = document.getElementById('lang-fr'), leInit = document.getElementById('lang-en');
