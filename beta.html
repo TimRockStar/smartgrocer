@@ -5017,6 +5017,39 @@ async function lookupBarcode(code) {
       } catch(e) { console.log('OFF failed:', e); }
     }
     
+    // 3. On vérifie notre propre banque de prix/spéciaux par code-barres —
+    // le produit a peut-être déjà un vrai prix connu (via une circulaire ou
+    // un reçu scanné par quelqu'un d'autre) même si son NOM n'est enregistré
+    // nulle part encore. Le code-barre suffit à le reconnaître.
+    if (!productName && STRIPE_API_URL.indexOf('REMPLACE_PAR') !== 0) {
+      try {
+        var userData3 = JSON.parse(localStorage.getItem('smartgrocer_data') || '{}');
+        var city3 = (userData3.city || '').split(',')[0].trim();
+        var country3 = userData3.country || 'Canada';
+
+        var specialRes = await fetch(STRIPE_API_URL + '?action=specialFind&barcode=' + encodeURIComponent(code) + '&city=' + encodeURIComponent(city3) + '&country=' + encodeURIComponent(country3));
+        var specialData = await specialRes.json();
+        if (specialData.found) {
+          productName = specialData.nom;
+          // Ce scan confirme définitivement "ce code-barre = ce produit" — on capture le prix
+          // maintenant de façon permanente dans "Prix", indépendamment du spécial qui va expirer.
+          // Priorité au prix régulier s'il était connu sur la circulaire (plus fiable à long terme
+          // qu'un prix spécial temporaire), sinon le prix spécial reste mieux que rien.
+          var priceToKeep = (specialData.prixRegulier && Number(specialData.prixRegulier) > Number(specialData.prixSpecial))
+            ? specialData.prixRegulier : specialData.prixSpecial;
+          fetch(STRIPE_API_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'priceSave', city: city3, country: country3, items: [{nom: specialData.nom, prix: priceToKeep, magasin: specialData.magasin, codeBarre: code}] })
+          }).catch(function(e){ console.log('Capture du prix par code-barre échouée (silencieux):', e); });
+        } else {
+          var priceRes = await fetch(STRIPE_API_URL + '?action=priceGet&barcode=' + encodeURIComponent(code) + '&city=' + encodeURIComponent(city3) + '&country=' + encodeURIComponent(country3));
+          var priceData = await priceRes.json();
+          if (priceData.found) productName = priceData.nom; // déjà dans "Prix" en permanence — rien à ajouter
+        }
+        if (productName) showToast('✅ Prix déjà connu par la communauté!');
+      } catch(e) { console.log('Vérification prix/spéciaux par code-barre échouée:', e); }
+    }
+
     if (!productName) {
       // Produit non reconnu — formulaire pour l'ajouter directement, synchronisé pour toute la communauté
       document.getElementById('px-ld').classList.remove('on');
