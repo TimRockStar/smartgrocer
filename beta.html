@@ -3905,6 +3905,7 @@ async function moderateContent(text) {
       headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
       body: JSON.stringify({
         model: 'qwen/qwen3.6-27b',
+        reasoning_effort: 'none',
         max_tokens: 20,
         temperature: 0,
         messages: [{role:'user', content: 'Ce texte est-il approprié pour une communauté publique de recettes de cuisine (pas de haine, contenu sexuel, spam, ou langage abusif)? Reponds UNIQUEMENT par "OUI" ou "NON". Texte: "' + text.substring(0, 500) + '"'}]
@@ -5387,6 +5388,7 @@ async function analyzeProductPhoto(input) {
       headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
       body: JSON.stringify({
         model: 'qwen/qwen3.6-27b',
+        reasoning_effort: 'none',
         max_tokens: 300,
         temperature: 0,
         messages: [{
@@ -5841,6 +5843,7 @@ async function analyzeNutritionPhoto(input) {
       headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
       body: JSON.stringify({
         model: 'qwen/qwen3.6-27b',
+        reasoning_effort: 'none',
         max_tokens: 400,
         messages: [{
           role: 'user',
@@ -6528,6 +6531,7 @@ async function scanExpiryDate(input) {
       headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
       body: JSON.stringify({
         model: 'qwen/qwen3.6-27b',
+        reasoning_effort: 'none',
         max_tokens: 100,
         messages: [{
           role: 'user',
@@ -6968,6 +6972,7 @@ async function analyzeReceipt(input) {
       headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
       body: JSON.stringify({
         model: 'qwen/qwen3.6-27b',
+        reasoning_effort: 'none',
         max_tokens: 3000,
         temperature: 0,
         messages: [{
@@ -7084,6 +7089,7 @@ async function analyzeCircular(input) {
       headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
       body: JSON.stringify({
         model: 'qwen/qwen3.6-27b',
+        reasoning_effort: 'none',
         max_tokens: 1800,
         temperature: 0,
         messages: [{
