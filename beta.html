@@ -5831,12 +5831,7 @@ async function analyzeNutritionPhoto(input) {
   showToast('⏳ Analyse de la photo en cours...', 4000);
   
   try {
-    var base64 = await new Promise(function(resolve, reject) {
-      var reader = new FileReader();
-      reader.onload = function(e) { resolve(e.target.result.split(',')[1]); };
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
+    var base64 = await resizeImageToBase64(file, 1200);
     
     var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
@@ -5854,9 +5849,11 @@ async function analyzeNutritionPhoto(input) {
       })
     });
     var data = await res.json();
+    console.log('[Nutrition photo] Réponse brute:', data);
+    if(!data.choices || !data.choices[0]) throw new Error('Réponse IA invalide: ' + JSON.stringify(data).substring(0,200));
     var text = data.choices[0].message.content.replace(/```json|```/g,'').trim();
     var jsonMatch = text.match(/\{[\s\S]*\}/);
-    if(!jsonMatch) throw new Error('No JSON');
+    if(!jsonMatch) throw new Error('No JSON found in: ' + text.substring(0,200));
     var result = JSON.parse(jsonMatch[0]);
     showNutritionResults(result);
   } catch(e) {
