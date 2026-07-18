@@ -3904,7 +3904,7 @@ async function moderateContent(text) {
       method: 'POST',
       headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
       body: JSON.stringify({
-        model: 'meta-llama/llama-4-scout-17b-16e-instruct',
+        model: 'qwen/qwen3.6-27b',
         max_tokens: 20,
         temperature: 0,
         messages: [{role:'user', content: 'Ce texte est-il approprié pour une communauté publique de recettes de cuisine (pas de haine, contenu sexuel, spam, ou langage abusif)? Reponds UNIQUEMENT par "OUI" ou "NON". Texte: "' + text.substring(0, 500) + '"'}]
@@ -5386,7 +5386,7 @@ async function analyzeProductPhoto(input) {
       method: 'POST',
       headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
       body: JSON.stringify({
-        model: 'meta-llama/llama-4-scout-17b-16e-instruct',
+        model: 'qwen/qwen3.6-27b',
         max_tokens: 300,
         temperature: 0,
         messages: [{
@@ -5840,7 +5840,7 @@ async function analyzeNutritionPhoto(input) {
       method: 'POST',
       headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
       body: JSON.stringify({
-        model: 'meta-llama/llama-4-scout-17b-16e-instruct',
+        model: 'qwen/qwen3.6-27b',
         max_tokens: 400,
         messages: [{
           role: 'user',
@@ -6527,7 +6527,7 @@ async function scanExpiryDate(input) {
       method: 'POST',
       headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
       body: JSON.stringify({
-        model: 'meta-llama/llama-4-scout-17b-16e-instruct',
+        model: 'qwen/qwen3.6-27b',
         max_tokens: 100,
         messages: [{
           role: 'user',
@@ -6967,7 +6967,7 @@ async function analyzeReceipt(input) {
       method: 'POST',
       headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
       body: JSON.stringify({
-        model: 'meta-llama/llama-4-scout-17b-16e-instruct',
+        model: 'qwen/qwen3.6-27b',
         max_tokens: 3000,
         temperature: 0,
         messages: [{
@@ -7083,7 +7083,7 @@ async function analyzeCircular(input) {
       method: 'POST',
       headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
       body: JSON.stringify({
-        model: 'meta-llama/llama-4-scout-17b-16e-instruct',
+        model: 'qwen/qwen3.6-27b',
         max_tokens: 1800,
         temperature: 0,
         messages: [{
