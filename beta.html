@@ -683,7 +683,7 @@ ml('account', '2355363');
       </div>
       <div class="hstats">
         <div class="hs"><div class="hs-n" id="h-scans">∞</div><div class="hs-l">Scans restants</div></div>
-        <div class="hs"><div class="hs-n">$38</div><div class="hs-l">Économisé</div></div>
+        <div class="hs"><div class="hs-n js-total-saved" id="home-saved-n">$0</div><div class="hs-l">Économisé</div></div>
         <div class="hs"><div class="hs-n" id="h-pts">0</div><div class="hs-l">Points</div></div>
       </div>
     </div>
@@ -1132,7 +1132,7 @@ ml('account', '2355363');
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1rem;">
       <div class="card" style="text-align:center;"><div style="font-size:18px;font-weight:700;color:var(--g);">$153</div><div style="font-size:10px;color:var(--sub);margin-top:2px;" data-i18n="budget_remaining">Restant</div></div>
       <div class="card" style="text-align:center;"><div style="font-size:18px;font-weight:700;">$82</div><div style="font-size:10px;color:var(--sub);margin-top:2px;" data-i18n="budget_avg_week">Moy./semaine</div></div>
-      <div class="card" style="text-align:center;"><div style="font-size:18px;font-weight:700;color:var(--g);">$38</div><div style="font-size:10px;color:var(--sub);margin-top:2px;">Économisé</div></div>
+      <div class="card" style="text-align:center;"><div style="font-size:18px;font-weight:700;color:var(--g);" class="js-total-saved">$0</div><div style="font-size:10px;color:var(--sub);margin-top:2px;">Économisé</div></div>
     </div>
     <div class="sl" data-i18n="budget_by_category">Par catégorie</div>
     <div class="card" id="bcc"></div>
@@ -1162,7 +1162,7 @@ ml('account', '2355363');
   <div class="px">
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1.5rem;">
       <div class="card" style="text-align:center;"><div style="font-size:18px;font-weight:700;" id="prof-scans">0</div><div style="font-size:10px;color:var(--sub);margin-top:2px;">Scans</div></div>
-      <div class="card" style="text-align:center;"><div style="font-size:18px;font-weight:700;color:var(--g);">$38</div><div style="font-size:10px;color:var(--sub);margin-top:2px;">Économisé</div></div>
+      <div class="card" style="text-align:center;"><div style="font-size:18px;font-weight:700;color:var(--g);" class="js-total-saved">$0</div><div style="font-size:10px;color:var(--sub);margin-top:2px;">Économisé</div></div>
       <div class="card" style="text-align:center;"><div style="font-size:18px;font-weight:700;color:var(--gold);" id="prof-pts">0</div><div style="font-size:10px;color:var(--sub);margin-top:2px;">Points</div></div>
     </div>
     <div class="sl">Langue / Language</div>
@@ -1789,7 +1789,7 @@ var translations = {
     home_recettes: 'Recettes IA', home_recettes_sub: '+ Vidéos YouTube',
     home_liste: 'Ma liste', home_wallet: 'Portefeuille',
     home_specials: '🔥 Spéciaux cette semaine', home_trending: '🍳 Recettes tendances',
-    home_saved: '$38', home_saved_label: 'Économisé', home_scans_label: 'Scans restants', home_pts_label: 'Points',
+    home_saved_label: 'Économisé', home_scans_label: 'Scans restants', home_pts_label: 'Points',
     // Prix
     prix_title: 'Comparateur de prix', prix_scan_btn: '📷 Scanner un produit',
     prix_stop: '✕ Arrêter le scanner', prix_or: 'ou recherche / or search',
@@ -1926,7 +1926,7 @@ var translations = {
     home_recettes: 'AI Recipes', home_recettes_sub: '+ YouTube Videos',
     home_liste: 'My list', home_wallet: 'Wallet',
     home_specials: '🔥 This week specials', home_trending: '🍳 Trending recipes',
-    home_saved: '$38', home_saved_label: 'Saved', home_scans_label: 'Scans left', home_pts_label: 'Points',
+    home_saved_label: 'Saved', home_scans_label: 'Scans left', home_pts_label: 'Points',
     // Prix
     prix_title: 'Price comparison', prix_scan_btn: '📷 Scan a product',
     prix_stop: '✕ Stop scanner', prix_or: 'or search',
@@ -2320,8 +2320,9 @@ function addWithoutPrice() {
   closePricePicker();
 }
 
-function addWithPrice(price, storeEl) {
+function addWithPrice(price, storeEl, saved) {
   var store = typeof storeEl === "string" ? storeEl : storeEl;
+  saved = Number(saved) || 0;
   // UPDATE existing item by UID
   if(window._updatingItemUID) {
     var uid = window._updatingItemUID;
@@ -2332,6 +2333,7 @@ function addWithPrice(price, storeEl) {
       itemToUpdate.store = store;
       renderGr();
       saveData();
+      if(saved > 0) addToSavings(saved);
       showToast('✅ Prix mis à jour — ' + store + ' $' + price.toFixed(2));
       closePricePicker();
       return;
@@ -2344,11 +2346,28 @@ function addWithPrice(price, storeEl) {
     groceries.push(newItem);
     renderGr();
     saveData();
+    if(saved > 0) addToSavings(saved);
     showToast('✅ "' + _pendingGroceryItem + '" — ' + store + ' $' + price.toFixed(2));
     closePricePicker();
     return;
   }
   closePricePicker();
+}
+
+// Comptabilise une vraie économie (différence prix régulier - prix spécial,
+// seulement quand un vrai spécial confirmé est choisi) — jamais un chiffre inventé.
+function addToSavings(amount){
+  var data = JSON.parse(localStorage.getItem('smartgrocer_data') || '{}');
+  data.totalSaved = (Number(data.totalSaved) || 0) + amount;
+  localStorage.setItem('smartgrocer_data', JSON.stringify(data));
+  updateSavingsDisplay();
+}
+
+function updateSavingsDisplay(){
+  var data = JSON.parse(localStorage.getItem('smartgrocer_data') || '{}');
+  var total = Number(data.totalSaved) || 0;
+  var formatted = '$' + total.toFixed(0);
+  document.querySelectorAll('.js-total-saved').forEach(function(el){ el.textContent = formatted; });
 }
 
 async function showPricePicker(productName) {
@@ -2371,7 +2390,9 @@ async function showPricePicker(productName) {
       ]);
       var special = results[0], realPrice = results[1];
       if(special && special.found){
-        realRows.push({store: special.magasin, price: Number(special.prixSpecial), special: true, real: true, tag: '🔥 Vrai spécial cette semaine'});
+        var savedAmt = (special.prixRegulier && Number(special.prixRegulier) > Number(special.prixSpecial))
+          ? (Number(special.prixRegulier) - Number(special.prixSpecial)) : 0;
+        realRows.push({store: special.magasin, price: Number(special.prixSpecial), special: true, real: true, tag: '🔥 Vrai spécial cette semaine', saved: savedAmt});
       }
       if(realPrice && realPrice.found && (!special.found || realPrice.store !== special.magasin)){
         realRows.push({store: realPrice.store || city, price: Number(realPrice.price), special: false, real: true, tag: '✅ Vrai prix vu récemment'});
@@ -2388,7 +2409,7 @@ async function showPricePicker(productName) {
       var bg = isBest ? '#dcfce7' : '#f0fdf4';
       var border = '#86efac';
       var color = isBest ? '#166534' : 'var(--text)';
-      return '<div onclick="addWithPrice(' + p.price + ',\'' + p.store.replace(/'/g,"\\'") + '\')" style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:14px;cursor:pointer;margin-bottom:8px;background:' + bg + ';border:2px solid ' + border + '">'
+      return '<div onclick="addWithPrice(' + p.price + ',\'' + p.store.replace(/'/g,"\\'") + '\',' + (p.saved || 0) + ')" style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:14px;cursor:pointer;margin-bottom:8px;background:' + bg + ';border:2px solid ' + border + '">'
         + '<div style="font-size:24px;">🏪</div>'
         + '<div style="flex:1;"><div style="font-size:14px;font-weight:700;">' + p.store + '</div>'
         + '<div style="font-size:10px;color:#166534;font-weight:700;">' + p.tag + '</div></div>'
@@ -3267,10 +3288,11 @@ function finishOb_complete() {
   const savedData = {
     name: name, email: email, city: fullCity,
     diet: 'Aucun', onboardingDone: true,
-    isPremium: (BETA_CODES.includes(localStorage.getItem('sg_beta_code'))), points: 0, totalScans: 0,
+    isPremium: (BETA_CODES.includes(localStorage.getItem('sg_beta_code'))), points: 0, totalScans: 0, totalSaved: 0,
     groceries: [], walletCards: []
   };
   try { localStorage.setItem('smartgrocer_data', JSON.stringify(savedData)); } catch(e) { console.error('Save error:', e); }
+  updateSavingsDisplay();
   
   // Update UI
   ['h-name','pnm'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=name;});
@@ -5703,6 +5725,7 @@ function showApp() {
     document.getElementById('app').style.display = 'block';
     var savedCode = localStorage.getItem('sg_beta_code');
     if (savedCode && BETA_CODES.includes(savedCode)) { isPremium = true; }
+    updateSavingsDisplay();
     updatePlanUI(); renderRewards(); renderC(); renderBCats(); renderWallet(); renderGr(); updatePointsUI(); loadSpecials();
     loadProductDB();
     loadTrendingRecipes();
