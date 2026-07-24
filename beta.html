@@ -431,6 +431,12 @@ n=d.getElementsByTagName(e)[0],n.parentNode.insertBefore(l,n);})
 (window,document,'script','https://assets.mailerlite.com/js/universal.js','ml');
 ml('account', '2355363');
 </script>
+<!-- ⚠️ TEMPORAIRE — Console de débogage mobile (Eruda). À RETIRER avant la publication sur Google Play. -->
+<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+<script>eruda.init();</script>
+<!-- ⚠️ TEMPORAIRE — Console de débogage mobile (Eruda). À RETIRER une fois le bug confirmé réglé. -->
+<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+<script>eruda.init();</script>
 </head>
 <body>
 <div class="toast" id="toast"></div>
@@ -3175,19 +3181,23 @@ let activeCard=0;
 function startApp(){document.getElementById('landing').style.display='none';document.getElementById('onboarding').style.display='block';detectLocation();}
 function nextOb(n){document.querySelectorAll('.ob-step').forEach(s=>s.classList.remove('active'));document.getElementById('ob'+n).classList.add('active');}
 function finishOb(){
+  console.log('[SmartGrocer] finishOb() appelée — version du fichier: correctif email 2026-07-23');
   // Validate required fields
   const nameEl = document.getElementById('ob-name');
   const emailEl = document.getElementById('ob-email');
   const cityEl = document.getElementById('ob-city');
+  console.log('[SmartGrocer] Valeur email saisie:', emailEl ? emailEl.value : 'CHAMP INTROUVABLE');
   
   if(!nameEl || !nameEl.value.trim()){
     if(nameEl) nameEl.style.border='2px solid #ef4444';
     showToast('⚠️ Entre ton prénom!'); return;
   }
-  if(!emailEl || !emailEl.value.trim() || !emailEl.value.includes('@')){
+  if(!emailEl || !emailEl.value.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(emailEl.value.trim())){
+    console.log('[SmartGrocer] Email REJETÉ par la validation — correctif actif.');
     if(emailEl){emailEl.style.border='2px solid #ef4444';}
-    showToast('⚠️ Entre un email valide!'); return;
+    showToast('⚠️ Entre un email valide (exemple: nom@exemple.com)!'); return;
   }
+  console.log('[SmartGrocer] Email ACCEPTÉ par la validation, on continue.');
   if(!cityEl || !cityEl.value.trim()){
     if(cityEl) cityEl.style.border='2px solid #ef4444';
     showToast('⚠️ Entre ta ville!'); return;
@@ -3245,10 +3255,12 @@ function finishOb(){
   showToast('📧 Envoi du code de vérification...', 3000);
   sendVerificationEmail(name, email).then(function(ok) {
     if (!ok) {
-      // If email fails, skip verification and go to app
-      showToast('⚠️ Email non envoyé — accès direct accordé');
-      document.getElementById('verification').style.display='none';
-      finishOb_complete();
+      // L'envoi a échoué — on NE donne JAMAIS accès sans vérification.
+      // On reste sur l'écran de vérification et on explique le problème,
+      // avec la possibilité de réessayer via le bouton "Renvoyer le code".
+      showToast('⚠️ Envoi impossible — vérifie ton adresse courriel et réessaie');
+      document.getElementById('verify-error').textContent = "⚠️ Impossible d'envoyer le code à cette adresse. Vérifie qu'elle est bien écrite, puis clique \"Renvoyer le code\".";
+      document.getElementById('verify-error').style.display = 'block';
     }
   });
 }
@@ -3902,7 +3914,6 @@ async function moderateContent(text) {
       headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
       body: JSON.stringify({
         model: 'qwen/qwen3.6-27b',
-        reasoning_effort: 'none',
         max_tokens: 20,
         temperature: 0,
         messages: [{role:'user', content: 'Ce texte est-il approprié pour une communauté publique de recettes de cuisine (pas de haine, contenu sexuel, spam, ou langage abusif)? Reponds UNIQUEMENT par "OUI" ou "NON". Texte: "' + text.substring(0, 500) + '"'}]
@@ -4193,6 +4204,7 @@ function verifyCode() {
     document.getElementById('verification').style.display = 'none';
     finishOb_complete();
   } else {
+    document.getElementById('verify-error').textContent = '❌ Code incorrect — réessaie!';
     document.getElementById('verify-error').style.display = 'block';
     setTimeout(function(){ document.getElementById('verify-error').style.display = 'none'; }, 3000);
   }
@@ -5385,7 +5397,6 @@ async function analyzeProductPhoto(input) {
       headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
       body: JSON.stringify({
         model: 'qwen/qwen3.6-27b',
-        reasoning_effort: 'none',
         max_tokens: 300,
         temperature: 0,
         messages: [{
@@ -5840,7 +5851,6 @@ async function analyzeNutritionPhoto(input) {
       headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
       body: JSON.stringify({
         model: 'qwen/qwen3.6-27b',
-        reasoning_effort: 'none',
         max_tokens: 400,
         messages: [{
           role: 'user',
@@ -6528,7 +6538,6 @@ async function scanExpiryDate(input) {
       headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
       body: JSON.stringify({
         model: 'qwen/qwen3.6-27b',
-        reasoning_effort: 'none',
         max_tokens: 100,
         messages: [{
           role: 'user',
@@ -6969,7 +6978,6 @@ async function analyzeReceipt(input) {
       headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
       body: JSON.stringify({
         model: 'qwen/qwen3.6-27b',
-        reasoning_effort: 'none',
         max_tokens: 3000,
         temperature: 0,
         messages: [{
@@ -7086,14 +7094,13 @@ async function analyzeCircular(input) {
       headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
       body: JSON.stringify({
         model: 'qwen/qwen3.6-27b',
-        reasoning_effort: 'none',
-        max_tokens: 4000,
+        max_tokens: 1800,
         temperature: 0,
         messages: [{
           role: 'user',
           content: [
             {type: 'image_url', image_url: {url: 'data:image/jpeg;base64,' + base64}},
-            {type: 'text', text: 'Tu es un outil de transcription OCR strict, pas un assistant créatif. Regarde uniquement cette image d\'une circulaire/publicité d\'épicerie et transcris EXACTEMENT les spéciaux qui y sont imprimés.\n\nRègles absolues :\n- N\'invente JAMAIS un produit qui n\'est pas visible sur l\'image.\n- Ne complète PAS avec des produits "typiques". Transcris seulement ce que tu vois réellement.\n- Copie le nom du produit tel qu\'imprimé, ne le reformule pas.\n- IMPORTANT — deux prix distincts à chercher pour chaque article : le "prixSpecial" est le nouveau prix mis en évidence (souvent gros caractères, couleur vive). Le "prixRegulier" est l\'ANCIEN prix, souvent affiché plus petit et BARRÉ ou avec une mention "était" / "reg." juste à côté. Ces deux prix sont presque toujours DIFFÉRENTS — cherche activement ce prix barré, ne le confonds pas avec le prix spécial. Seulement si aucun prix barré/régulier n\'est visible du tout, mets prixRegulier identique à prixSpecial.\n- Si une date de fin de la promotion est visible sur la circulaire, transcris-la au format YYYY-MM-DD. Si aucune date n\'est visible, laisse le champ vide.\n- Si l\'image n\'est pas une circulaire lisible ou si aucun spécial n\'est visible, réponds avec une liste vide.\n- N\'ajoute AUCUN texte, explication ou commentaire — uniquement le JSON.\n\nExemple représentatif (avec un vrai prix régulier différent, pas juste des zéros) :\n{"items":[{"nom":"Poitrines de poulet","prixSpecial":8.99,"prixRegulier":13.99,"dateFin":"2026-07-22"},{"nom":"Pain tranché","prixSpecial":2.49,"prixRegulier":2.49,"dateFin":""}]}\n\nFormat de réponse (JSON strict), un objet par article visible sur l\'image :\n{"items":[{"nom":"...","prixSpecial":0.00,"prixRegulier":0.00,"dateFin":"YYYY-MM-DD"}]}'}
+            {type: 'text', text: 'Tu es un outil de transcription OCR strict, pas un assistant créatif. Regarde uniquement cette image d\'une circulaire/publicité d\'épicerie et transcris EXACTEMENT les spéciaux qui y sont imprimés.\n\nRègles absolues :\n- N\'invente JAMAIS un produit qui n\'est pas visible sur l\'image.\n- Ne complète PAS avec des produits "typiques". Transcris seulement ce que tu vois réellement.\n- Copie le nom du produit tel qu\'imprimé, ne le reformule pas.\n- Pour chaque spécial, note le prix spécial ET le prix régulier si visible (sinon laisse prixRegulier identique au prix spécial).\n- Si une date de fin de la promotion est visible sur la circulaire, transcris-la au format YYYY-MM-DD. Si aucune date n\'est visible, laisse le champ vide.\n- Si l\'image n\'est pas une circulaire lisible ou si aucun spécial n\'est visible, réponds avec une liste vide.\n- N\'ajoute AUCUN texte, explication ou commentaire — uniquement le JSON.\n\nFormat de réponse (JSON strict) :\n{"items":[{"nom":"nom exact du produit","prixSpecial":0.00,"prixRegulier":0.00,"dateFin":"YYYY-MM-DD"}]}'}
           ]
         }]
       })
@@ -7148,8 +7155,6 @@ async function addAllCircularItems() {
   var country = userData.country || 'Canada';
 
   if(STRIPE_API_URL.indexOf('REMPLACE_PAR') === 0) { closeCircularScanner(); return; }
-
-  console.log('[Circulaire] Articles envoyés au serveur:', JSON.stringify(items));
 
   try {
     var res = await fetch(STRIPE_API_URL, {
