@@ -1727,8 +1727,9 @@ async function openStore(name, icon, address, mapsQuery) {
       method: 'POST',
       headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
       body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
-        max_completion_tokens: 500,
+        model: 'qwen/qwen3.6-27b',
+        reasoning_effort: 'none',
+        max_tokens: 500,
         messages: [{role:'user',content:'Génère 5 spéciaux réalistes cette semaine chez '+name+' au Québec. JSON seulement: [{"emoji":"🥜","nom":"Produit","prix":5.99,"prixReg":7.49,"rabais":"-20%"}]'}]
       })
     });
@@ -2274,8 +2275,9 @@ async function showCompareModal(query) {
       method: 'POST',
       headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
       body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
-        max_completion_tokens: 600,
+        model: 'qwen/qwen3.6-27b',
+        reasoning_effort: 'none',
+        max_tokens: 600,
         messages: [{role:'user',content:'Compare le coût total de cette liste entre IGA, Maxi, Metro et Walmart au Québec. Liste: '+list+'. Donne les totaux estimés pour chaque magasin et recommande le moins cher. Réponds en français, format simple et clair.'}]
       })
     });
@@ -2433,8 +2435,9 @@ async function showPricePicker(productName) {
       method: 'POST',
       headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
       body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
-        max_completion_tokens: 600,
+        model: 'qwen/qwen3.6-27b',
+        reasoning_effort: 'none',
+        max_tokens: 600,
         messages: [{role:'user',content:'Prix realistes au Quebec pour "'+productName+'". JSON seulement: [{"store":"IGA","price":5.99,"special":true},{"store":"Maxi","price":5.49,"special":false},{"store":"Metro","price":5.99,"special":false},{"store":"Walmart","price":5.97,"special":false},{"store":"Costco","price":12.99,"special":false}]'}]
       })
     });
@@ -2511,8 +2514,9 @@ async function loadLocalStores() {
       method: 'POST',
       headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
       body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
-        max_completion_tokens: 600,
+        model: 'qwen/qwen3.6-27b',
+        reasoning_effort: 'none',
+        max_tokens: 600,
         messages: [{role:'user',content:'Liste 5 vraies chaines epicerie connues pres de '+city+', '+country+'. Utilise seulement des noms de chaines reelles et connues (pas invente). JSON seulement: [{"nom":"Carrefour","icone":"🏪","distance":"1.2 km","adresse":"123 rue Example","specials":3,"ouvert":true}]'}]
       })
     });
@@ -2752,8 +2756,9 @@ async function generateNewRecipeForDay() {
         method: 'POST',
         headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
         body: JSON.stringify({
-          model: 'llama-3.3-70b-versatile',
-          max_completion_tokens: 200,
+          model: 'qwen/qwen3.6-27b',
+        reasoning_effort: 'none',
+          max_tokens: 200,
           messages: [{role:'user',content:'Reponds UNIQUEMENT en JSON valide sans texte avant ou apres. Langue de reponse: '+(currentLang==="en"?"English":"francais")+'. Recette economique de ' + randomType + ' avec ' + randomProtein + ' pour ' + day + '. ' + avoidText + ' JSON: {"emoji":"🍝","nom":"Nom court","ingredients":"ingredient1, ingredient2, ingredient3, ingredient4"}'}]
         })
       });
@@ -2838,8 +2843,9 @@ async function generatePlannerList() {
       method: 'POST',
       headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
       body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
-        max_completion_tokens: 1000,
+        model: 'qwen/qwen3.6-27b',
+        reasoning_effort: 'none',
+        max_tokens: 1000,
         messages: [{role:'user',content:'Reponds UNIQUEMENT en JSON valide. Langue pour "nom": '+(currentLang==="en"?"English":"francais")+'. Pour chaque ingredient donne le prix le moins cher et l epicerie. Epiceries disponibles: '+localStores+'. Ingredients: '+allIngredients.slice(0,10).join(', ')+'. Format strict: [{"nom":"boeuf hache","prix":6.99,"store":"Maxi"},{"nom":"pates","prix":2.49,"store":"IGA"}]'}]
       })
     });
@@ -2934,8 +2940,9 @@ async function genRecipesFromSpecials() {
       method: 'POST',
       headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
       body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
-        max_completion_tokens: 1200,
+        model: 'qwen/qwen3.6-27b',
+        reasoning_effort: 'none',
+        max_tokens: 1200,
         messages: [{role:'user',content:'Langue de reponse: '+(currentLang==="en"?"English":"francais")+'. Ces produits sont EN SPÉCIAL cette semaine: ' + specialsList + '. Génère 3 recettes économiques qui utilisent UN OU PLUSIEURS de ces produits en spécial. Mesures nord-américaines. JSON seulement: {"recettes":[{"emoji":"🍳","nom":"Nom recette","temps":"30 min","portions":"4 portions","match":"Utilise: poulet en spécial chez Maxi","etapes":["Étape 1","Étape 2","Étape 3"]}]}'}]
       })
     });
@@ -2992,8 +2999,9 @@ async function getHealthScore(productName) {
       method: 'POST',
       headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
       body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
-        max_completion_tokens: 150,
+        model: 'qwen/qwen3.6-27b',
+        reasoning_effort: 'none',
+        max_tokens: 150,
         messages: [{role:'user',content:'Score sante pour "'+productName+'". Le champ "conseil" doit etre en '+(currentLang==="en"?"English":"francais")+'. Le champ "couleur" doit TOUJOURS etre un de ces mots exacts en francais peu importe la langue de reponse: vert, jaune, orange, rouge. JSON seulement: {"score":75,"niveau":"bon","couleur":"vert","conseil":"Bonne source de proteines"}. Niveau: excellent(90-100,vert), bon(70-89,vert), moyen(50-69,jaune), mediocre(30-49,orange), mauvais(0-29,rouge).'}]
       })
     });
@@ -3523,8 +3531,8 @@ async function searchProd(){
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
       body:JSON.stringify({
-        model:'llama-3.3-70b-versatile',
-        max_completion_tokens:1000,
+        model:'qwen/qwen3.6-27b',reasoning_effort:'none',
+        max_tokens:1000,
         messages:[{role:'user',content:'Reponds UNIQUEMENT avec du JSON valide, aucun texte avant ou apres. Prix realistes Quebec pour "'+p+'": {"emoji":"🛒","nom":"Nom complet","magasins":[{"nom":"IGA","prix":5.99,"prixRegulier":7.49,"enSpecial":true,"format":"200g"},{"nom":"Metro","prix":6.29,"prixRegulier":6.29,"enSpecial":false,"format":"200g"},{"nom":"Maxi","prix":5.49,"prixRegulier":6.49,"enSpecial":true,"format":"200g"},{"nom":"Walmart","prix":5.97,"prixRegulier":5.97,"enSpecial":false,"format":"200g"},{"nom":"Costco","prix":12.99,"prixRegulier":12.99,"enSpecial":false,"format":"500g"}],"formats":[{"format":"200g","prix":5.99,"prixAu100g":3.00},{"format":"500g","prix":12.99,"prixAu100g":2.60}]}'}]
       })
     });
@@ -3586,7 +3594,7 @@ async function genAll(){
   document.getElementById('rec-ld').classList.add('on');
   document.getElementById('rec-res').style.display='none';
   try{
-    var res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},body:JSON.stringify({model:'llama-3.3-70b-versatile',max_completion_tokens:1400,messages:[{role:'user',content:'Chef cuisinier. Langue de réponse: '+(currentLang==="en"?"English":"français")+'. Ingrédients: '+ingredientsList+'. Génère 3 recettes + 4 vidéos YouTube. Utilise mesures nord-américaines (tasse, c. à thé, c. à soupe). JSON seulement: {"recettes":[{"emoji":"🍳","nom":"Nom recette","temps":"20 min","portions":"2 portions","match":"Utilise les ingrédients","etapes":["Étape 1","Étape 2","Étape 3","Étape 4"]}],"youtubeVideos":[{"query":"recette facile","titre":"Titre viral","channel":"Channel","views":"2.3M vues","duration":"8:42","viral":true}]}'}]})});
+    var res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},body:JSON.stringify({model:'qwen/qwen3.6-27b',reasoning_effort:'none',max_tokens:1400,messages:[{role:'user',content:'Chef cuisinier. Langue de réponse: '+(currentLang==="en"?"English":"français")+'. Ingrédients: '+ingredientsList+'. Génère 3 recettes + 4 vidéos YouTube. Utilise mesures nord-américaines (tasse, c. à thé, c. à soupe). JSON seulement: {"recettes":[{"emoji":"🍳","nom":"Nom recette","temps":"20 min","portions":"2 portions","match":"Utilise les ingrédients","etapes":["Étape 1","Étape 2","Étape 3","Étape 4"]}],"youtubeVideos":[{"query":"recette facile","titre":"Titre viral","channel":"Channel","views":"2.3M vues","duration":"8:42","viral":true}]}'}]})});
     var data=await res.json();
     var text=data.choices[0].message.content.replace(/```json|```/g,'').trim();
     var parsed=JSON.parse(text);
@@ -4336,8 +4344,9 @@ async function showRecipeModal(nom, emoji, recipeObj) {
       method: 'POST',
       headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
       body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
-        max_completion_tokens: 600,
+        model: 'qwen/qwen3.6-27b',
+        reasoning_effort: 'none',
+        max_tokens: 600,
         messages: [{role:'user',content: prompt}]
       })
     });
@@ -5128,8 +5137,9 @@ async function lookupBarcode(code) {
       method: 'POST',
       headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
       body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
-        max_completion_tokens: 1000,
+        model: 'qwen/qwen3.6-27b',
+        reasoning_effort: 'none',
+        max_tokens: 1000,
         messages: [{role:'user',content:'Prix realistes en '+(window.userCity||'Quebec')+', '+(window.userCountry||'CA')+' pour "' + productName + '". JSON seulement: {"emoji":"🛒","nom":"' + productName + '","magasins":[{"nom":"IGA","prix":5.99,"prixRegulier":7.49,"enSpecial":true,"format":"1kg"},{"nom":"Metro","prix":7.29,"prixRegulier":7.29,"enSpecial":false,"format":"1kg"},{"nom":"Maxi","prix":6.49,"prixRegulier":6.99,"enSpecial":true,"format":"1kg"},{"nom":"Walmart","prix":6.19,"prixRegulier":6.19,"enSpecial":false,"format":"1kg"},{"nom":"Costco","prix":14.99,"prixRegulier":14.99,"enSpecial":false,"format":"2.5kg"}],"formats":[{"format":"1kg","prix":5.99,"prixAu100g":0.60}]}'}]
       })
     });
@@ -5286,8 +5296,9 @@ async function loadSpecials() {
       method: 'POST',
       headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
       body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
-        max_completion_tokens: 800,
+        model: 'qwen/qwen3.6-27b',
+        reasoning_effort: 'none',
+        max_tokens: 800,
         messages: [{
           role: 'user',
           content: 'Genere 6 specials epiceirie realistes cette semaine au Quebec. JSON seulement:\n[{"emoji":"🥜","nom":"Beurre arachide Kraft 1kg","magasin":"IGA","prix":5.99,"prixReg":7.49,"expire":"dim."},{"emoji":"🥛","nom":"Lait 2% 4L","magasin":"Maxi","prix":5.49,"prixReg":6.29,"expire":"sam."},{"emoji":"🍗","nom":"Poulet entier","magasin":"Metro","prix":7.99,"prixReg":10.49,"expire":"ven."},{"emoji":"🥚","nom":"Oeufs 12","magasin":"Walmart","prix":3.97,"prixReg":5.49,"expire":"jeu."},{"emoji":"🧀","nom":"Cheddar fort 400g","magasin":"IGA","prix":4.99,"prixReg":6.99,"expire":"dim."},{"emoji":"🍞","nom":"Pain baguette","magasin":"Maxi","prix":1.99,"prixReg":2.99,"expire":"sam."}]'
@@ -5641,8 +5652,10 @@ async function loadTrendingRecipes() {
       method: 'POST',
       headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
       body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
-        max_completion_tokens: 400,
+        model: 'qwen/qwen3.6-27b',
+        reasoning_effort: 'none',
+        max_tokens: 500,
+        temperature: 0.9,
         messages: [{role:'user',content:(currentLang==='en' ? 'Generate 3 different trending, viral Quebec-style recipes. Reply in English. JSON only: ' : 'Génère 3 recettes québécoises tendances et virales différentes. JSON seulement: ')+'[{"emoji":"🍝","nom":"Nom recette","auteur":"Prénom N.","temps":"30 min","likes":1284},{"emoji":"🥘","nom":"Nom recette 2","auteur":"Prénom N.","temps":"45 min","likes":893},{"emoji":"🍜","nom":"Nom recette 3","auteur":"Prénom N.","temps":"20 min","likes":654}]'}]
       })
     });
@@ -5715,7 +5728,7 @@ function openTrending(idx) {
 </script>
 
 <script>
-const BETA_CODES = ["SG-BETA-001","SG-BETA-002","SG-BETA-003","SG-BETA-004","SG-BETA-005","SG-BETA-006","SG-BETA-007","SG-BETA-008","SG-BETA-009","SG-BETA-010","SG-BETA-011","SG-BETA-012","SG-BETA-013","SG-BETA-014","SG-BETA-015","SG-BETA-016","SG-BETA-017","SG-BETA-018","SG-BETA-019","SG-BETA-020"];
+const BETA_CODES = ["SG-BETA-001","SG-BETA-002","SG-BETA-003","SG-BETA-004","SG-BETA-005","SG-BETA-006","SG-BETA-007","SG-BETA-008","SG-BETA-009","SG-BETA-010","SG-BETA-011","SG-BETA-012","SG-BETA-013","SG-BETA-014","SG-BETA-015","SG-BETA-016","SG-BETA-017","SG-BETA-018","SG-BETA-019","SG-BETA-020","SG-BETA-021","SG-BETA-022","SG-BETA-023","SG-BETA-024","SG-BETA-025","SG-BETA-026","SG-BETA-027","SG-BETA-028","SG-BETA-029","SG-BETA-030","SG-BETA-031","SG-BETA-032","SG-BETA-033","SG-BETA-034","SG-BETA-035","SG-BETA-036","SG-BETA-037","SG-BETA-038","SG-BETA-039","SG-BETA-040","SG-BETA-041","SG-BETA-042","SG-BETA-043","SG-BETA-044","SG-BETA-045","SG-BETA-046","SG-BETA-047","SG-BETA-048","SG-BETA-049","SG-BETA-050","SG-BETA-051","SG-BETA-052","SG-BETA-053","SG-BETA-054","SG-BETA-055","SG-BETA-056","SG-BETA-057","SG-BETA-058","SG-BETA-059","SG-BETA-060","SG-BETA-061","SG-BETA-062","SG-BETA-063","SG-BETA-064","SG-BETA-065","SG-BETA-066","SG-BETA-067","SG-BETA-068","SG-BETA-069","SG-BETA-070","SG-BETA-071","SG-BETA-072","SG-BETA-073","SG-BETA-074","SG-BETA-075","SG-BETA-076","SG-BETA-077","SG-BETA-078","SG-BETA-079","SG-BETA-080","SG-BETA-081","SG-BETA-082","SG-BETA-083","SG-BETA-084","SG-BETA-085","SG-BETA-086","SG-BETA-087","SG-BETA-088","SG-BETA-089","SG-BETA-090","SG-BETA-091","SG-BETA-092","SG-BETA-093","SG-BETA-094","SG-BETA-095","SG-BETA-096","SG-BETA-097","SG-BETA-098","SG-BETA-099","SG-BETA-100"];
 
 function showApp() {
   document.getElementById('beta-gate').style.display = 'none';
@@ -5930,7 +5943,8 @@ async function analyzeNutritionText() {
       method: 'POST',
       headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
       body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
+        model: 'qwen/qwen3.6-27b',
+        reasoning_effort: 'none',
         max_tokens: 300,
         messages: [{role:'user',content:'Infos nutritionnelles pour "'+food+'". Langue de reponse pour "details": '+(currentLang==="en"?"English":"francais")+'. JSON seulement: {"emoji":"🍗","nom":"'+food+'","calories":520,"proteines":38,"gras":12,"glucides":55,"details":"Description courte et conseil nutritionnel."}'}]
       })
@@ -6522,8 +6536,9 @@ async function generateMenuFromSpecials() {
       method: 'POST',
       headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
       body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
-        max_completion_tokens: 1500,
+        model: 'qwen/qwen3.6-27b',
+        reasoning_effort: 'none',
+        max_tokens: 1500,
         messages: [{role:'user',content:'Langue de reponse pour "repas" et "special": '+(currentLang==="en"?"English":"francais")+'. Ces produits sont EN SPECIAL cette semaine: ' + specialsList + '. Genere un menu pour 7 jours qui utilise au maximum ces produits en special pour economiser. Un repas principal par jour. JSON seulement: {"menu":[{"jour":"Lundi","emoji":"🍗","repas":"Poulet roti aux herbes","special":"Utilise: poulet en special","temps":"45 min"},{"jour":"Mardi","emoji":"🥘","repas":"Soupe aux legumes","special":"Utilise: carottes en special","temps":"30 min"}]}'}]
       })
     });
