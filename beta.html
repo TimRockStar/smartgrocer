@@ -1209,6 +1209,13 @@ ml('account', '2355363');
           </div>
         </div></div>
         <button class="btn bg bf" onclick="saveProfile();showToast('✅ ' + t('prof_saved_toast'))"><i class="ti ti-check"></i> <span data-i18n="prof_save_btn">Sauvegarder</span></button>
+        <div style="margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--border);">
+          <div style="font-size:12px;font-weight:700;margin-bottom:8px;" data-i18n="prof_beta_title">🎁 Tu as un code bêta?</div>
+          <div style="display:flex;gap:8px;">
+            <input type="text" id="pp-beta-code" placeholder="Ex: SG-BETA-001" style="flex:1;text-transform:uppercase;letter-spacing:1px;font-family:monospace;" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')redeemBetaCodeProfile()"/>
+            <button class="btn bg" style="flex:0 0 auto;padding:0 16px;" onclick="redeemBetaCodeProfile()" data-i18n="prof_beta_btn">Activer</button>
+          </div>
+        </div>
         <div style="margin-top:2rem;padding-top:1rem;border-top:1px solid var(--border);">
           <button class="btn bo" style="border-color:#dc2626;color:#dc2626;" onclick="confirmDeleteAccount()"><i class="ti ti-trash"></i> <span data-i18n="prof_delete_btn">Supprimer mon compte</span></button>
           <div style="font-size:10px;color:var(--sub);text-align:center;margin-top:6px;" data-i18n="prof_delete_hint">Efface définitivement ton compte et toutes tes données de cet appareil</div>
@@ -1894,6 +1901,7 @@ var translations = {
     nut_analyze_title: '📸 Analyser un repas', nut_take_photo: 'Prendre une photo de ton repas',
     nut_ai_desc: "L'IA identifie les aliments et calcule les calories", nut_or_manual: 'ou entre manuellement',
     twa_upgrade_msg: 'Visite smartgrocer.health pour passer à Premium',
+    prof_beta_title: '🎁 Tu as un code bêta?', prof_beta_btn: 'Activer',
     prof_delete_btn: 'Supprimer mon compte',
     prof_delete_hint: 'Efface définitivement ton compte et toutes tes données de cet appareil',
     // Menu Plus (clés manquantes trouvées à la vérification finale)
@@ -2031,6 +2039,7 @@ var translations = {
     nut_analyze_title: '📸 Analyze a meal', nut_take_photo: 'Take a photo of your meal',
     nut_ai_desc: 'AI identifies foods and calculates calories', nut_or_manual: 'or enter manually',
     twa_upgrade_msg: 'Visit smartgrocer.health to upgrade to Premium',
+    prof_beta_title: '🎁 Have a beta code?', prof_beta_btn: 'Activate',
     prof_delete_btn: 'Delete my account',
     prof_delete_hint: 'Permanently erases your account and all data from this device',
     // Plus menu (missing keys found during final verification)
@@ -5762,6 +5771,24 @@ function checkBetaCode() {
   } else {
     document.getElementById('beta-error').style.display = 'block';
     setTimeout(function(){ document.getElementById('beta-error').style.display = 'none'; }, 3000);
+  }
+}
+
+// Activation d'un code bêta depuis le Profil — pour les utilisateurs déjà
+// inscrits (contrairement à l'ancien écran de porte, retiré au lancement public).
+function redeemBetaCodeProfile() {
+  var fr = currentLang !== 'en';
+  var input = document.getElementById('pp-beta-code').value.trim().toUpperCase();
+  if (!input) return;
+  if (BETA_CODES.includes(input)) {
+    localStorage.setItem('sg_beta_code', input);
+    isPremium = true;
+    updatePlanUI();
+    updatePointsUI();
+    showToast(fr ? '🎉 Code activé — Premium débloqué!' : '🎉 Code activated — Premium unlocked!');
+    document.getElementById('pp-beta-code').value = '';
+  } else {
+    showToast(fr ? '⚠️ Code invalide — vérifie et réessaie' : '⚠️ Invalid code — check and try again');
   }
 }
 
