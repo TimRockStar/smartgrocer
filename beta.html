@@ -431,9 +431,6 @@ n=d.getElementsByTagName(e)[0],n.parentNode.insertBefore(l,n);})
 (window,document,'script','https://assets.mailerlite.com/js/universal.js','ml');
 ml('account', '2355363');
 </script>
-<!-- ⚠️ TEMPORAIRE — Console de débogage mobile (Eruda). À RETIRER avant la publication sur Google Play. -->
-<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-<script>eruda.init();</script>
 <!-- ⚠️ TEMPORAIRE — Console de débogage mobile (Eruda). À RETIRER une fois le bug confirmé réglé. -->
 <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
 <script>eruda.init();</script>
@@ -3234,15 +3231,9 @@ function finishOb(){
   const carte=document.getElementById('carte-city');if(carte)carte.textContent='Épiceries · '+fullCity+' · 5 km';
   const ppb=document.getElementById('pp-budget');if(ppb)ppb.textContent='$'+budget;
 
-  // Save to localStorage
-  const data = {
-    name: name, email: email, city: fullCity,
-    diet: 'Aucun', onboardingDone: true,
-    isPremium: (BETA_CODES.includes(localStorage.getItem('sg_beta_code'))), points: 0, totalScans: 0,
-    groceries: [], walletCards: []
-  };
-  try { localStorage.setItem('smartgrocer_data', JSON.stringify(data)); console.log('Saved OK:', name, email, fullCity); } catch(e) { console.error('Save error:', e); }
-
+  // Les données complètes ne sont PLUS sauvegardées ici — seulement après que le
+  // code de vérification soit confirmé, dans finishOb_complete(). Sauvegarder ici
+  // permettait de contourner la vérification en fermant/rouvrant l'app.
   // Save data for after verification
   sgVerifyData = {name: name, email: email, city: fullCity, budget: budget};
   
@@ -3269,6 +3260,17 @@ function finishOb_complete() {
   var data = sgVerifyData;
   if (!data) return;
   var name = data.name, email = data.email, fullCity = data.city;
+
+  // C'est ICI, et seulement ici, que les données sont vraiment sauvegardées —
+  // après que le code de vérification ait été confirmé. Empêche de contourner
+  // la vérification en fermant/rouvrant l'app avant d'entrer le bon code.
+  const savedData = {
+    name: name, email: email, city: fullCity,
+    diet: 'Aucun', onboardingDone: true,
+    isPremium: (BETA_CODES.includes(localStorage.getItem('sg_beta_code'))), points: 0, totalScans: 0,
+    groceries: [], walletCards: []
+  };
+  try { localStorage.setItem('smartgrocer_data', JSON.stringify(savedData)); } catch(e) { console.error('Save error:', e); }
   
   // Update UI
   ['h-name','pnm'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=name;});
