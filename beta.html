@@ -431,9 +431,6 @@ n=d.getElementsByTagName(e)[0],n.parentNode.insertBefore(l,n);})
 (window,document,'script','https://assets.mailerlite.com/js/universal.js','ml');
 ml('account', '2355363');
 </script>
-<!-- ⚠️ TEMPORAIRE — Console de débogage mobile (Eruda). À RETIRER une fois le bug confirmé réglé. -->
-<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-<script>eruda.init();</script>
 </head>
 <body>
 <div class="toast" id="toast"></div>
@@ -3208,23 +3205,19 @@ let activeCard=0;
 function startApp(){document.getElementById('landing').style.display='none';document.getElementById('onboarding').style.display='block';detectLocation();}
 function nextOb(n){document.querySelectorAll('.ob-step').forEach(s=>s.classList.remove('active'));document.getElementById('ob'+n).classList.add('active');}
 function finishOb(){
-  console.log('[SmartGrocer] finishOb() appelée — version du fichier: correctif email 2026-07-23');
   // Validate required fields
   const nameEl = document.getElementById('ob-name');
   const emailEl = document.getElementById('ob-email');
   const cityEl = document.getElementById('ob-city');
-  console.log('[SmartGrocer] Valeur email saisie:', emailEl ? emailEl.value : 'CHAMP INTROUVABLE');
   
   if(!nameEl || !nameEl.value.trim()){
     if(nameEl) nameEl.style.border='2px solid #ef4444';
     showToast('⚠️ Entre ton prénom!'); return;
   }
   if(!emailEl || !emailEl.value.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(emailEl.value.trim())){
-    console.log('[SmartGrocer] Email REJETÉ par la validation — correctif actif.');
     if(emailEl){emailEl.style.border='2px solid #ef4444';}
     showToast('⚠️ Entre un email valide (exemple: nom@exemple.com)!'); return;
   }
-  console.log('[SmartGrocer] Email ACCEPTÉ par la validation, on continue.');
   if(!cityEl || !cityEl.value.trim()){
     if(cityEl) cityEl.style.border='2px solid #ef4444';
     showToast('⚠️ Entre ta ville!'); return;
