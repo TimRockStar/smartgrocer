@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deviens bêta-testeur — SmartGrocer</title>
+<style>
+  :root{
+    --g:#1D9E75;--g2:#0F6E56;--gold:#C9A227;
+    --bg:#f0f9f4;--card:#fff;--border:#e0f0e8;--text:#1a2e1a;--sub:#4a6b5a;--light:#e8f5ee;
+  }
+  *{box-sizing:border-box;}
+  body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);margin:0;line-height:1.6;}
+  .wrap{max-width:600px;margin:0 auto;padding:0 1.25rem 3rem;}
+  header{background:linear-gradient(160deg,var(--g),var(--g2));color:#fff;padding:2.5rem 1.25rem 2rem;text-align:center;}
+  header h1{margin:0 0 8px;font-size:26px;}
+  header p{margin:0;font-size:15px;opacity:0.95;}
+  .perk{display:inline-block;background:rgba(255,255,255,0.18);border-radius:999px;padding:6px 16px;margin-top:14px;font-size:13px;font-weight:700;}
+  .step{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.25rem 1.5rem;margin-top:1.25rem;}
+  .step-num{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;background:var(--g);color:#fff;border-radius:50%;font-weight:700;font-size:14px;margin-right:8px;}
+  .step h2{display:flex;align-items:center;font-size:17px;margin:0 0 10px;color:var(--g2);}
+  .step p{margin:0 0 8px;font-size:14.5px;color:var(--sub);}
+  .step p:last-child{margin-bottom:0;}
+  .btn{display:inline-block;background:var(--g);color:#fff;text-decoration:none;font-weight:700;font-size:14px;padding:12px 22px;border-radius:10px;margin-top:8px;}
+  .btn:hover{background:var(--g2);}
+  .btn-outline{display:inline-block;border:2px solid var(--g);color:var(--g);text-decoration:none;font-weight:700;font-size:13px;padding:9px 18px;border-radius:10px;margin-top:6px;margin-right:8px;}
+  code{background:var(--light);padding:2px 8px;border-radius:6px;font-family:monospace;font-weight:700;color:var(--g2);}
+  .note{background:#FBF1E1;border-left:4px solid var(--gold);border-radius:8px;padding:12px 16px;font-size:13px;color:#7A5A15;margin-top:1.5rem;}
+  footer{text-align:center;font-size:12px;color:var(--sub);margin-top:2.5rem;}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🛒 Deviens bêta-testeur de SmartGrocer</h1>
+  <p>Aide-nous à peaufiner l'app avant son vrai lancement — ça prend 5 minutes</p>
+  <div class="perk">🎁 1 an d'abonnement Premium gratuit en remerciement</div>
+</header>
+
+<div class="wrap">
+
+  <div class="step">
+    <h2><span class="step-num">1</span> Rejoins le groupe de testeurs</h2>
+    <p>C'est ce qui te donne accès au test — sans ça, l'app ne s'installera pas correctement.</p>
+    <a class="btn" href="https://groups.google.com/g/smartgrocer-testeurs" target="_blank" rel="noopener">Rejoindre le groupe →</a>
+  </div>
+
+  <div class="step">
+    <h2><span class="step-num">2</span> Accepte l'invitation au test</h2>
+    <p>Une fois dans le groupe, ouvre ce lien sur ton téléphone — il t'amène directement vers le Google Play Store pour installer l'app :</p>
+    <a class="btn" href="#" id="test-link">Rejoindre le test et installer →</a>
+    <p style="font-size:12.5px;margin-top:10px;">💡 Assure-toi d'être connecté sur ton téléphone avec le même courriel que celui utilisé pour rejoindre le groupe.</p>
+  </div>
+
+  <div class="step">
+    <h2><span class="step-num">3</span> Crée ton compte dans l'app</h2>
+    <p>Ouvre SmartGrocer, entre ton prénom, un <strong>vrai</strong> courriel et ta ville. Tu vas recevoir un code à 6 chiffres par courriel — entre-le pour confirmer ton compte.</p>
+  </div>
+
+  <div class="step">
+    <h2><span class="step-num">4</span> Active ton année Premium gratuite</h2>
+    <p>Va dans l'onglet <strong>Profil</strong>, trouve la section « 🎁 Tu as un code bêta? », et entre <strong>ton</strong> code personnel, juste pour toi :</p>
+    <p style="text-align:center;font-size:26px;" id="code-display">⏳ Attribution de ton code...</p>
+    <p style="font-size:12px;text-align:center;color:var(--sub);">Ce code t'est réservé — garde-le pour toi, il ne fonctionnera qu'une fois attribué.</p>
+    <p>Toutes les fonctionnalités Premium se débloquent instantanément — scans illimités, recettes IA, tout.</p>
+  </div>
+
+  <div class="step">
+    <h2><span class="step-num">5</span> Utilise l'app et donne ton avis</h2>
+    <p>Scanne un code-barres, ajoute des articles à ta liste, essaie une recette générée par IA — pas besoin de vraiment changer tes habitudes d'épicerie, juste explorer un peu.</p>
+    <p>Une question, un bug, un commentaire? Écris directement à :</p>
+    <a class="btn-outline" href="mailto:smartgrocer.canada@gmail.com">📧 smartgrocer.canada@gmail.com</a>
+  </div>
+
+  <div class="note">
+    💡 Le test dure 14 jours. Tu n'as besoin de rien faire de plus après avoir installé l'app et activé ton code — reste seulement inscrit au groupe pendant cette période.
+  </div>
+
+  <footer>
+    SmartGrocer — Un projet 100% québécois, construit avec soin. Merci de ton aide! 🙏
+  </footer>
+
+</div>
+
+<script>
+  // Remplace ce lien par le vrai lien "Participer sur le Web" trouvé dans Play Console → Test fermé → Testeurs
+  document.getElementById('test-link').href = "REMPLACE_PAR_LE_VRAI_LIEN_DE_TEST_FERME";
+
+  // Attribution d'un vrai code bêta unique, un seul par visiteur — jamais réutilisé.
+  var STRIPE_API_URL = 'https://script.google.com/macros/s/AKfycbyCQ3IMSdpu8LMdnZfAsZIANnYIUsstsD3MAXpwFDh_Th3NivPfz_af7UrWjTIF7Pjq/exec';
+
+  (async function claimCode(){
+    var display = document.getElementById('code-display');
+    // Évite de redemander un nouveau code si la personne recharge la page —
+    // garde le même code déjà attribué sur cet appareil.
+    var saved = localStorage.getItem('smartgrocer_beta_code_assigned');
+    if(saved){
+      display.innerHTML = '<code>' + saved + '</code>';
+      return;
+    }
+    try{
+      var res = await fetch(STRIPE_API_URL + '?action=claimBetaCode');
+      var data = await res.json();
+      if(data.success){
+        localStorage.setItem('smartgrocer_beta_code_assigned', data.code);
+        display.innerHTML = '<code>' + data.code + '</code>';
+      } else {
+        display.innerHTML = '⚠️ Tous les codes ont été attribués — écris-nous!';
+      }
+    } catch(e){
+      console.error('Erreur attribution code:', e);
+      display.innerHTML = '⚠️ Erreur — recharge la page, ou écris-nous.';
+    }
+  })();
+</script>
+
+</body>
+</html>
