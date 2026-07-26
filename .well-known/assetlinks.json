@@ -1,0 +1,10 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "health.smartgrocer.app",
+    "sha256_cert_fingerprints": [
+      "10:A9:B0:FB:2C:C5:BB:25:2E:8B:8E:61:F9:F3:7F:7F:38:0D:0A:45:06:DD:8A:62:A0:60:94:B2:60:A1:20:48"
+    ]
+  }
+}]
