@@ -986,7 +986,8 @@ ml('account', '2355363');
         <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:6px;" data-i18n="wallet_scanner_title">Scanner de cartes fidélité</div>
         <div style="font-size:12px;color:rgba(255,255,255,0.75);margin-bottom:10px;line-height:1.5;" data-i18n="wallet_scanner_desc">Scanne le vrai code-barres de ta carte pour l'ajouter!</div>
       </div>
-      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px;" data-i18n="wallet_add_manual">Ajouter une carte manuellement</div>
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px;" data-i18n="wallet_add_manual">Ajout rapide — programmes populaires</div>
+      <div style="font-size:11px;color:var(--sub);margin-bottom:10px;" data-i18n="wallet_add_manual_sub">Appuie sur ton programme pour ajouter TA carte — ce ne sont pas des cartes déjà enregistrées</div>
       <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:1rem;">
         <div class="store-chip" onclick="quickAddCard('PC Optimum','💙','linear-gradient(135deg,#003087,#0057B8)','rgba(0,48,135,0.35)')"><span class="store-chip-icon">💙</span><div class="store-chip-name">PC Optimum</div></div>
         <div class="store-chip" onclick="quickAddCard('Air Miles','✈️','linear-gradient(135deg,#C62828,#1565C0)','rgba(198,40,40,0.35)')"><span class="store-chip-icon">✈️</span><div class="store-chip-name">Air Miles</div></div>
@@ -1853,7 +1854,7 @@ var translations = {
     wallet_scanner_title: 'Scanner de cartes fidélité',
     wallet_scanner_desc: 'Scanne le vrai code-barres de ta carte pour l\'ajouter!',
     wallet_soon: '🚀 Bientôt disponible sur iOS et Android',
-    wallet_add_manual: 'Ajouter une carte manuellement', wallet_other_card: '+ Autre carte',
+    wallet_add_manual: 'Ajout rapide — programmes populaires', wallet_add_manual_sub: 'Appuie sur ton programme pour ajouter TA carte — ce ne sont pas des cartes déjà enregistrées', wallet_other_card: '+ Autre carte',
     wallet_take_photo: 'Prendre une photo de la carte',
     // Alertes
     alertes_configured: 'Alertes configurées', alertes_add: 'Ajouter une alerte', alertes_create_btn: "Créer l'alerte",
@@ -1991,7 +1992,7 @@ var translations = {
     wallet_scanner_title: 'Loyalty card scanner',
     wallet_scanner_desc: 'Scan your card\'s real barcode to add it!',
     wallet_soon: '🚀 Coming soon on iOS and Android',
-    wallet_add_manual: 'Add a card manually', wallet_other_card: '+ Other card',
+    wallet_add_manual: 'Quick add — popular programs', wallet_add_manual_sub: 'Tap your program to add YOUR card — these aren\'t already-saved cards', wallet_other_card: '+ Other card',
     wallet_take_photo: 'Take a photo of the card',
     // Alerts
     alertes_configured: 'Configured alerts', alertes_add: 'Add an alert', alertes_create_btn: 'Create alert',
@@ -4160,8 +4161,16 @@ function renderWallet(){
   display.style.background=c.gradient;display.style.boxShadow=`0 12px 32px ${c.shadow}`;
   display.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;"><div><div style="font-size:20px;font-weight:800;color:#fff;">${c.name}</div><div style="font-size:10px;color:rgba(255,255,255,0.8);">${c.type}</div></div><div style="font-size:30px;">${c.icon}</div></div><div style="background:rgba(255,255,255,0.15);border-radius:12px;padding:12px;margin-bottom:10px;text-align:center;"><div style="font-size:12px;font-weight:700;color:#fff;letter-spacing:3px;margin-bottom:8px;">${c.number}</div><div style="display:flex;justify-content:center;align-items:center;height:44px;overflow:hidden;"><svg id="wbc"></svg></div><div style="font-size:10px;color:rgba(255,255,255,0.7);margin-top:6px;">Appuie pour agrandir le code</div></div><div style="display:flex;align-items:center;justify-content:space-between;"><div><div style="font-size:20px;font-weight:700;color:#fff;">${c.pts.toLocaleString()} pts</div><div style="font-size:10px;color:rgba(255,255,255,0.8);">≈ $${(c.pts/100).toFixed(2)} en récompenses</div></div><div style="background:rgba(255,255,255,0.2);color:#fff;font-size:10px;font-weight:700;padding:5px 12px;border-radius:999px;">Niveau Or 🏆</div></div>`;
   setTimeout(()=>{const wbc=document.getElementById('wbc');if(wbc && c.number && typeof JsBarcode !== 'undefined'){ try{ JsBarcode(wbc, c.number, { format:'CODE128', width:1.5, height:40, displayValue:false, margin:0 }); }catch(e){} }},50);
-  const wd=document.getElementById('w-dots');if(wd)wd.innerHTML=walletCards.map((x,i)=>`<div onclick="setActiveCard(${i})" style="width:${i===activeCard?20:8}px;height:8px;border-radius:999px;background:${i===activeCard?'var(--g)':'#e5e7eb'};cursor:pointer;transition:all 0.2s;"></div>`).join('');
-  const mcl=document.getElementById('mini-cards-list');if(mcl)mcl.innerHTML=walletCards.map((card,i)=>`<div class="mini-card ${i===activeCard?'active-mini':''}" onclick="setActiveCard(${i})"><div style="font-size:24px;">${card.icon}</div><div style="flex:1"><div style="font-size:12px;font-weight:700;">${card.name} — ${card.type}</div><div style="font-size:10px;color:var(--sub);">${card.pts.toLocaleString()} pts · ≈ $${(card.pts/100).toFixed(2)}</div></div><div style="display:flex;align-items:center;gap:8px;"><div style="width:6px;height:6px;border-radius:50%;background:${i===activeCard?'var(--g)':'#e5e7eb'};"></div><button onclick="event.stopPropagation();removeWCard(${i})" style="background:none;border:none;cursor:pointer;color:#9ca3af;font-size:16px;padding:0;">×</button></div></div>`).join('');
+
+  // Avec une seule carte, la grande vue du haut ET la liste du bas montreraient
+  // exactement la même chose — on cache la liste (et les points de sélection)
+  // dans ce cas, puisqu'il n'y a rien entre quoi choisir.
+  const hasMultiple = walletCards.length > 1;
+  const wd=document.getElementById('w-dots');
+  if(wd){ wd.style.display = hasMultiple ? 'flex' : 'none'; wd.innerHTML = hasMultiple ? walletCards.map((x,i)=>`<div onclick="setActiveCard(${i})" style="width:${i===activeCard?20:8}px;height:8px;border-radius:999px;background:${i===activeCard?'var(--g)':'#e5e7eb'};cursor:pointer;transition:all 0.2s;"></div>`).join('') : ''; }
+  const mcl=document.getElementById('mini-cards-list');
+  if(mcl){ mcl.style.display = hasMultiple ? 'block' : 'none'; mcl.innerHTML = hasMultiple ? walletCards.map((card,i)=>`<div class="mini-card ${i===activeCard?'active-mini':''}" onclick="setActiveCard(${i})"><div style="font-size:24px;">${card.icon}</div><div style="flex:1"><div style="font-size:12px;font-weight:700;">${card.name} — ${card.type}</div><div style="font-size:10px;color:var(--sub);">${card.pts.toLocaleString()} pts · ≈ $${(card.pts/100).toFixed(2)}</div></div><div style="display:flex;align-items:center;gap:8px;"><div style="width:6px;height:6px;border-radius:50%;background:${i===activeCard?'var(--g)':'#e5e7eb'};"></div><button onclick="event.stopPropagation();removeWCard(${i})" style="background:none;border:none;cursor:pointer;color:#9ca3af;font-size:16px;padding:0;">×</button></div></div>`).join('') : ''; }
+  if(listLabel) listLabel.style.display = (isEmpty || !hasMultiple) ? 'none' : 'block';
   const totalPts=walletCards.reduce((s,x)=>s+x.pts,0);
   ['w-count','w-pts','w-val'].forEach((id,i)=>{const el=document.getElementById(id);if(el)el.textContent=[walletCards.length,totalPts.toLocaleString(),'$'+(totalPts/100).toFixed(0)][i];});
   const ql=document.getElementById('ql-wallet');if(ql)ql.textContent=walletCards.length+' carte'+(walletCards.length>1?'s':'')+' fidélité';
@@ -4616,6 +4625,9 @@ function quickAddCard(name, icon, gradient, shadow, number) {
     activeCard = existingIdx;
     renderWallet();
     showToast('Carte ' + name + ' selectionnee!');
+    // Un clic sur une carte déjà enregistrée doit montrer le code-barres
+    // tout de suite, sans étape intermédiaire à chercher plus bas.
+    if(walletCards[existingIdx].number) showBc();
     return;
   }
   if(number === undefined) {
@@ -4625,6 +4637,9 @@ function quickAddCard(name, icon, gradient, shadow, number) {
   activeCard = walletCards.length - 1;
   renderWallet(); saveData();
   showToast('Carte ' + name + ' ajoutee!');
+  // Même chose pour une toute nouvelle carte — dès qu'un numéro est entré,
+  // on saute directement au code-barres en plein écran.
+  if(number && number.trim()) showBc();
 }
 
 function quickAddCustomCard() {
