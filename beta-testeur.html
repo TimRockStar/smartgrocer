@@ -35,6 +35,7 @@
   <h1>🛒 Deviens bêta-testeur de SmartGrocer</h1>
   <p>Aide-nous à peaufiner l'app avant son vrai lancement — ça prend 5 minutes</p>
   <div class="perk">🎁 1 an d'abonnement Premium gratuit en remerciement</div>
+  <p style="font-size:12px;margin-top:10px;opacity:0.85;">📱 Disponible sur Android seulement pour l'instant (pas encore sur iPhone)</p>
 </header>
 
 <div class="wrap">
@@ -43,13 +44,20 @@
     <h2><span class="step-num">1</span> Rejoins le groupe de testeurs</h2>
     <p>C'est ce qui te donne accès au test — sans ça, l'app ne s'installera pas correctement.</p>
     <a class="btn" href="https://groups.google.com/g/smartgrocer-testeurs" target="_blank" rel="noopener">Rejoindre le groupe →</a>
+    <div id="confirm-group-box" style="margin-top:14px;">
+      <button class="btn-outline" id="confirm-group-btn" style="width:100%;text-align:center;">✅ J'ai rejoint le groupe</button>
+    </div>
   </div>
 
-  <div class="step">
+  <div class="step" id="step2" style="display:none;">
     <h2><span class="step-num">2</span> Accepte l'invitation au test</h2>
-    <p>Une fois dans le groupe, ouvre ce lien sur ton téléphone — il t'amène directement vers le Google Play Store pour installer l'app :</p>
+    <p>Ouvre ce lien sur ton téléphone — il t'amène directement vers le Google Play Store pour installer l'app :</p>
     <a class="btn" href="#" id="test-link">Rejoindre le test et installer →</a>
     <p style="font-size:12.5px;margin-top:10px;">💡 Assure-toi d'être connecté sur ton téléphone avec le même courriel que celui utilisé pour rejoindre le groupe.</p>
+  </div>
+
+  <div class="step" id="step2-locked" style="text-align:center;color:var(--sub);font-size:13px;">
+    🔒 Complète d'abord l'étape 1 pour débloquer la suite
   </div>
 
   <div class="step">
@@ -85,6 +93,24 @@
 <script>
   // Remplace ce lien par le vrai lien "Participer sur le Web" trouvé dans Play Console → Test fermé → Testeurs
   document.getElementById('test-link').href = "https://play.google.com/apps/testing/health.smartgrocer.app";
+
+  // Étape 1 → 2 : l'étape 2 reste cachée tant que la personne n'a pas confirmé
+  // avoir rejoint le groupe — évite qu'elle saute directement à l'installation
+  // sans être vraiment inscrite au groupe (ce qui bloquerait le test).
+  function unlockStep2(){
+    document.getElementById('step2').style.display = 'block';
+    document.getElementById('step2-locked').style.display = 'none';
+    document.getElementById('confirm-group-btn').textContent = '✅ Groupe rejoint!';
+    document.getElementById('confirm-group-btn').disabled = true;
+    document.getElementById('confirm-group-btn').style.opacity = '0.6';
+    localStorage.setItem('smartgrocer_beta_group_confirmed', 'true');
+  }
+
+  if(localStorage.getItem('smartgrocer_beta_group_confirmed') === 'true'){
+    unlockStep2();
+  }
+
+  document.getElementById('confirm-group-btn').addEventListener('click', unlockStep2);
 
   // Attribution d'un vrai code bêta unique, un seul par visiteur — jamais réutilisé.
   var STRIPE_API_URL = 'https://script.google.com/macros/s/AKfycbyCQ3IMSdpu8LMdnZfAsZIANnYIUsstsD3MAXpwFDh_Th3NivPfz_af7UrWjTIF7Pjq/exec';
