@@ -3948,6 +3948,7 @@ async function moderateContent(text) {
       headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
       body: JSON.stringify({
         model: 'qwen/qwen3.6-27b',
+        reasoning_effort: 'none',
         max_tokens: 20,
         temperature: 0,
         messages: [{role:'user', content: 'Ce texte est-il approprié pour une communauté publique de recettes de cuisine (pas de haine, contenu sexuel, spam, ou langage abusif)? Reponds UNIQUEMENT par "OUI" ou "NON". Texte: "' + text.substring(0, 500) + '"'}]
@@ -5448,6 +5449,7 @@ async function analyzeProductPhoto(input) {
       headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
       body: JSON.stringify({
         model: 'qwen/qwen3.6-27b',
+        reasoning_effort: 'none',
         max_tokens: 300,
         temperature: 0,
         messages: [{
@@ -5923,6 +5925,7 @@ async function analyzeNutritionPhoto(input) {
       headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
       body: JSON.stringify({
         model: 'qwen/qwen3.6-27b',
+        reasoning_effort: 'none',
         max_tokens: 400,
         messages: [{
           role: 'user',
@@ -6612,6 +6615,7 @@ async function scanExpiryDate(input) {
       headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
       body: JSON.stringify({
         model: 'qwen/qwen3.6-27b',
+        reasoning_effort: 'none',
         max_tokens: 100,
         messages: [{
           role: 'user',
@@ -7052,6 +7056,7 @@ async function analyzeReceipt(input) {
       headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
       body: JSON.stringify({
         model: 'qwen/qwen3.6-27b',
+        reasoning_effort: 'none',
         max_tokens: 3000,
         temperature: 0,
         messages: [{
@@ -7168,13 +7173,14 @@ async function analyzeCircular(input) {
       headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
       body: JSON.stringify({
         model: 'qwen/qwen3.6-27b',
-        max_tokens: 1800,
+        reasoning_effort: 'none',
+        max_tokens: 4000,
         temperature: 0,
         messages: [{
           role: 'user',
           content: [
             {type: 'image_url', image_url: {url: 'data:image/jpeg;base64,' + base64}},
-            {type: 'text', text: 'Tu es un outil de transcription OCR strict, pas un assistant créatif. Regarde uniquement cette image d\'une circulaire/publicité d\'épicerie et transcris EXACTEMENT les spéciaux qui y sont imprimés.\n\nRègles absolues :\n- N\'invente JAMAIS un produit qui n\'est pas visible sur l\'image.\n- Ne complète PAS avec des produits "typiques". Transcris seulement ce que tu vois réellement.\n- Copie le nom du produit tel qu\'imprimé, ne le reformule pas.\n- Pour chaque spécial, note le prix spécial ET le prix régulier si visible (sinon laisse prixRegulier identique au prix spécial).\n- Si une date de fin de la promotion est visible sur la circulaire, transcris-la au format YYYY-MM-DD. Si aucune date n\'est visible, laisse le champ vide.\n- Si l\'image n\'est pas une circulaire lisible ou si aucun spécial n\'est visible, réponds avec une liste vide.\n- N\'ajoute AUCUN texte, explication ou commentaire — uniquement le JSON.\n\nFormat de réponse (JSON strict) :\n{"items":[{"nom":"nom exact du produit","prixSpecial":0.00,"prixRegulier":0.00,"dateFin":"YYYY-MM-DD"}]}'}
+            {type: 'text', text: 'Tu es un outil de transcription OCR strict, pas un assistant créatif. Regarde uniquement cette image d\'une circulaire/publicité d\'épicerie et transcris EXACTEMENT les spéciaux qui y sont imprimés.\n\nRègles absolues :\n- N\'invente JAMAIS un produit qui n\'est pas visible sur l\'image.\n- Ne complète PAS avec des produits "typiques". Transcris seulement ce que tu vois réellement.\n- Copie le nom du produit tel qu\'imprimé, ne le reformule pas.\n- IMPORTANT — deux prix distincts à chercher pour chaque article : le "prixSpecial" est le nouveau prix mis en évidence (souvent gros caractères, couleur vive). Le "prixRegulier" est l\'ANCIEN prix, souvent affiché plus petit et BARRÉ ou avec une mention "était" / "reg." juste à côté. Ces deux prix sont presque toujours DIFFÉRENTS — cherche activement ce prix barré, ne le confonds pas avec le prix spécial. Seulement si aucun prix barré/régulier n\'est visible du tout, mets prixRegulier identique à prixSpecial.\n- Si une date de fin de la promotion est visible sur la circulaire, transcris-la au format YYYY-MM-DD. Si aucune date n\'est visible, laisse le champ vide.\n- Si l\'image n\'est pas une circulaire lisible ou si aucun spécial n\'est visible, réponds avec une liste vide.\n- N\'ajoute AUCUN texte, explication ou commentaire — uniquement le JSON.\n\nExemple représentatif (avec un vrai prix régulier différent, pas juste des zéros) :\n{"items":[{"nom":"Poitrines de poulet","prixSpecial":8.99,"prixRegulier":13.99,"dateFin":"2026-07-22"},{"nom":"Pain tranché","prixSpecial":2.49,"prixRegulier":2.49,"dateFin":""}]}\n\nFormat de réponse (JSON strict), un objet par article visible sur l\'image :\n{"items":[{"nom":"...","prixSpecial":0.00,"prixRegulier":0.00,"dateFin":"YYYY-MM-DD"}]}'}
           ]
         }]
       })
