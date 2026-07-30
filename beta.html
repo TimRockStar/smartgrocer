@@ -7270,6 +7270,9 @@ async function addAllCircularItems() {
   }
 
   closeCircularScanner();
+  // Réaffiche vraiment les spéciaux tout de suite après un scan réussi — sinon la
+  // personne devrait fermer et rouvrir l'app pour voir ce qu'elle vient d'ajouter.
+  if(typeof loadSpecials === 'function') loadSpecials();
 }
 </script>
 <script>
