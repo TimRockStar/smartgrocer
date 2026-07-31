@@ -2743,11 +2743,24 @@ async function generateNewRecipeForDay() {
   var plannedMeals = Object.values(mealPlan).map(function(m){ return m.nom; }).join(', ');
   var avoidText = plannedMeals ? 'Evite absolument: ' + plannedMeals + '.' : '';
   var day = _pendingPlannerSlot.split('-')[0];
-  
-  var types = ['soupe','mijotée','sauté','gratin','omelette','riz frit','quesadilla','pâtes','tacos','chili','pâté chinois','frittata'];
-  var proteins = ['boeuf haché','oeufs','légumineuses','porc','thon en conserve','tofu','saucisses','jambon'];
-  var randomType = types[Math.floor(Math.random() * types.length)];
-  var randomProtein = proteins[Math.floor(Math.random() * proteins.length)];
+
+  // Utilise les VRAIS spéciaux de la semaine (déjà chargés dans _weeklySpecials par
+  // loadSpecials()) pour construire la recette autour de ce qui est vraiment en
+  // solde — au lieu de piger au hasard dans une liste générique.
+  var promptCore;
+  var usingRealSpecials = false;
+  if(_weeklySpecials && _weeklySpecials.length > 0){
+    var shuffled = _weeklySpecials.slice().sort(function(){ return Math.random() - 0.5; });
+    var picked = shuffled.slice(0, Math.min(3, shuffled.length)).map(function(s){ return s.nom; });
+    promptCore = 'Recette economique pour ' + day + ' qui utilise, autant que possible, ces vrais produits en special cette semaine : ' + picked.join(', ') + '. Tu peux completer avec d\'autres ingredients courants si necessaire.';
+    usingRealSpecials = true;
+  } else {
+    var types = ['soupe','mijotée','sauté','gratin','omelette','riz frit','quesadilla','pâtes','tacos','chili','pâté chinois','frittata'];
+    var proteins = ['boeuf haché','oeufs','légumineuses','porc','thon en conserve','tofu','saucisses','jambon'];
+    var randomType = types[Math.floor(Math.random() * types.length)];
+    var randomProtein = proteins[Math.floor(Math.random() * proteins.length)];
+    promptCore = 'Recette economique de ' + randomType + ' avec ' + randomProtein + ' pour ' + day + '.';
+  }
   
   // Try up to 2 times
   for(var attempt = 0; attempt < 2; attempt++) {
@@ -2759,7 +2772,7 @@ async function generateNewRecipeForDay() {
           model: 'qwen/qwen3.6-27b',
         reasoning_effort: 'none',
           max_tokens: 200,
-          messages: [{role:'user',content:'Reponds UNIQUEMENT en JSON valide sans texte avant ou apres. Langue de reponse: '+(currentLang==="en"?"English":"francais")+'. Recette economique de ' + randomType + ' avec ' + randomProtein + ' pour ' + day + '. ' + avoidText + ' JSON: {"emoji":"🍝","nom":"Nom court","ingredients":"ingredient1, ingredient2, ingredient3, ingredient4"}'}]
+          messages: [{role:'user',content:'Reponds UNIQUEMENT en JSON valide sans texte avant ou apres. Langue de reponse: '+(currentLang==="en"?"English":"francais")+'. ' + promptCore + ' ' + avoidText + ' JSON: {"emoji":"🍝","nom":"Nom court","ingredients":"ingredient1, ingredient2, ingredient3, ingredient4"}'}]
         })
       });
       var data = await res.json();
@@ -2774,7 +2787,7 @@ async function generateNewRecipeForDay() {
       saveMealPlan();
       renderPlannerDays();
       closeDayPicker();
-      showToast('🍳 ' + recipe.nom + ' ajouté!');
+      showToast('🍳 ' + recipe.nom + (usingRealSpecials ? ' — basé sur tes spéciaux!' : ' ajouté!'));
       return;
       
     } catch(e) {
