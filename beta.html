@@ -3328,6 +3328,9 @@ function finishOb_complete() {
   loadProductDB(); loadTrendingRecipes(); loadFavorites(); renderFavorites(); loadLocalStores(); loadMealPlan(); renderPlannerDays();
   applyPlayStorePaymentRules();
   showToast('🎉 Email vérifié! Bienvenue ' + name + '!', 4000);
+  // Tour guidé pour les nouveaux utilisateurs — seulement à la toute première
+  // inscription, jamais revu par la suite (startTour() vérifie déjà sg_tour_done).
+  setTimeout(startTour, 1200);
 }
 function goTo(p,btn){ if(p==='liste') setTimeout(checkExpiryAlerts, 100);
   document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
@@ -6088,7 +6091,7 @@ var tourSteps = [
   {
     emoji: '💲',
     title: 'Section Prix',
-    text: 'Compare les prix en temps réel entre toutes les épiceries. Note : en version bêta, les prix sont estimés par IA — les vrais prix arrivent avec la version native!',
+    text: 'Compare les prix en temps réel entre toutes les épiceries — des vrais prix vérifiés par la communauté, pas juste des estimations!',
     target: '.nb:nth-child(2)',
     position: 'top'
   },
