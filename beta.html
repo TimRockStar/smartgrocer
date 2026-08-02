@@ -2908,7 +2908,7 @@ async function generatePlannerList() {
         model: 'qwen/qwen3.6-27b',
         reasoning_effort: 'none',
         max_tokens: 2500,
-        messages: [{role:'user',content:'Reponds UNIQUEMENT en JSON valide. Langue pour "nom": '+(currentLang==="en"?"English":"francais")+'. Pour CHAQUE ingredient de la liste ci-dessous, sans exception, donne le prix le moins cher et l epicerie — ne saute aucun ingredient. Epiceries disponibles: '+localStores+'. Ingredients: '+stillNeeded.slice(0,30).join(', ')+'. Format strict: [{"nom":"boeuf hache","prix":6.99,"store":"Maxi"},{"nom":"pates","prix":2.49,"store":"IGA"}]'}]
+        messages: [{role:'user',content:'Reponds UNIQUEMENT en JSON valide. Langue pour "nom": '+(currentLang==="en"?"English":"francais")+'. Pour CHAQUE ingredient de la liste ci-dessous, sans exception, donne le prix le moins cher, l epicerie, ET la bonne categorie d epicerie — ne saute aucun ingredient. Categories valides (utilise EXACTEMENT une de ces valeurs): frozen, meat_fish, fruits_veg, dairy, bakery, beverages, snacks, dry_goods, household, other. Epiceries disponibles: '+localStores+'. Ingredients: '+stillNeeded.slice(0,30).join(', ')+'. Format strict: [{"nom":"boeuf hache","prix":6.99,"store":"Maxi","categorie":"meat_fish"},{"nom":"olives noires","prix":3.49,"store":"IGA","categorie":"dry_goods"}]'}]
       })
     });
     
@@ -2922,11 +2922,15 @@ async function generatePlannerList() {
     var priceData = JSON.parse(jsonMatch[0]);
     var addedCount = addedCountReal;
     
+    var VALID_CATS = ['frozen','meat_fish','fruits_veg','dairy','bakery','beverages','snacks','dry_goods','household','other'];
     priceData.forEach(function(item) {
       if(!item.nom || !item.prix) return;
       var alreadyInList = groceries.some(function(g){ return g.name.toLowerCase() === item.nom.toLowerCase(); });
       if(!alreadyInList) {
-        var cat = guessCategory(item.nom);
+        // L'IA fournit directement la bonne catégorie — beaucoup plus fiable que
+        // deviner après coup avec des mots-clés. On garde guessCategory() en
+        // filet de sécurité seulement si l'IA n'a rien fourni de valide.
+        var cat = (item.categorie && VALID_CATS.indexOf(item.categorie) !== -1) ? item.categorie : guessCategory(item.nom);
         groceries.push({
           name: item.nom, 
           price: parseFloat(item.prix) || 0, 
