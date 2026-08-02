@@ -6618,8 +6618,8 @@ async function generateMenuFromSpecials() {
       body: JSON.stringify({
         model: 'qwen/qwen3.6-27b',
         reasoning_effort: 'none',
-        max_tokens: 1500,
-        messages: [{role:'user',content:'Langue de reponse pour "repas" et "special": '+(currentLang==="en"?"English":"francais")+'. Ces produits sont EN SPECIAL cette semaine: ' + specialsList + '. Genere un menu pour 7 jours qui utilise au maximum ces produits en special pour economiser. Un repas principal par jour. JSON seulement: {"menu":[{"jour":"Lundi","emoji":"🍗","repas":"Poulet roti aux herbes","special":"Utilise: poulet en special","temps":"45 min"},{"jour":"Mardi","emoji":"🥘","repas":"Soupe aux legumes","special":"Utilise: carottes en special","temps":"30 min"}]}'}]
+        max_tokens: 2200,
+        messages: [{role:'user',content:'Langue de reponse pour "repas", "special" et "ingredients": '+(currentLang==="en"?"English":"francais")+'. Ces produits sont EN SPECIAL cette semaine: ' + specialsList + '. Genere un menu pour 7 jours qui utilise au maximum ces produits en special pour economiser. Un repas principal par jour, avec une courte liste de 3 a 5 ingredients principaux separes par des virgules. JSON seulement: {"menu":[{"jour":"Lundi","emoji":"🍗","repas":"Poulet roti aux herbes","special":"Utilise: poulet en special","temps":"45 min","ingredients":"poulet, herbes de Provence, pommes de terre, carottes"},{"jour":"Mardi","emoji":"🥘","repas":"Soupe aux legumes","special":"Utilise: carottes en special","temps":"30 min","ingredients":"carottes, celeri, oignon, bouillon de legumes"}]}'}]
       })
     });
 
@@ -6642,7 +6642,7 @@ async function generateMenuFromSpecials() {
         nom: item.repas,
         temps: item.temps || '30 min',
         etapes: [],
-        ingredients: '',
+        ingredients: item.ingredients || '',
         special: item.special || ''
       };
     });
