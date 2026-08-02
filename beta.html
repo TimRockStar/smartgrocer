@@ -2603,20 +2603,22 @@ function guessCategory(productName) {
   if(/surgelé|surgele|congelé|congele|glace|crème glacée|creme glacee|frozen|ice cream/.test(n)) return 'frozen';
   // 2. Produits ménagers / hygiène — jamais dans une catégorie alimentaire
   if(/savon|vaisselle|nettoyant|détergent|detergent|javellisant|javel|papier hygiénique|papier hygienique|essuie-tout|essuie tout|désinfectant|desinfectant|lessive|shampoing|dentifrice|couche|soap|detergent|cleaner|bleach|toilet paper|paper towel|diaper|toothpaste/.test(n)) return 'household';
-  // 3. Viandes et poissons / Meat & fish
+  // 3. Épicerie sèche / Dry goods — vérifié AVANT fruits/légumes pour éviter
+  // qu'un terme composé comme "sauce tomate" ou "haricots en conserve" tombe
+  // par erreur dans fruits/légumes juste à cause d'un mot comme "tomate".
+  if(/sauce|conserve|en boîte|en boite|riz|pâte alimentaire|pate alimentaire|spaghetti|macaroni|nouille|farine|sucre|sel|huile|céréale|cereale|vinaigre|mayonnaise|margarine|olive|haricot|légumineuse|legumineuse|pois chiche|lentille|herbes de provence|épice|epice|assaisonnement|bouillon|rice|pasta|noodle|flour|sugar|salt|oil|canned|cereal|vinegar|mayonnaise|bean|lentil|spice|seasoning|broth/.test(n)) return 'dry_goods';
+  // 4. Viandes et poissons / Meat & fish
   if(/poulet|boeuf|bœuf|porc|poisson|saumon|viande|steak|jambon|bacon|dinde|crevette|thon|charcuterie|saucisse|tofu|chicken|beef|pork|fish|salmon|meat|ham|turkey|shrimp|tuna|sausage/.test(n)) return 'meat_fish';
-  // 4. Fruits et légumes / Fruits & vegetables
-  if(/pomme|banane|carotte|brocoli|laitue|légume|legume|fruit|tomate|oignon|poivron|concombre|fraise|orange|citron|raisin|patate|pomme de terre|apple|banana|carrot|broccoli|lettuce|vegetable|tomato|onion|pepper|cucumber|strawberry|lemon|grape|potato/.test(n)) return 'fruits_veg';
-  // 5. Produits laitiers / Dairy
+  // 5. Fruits et légumes / Fruits & vegetables
+  if(/pomme|banane|carotte|brocoli|laitue|légume|legume|fruit|tomate|oignon|poivron|concombre|fraise|orange|citron|raisin|patate|pomme de terre|champignon|céleri|celeri|ail|persil|apple|banana|carrot|broccoli|lettuce|vegetable|tomato|onion|pepper|cucumber|strawberry|lemon|grape|potato|mushroom|celery|garlic|parsley/.test(n)) return 'fruits_veg';
+  // 6. Produits laitiers / Dairy
   if(/lait|fromage|yogourt|yaourt|beurre|crème|creme|oeuf|œuf|kefir|ricotta|mascarpone|milk|cheese|yogurt|butter|cream|egg/.test(n)) return 'dairy';
-  // 6. Boulangerie / Bakery
+  // 7. Boulangerie / Bakery
   if(/pain|bagel|croissant|baguette|brioche|muffin|bread/.test(n)) return 'bakery';
-  // 7. Boissons / Beverages
+  // 8. Boissons / Beverages
   if(/jus|boisson|soda|eau|café|cafe|thé|the|bière|biere|vin|juice|drink|water|coffee|tea|beer|wine/.test(n)) return 'beverages';
-  // 8. Collations / Snacks
+  // 9. Collations / Snacks
   if(/chips|biscuit|chocolat|bonbon|croustille|collation|cookie|candy|snack|chocolate/.test(n)) return 'snacks';
-  // 9. Épicerie sèche / Dry goods (incluant condiments)
-  if(/riz|pâte|pate|farine|sucre|sel|huile|conserve|sauce|céréale|cereale|vinaigre|mayonnaise|margarine|rice|pasta|flour|sugar|salt|oil|canned|cereal|vinegar|mayonnaise/.test(n)) return 'dry_goods';
   return 'other';
 }
 
