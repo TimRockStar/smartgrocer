@@ -2844,12 +2844,59 @@ async function generatePlannerList() {
     showToast('⚠️ Aucun ingrédient trouvé!');
     return;
   }
-  
+
+  // Vérifie D'ABORD chaque ingrédient contre les VRAIS spéciaux scannés — jamais
+  // remplacés par une estimation IA quand un vrai prix existe déjà.
+  function normalizeForMatch(s){
+    return (s || '').toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/s\b/g, '') // enlève les pluriels simples
+      .trim();
+  }
+  var realMatches = [];
+  var stillNeeded = [];
+  allIngredients.forEach(function(ing){
+    var normIng = normalizeForMatch(ing);
+    var found = null;
+    if(_weeklySpecials && _weeklySpecials.length){
+      for(var i = 0; i < _weeklySpecials.length; i++){
+        var normSpecial = normalizeForMatch(_weeklySpecials[i].nom);
+        if(normSpecial && (normIng.indexOf(normSpecial) !== -1 || normSpecial.indexOf(normIng) !== -1)){
+          found = _weeklySpecials[i];
+          break;
+        }
+      }
+    }
+    if(found){
+      realMatches.push({ nom: ing, prix: found.prix, store: found.magasin, real: true });
+    } else {
+      stillNeeded.push(ing);
+    }
+  });
+
   var localStores = window._localStores 
     ? window._localStores.map(function(s){return s.nom;}).join(', ') 
     : 'IGA, Maxi, Metro, Walmart';
   
   showToast('⏳ Recherche des meilleurs prix...', 5000);
+
+  // Ajoute tout de suite les vrais spéciaux trouvés, peu importe si l'appel IA
+  // qui suit réussit ou échoue.
+  var addedCountReal = 0;
+  realMatches.forEach(function(item){
+    var alreadyInList = groceries.some(function(g){ return g.name.toLowerCase() === item.nom.toLowerCase(); });
+    if(!alreadyInList){
+      groceries.push({ name: item.nom, price: item.prix, done: false, category: guessCategory(item.nom), store: item.store || '', real: true });
+      addedCountReal++;
+    }
+  });
+
+  if(stillNeeded.length === 0){
+    renderGr(); saveData();
+    showToast('🛒 ' + addedCountReal + ' ingrédients ajoutés — tous trouvés dans tes vrais spéciaux! 🔥');
+    goTo('liste', null);
+    return;
+  }
   
   try {
     var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -2859,7 +2906,7 @@ async function generatePlannerList() {
         model: 'qwen/qwen3.6-27b',
         reasoning_effort: 'none',
         max_tokens: 1000,
-        messages: [{role:'user',content:'Reponds UNIQUEMENT en JSON valide. Langue pour "nom": '+(currentLang==="en"?"English":"francais")+'. Pour chaque ingredient donne le prix le moins cher et l epicerie. Epiceries disponibles: '+localStores+'. Ingredients: '+allIngredients.slice(0,10).join(', ')+'. Format strict: [{"nom":"boeuf hache","prix":6.99,"store":"Maxi"},{"nom":"pates","prix":2.49,"store":"IGA"}]'}]
+        messages: [{role:'user',content:'Reponds UNIQUEMENT en JSON valide. Langue pour "nom": '+(currentLang==="en"?"English":"francais")+'. Pour chaque ingredient donne le prix le moins cher et l epicerie. Epiceries disponibles: '+localStores+'. Ingredients: '+stillNeeded.slice(0,10).join(', ')+'. Format strict: [{"nom":"boeuf hache","prix":6.99,"store":"Maxi"},{"nom":"pates","prix":2.49,"store":"IGA"}]'}]
       })
     });
     
@@ -2871,7 +2918,7 @@ async function generatePlannerList() {
     if(!jsonMatch) throw new Error('No JSON array found: ' + text.substring(0,100));
     
     var priceData = JSON.parse(jsonMatch[0]);
-    var addedCount = 0;
+    var addedCount = addedCountReal;
     
     priceData.forEach(function(item) {
       if(!item.nom || !item.prix) return;
@@ -2890,7 +2937,7 @@ async function generatePlannerList() {
     });
     
     // Add any remaining ingredients not returned by Groq
-    allIngredients.forEach(function(ing) {
+    stillNeeded.forEach(function(ing) {
       var alreadyInList = groceries.some(function(g){ return g.name.toLowerCase() === ing.toLowerCase(); });
       if(!alreadyInList) {
         var cat = guessCategory(ing);
@@ -2901,14 +2948,14 @@ async function generatePlannerList() {
     
     renderGr();
     saveData();
-    showToast('🛒 ' + addedCount + ' ingrédients ajoutés avec les meilleurs prix!');
+    showToast('🛒 ' + addedCount + ' ingrédients ajoutés' + (addedCountReal > 0 ? ' (' + addedCountReal + ' à vrais prix spéciaux 🔥)' : ' avec les meilleurs prix!'));
     goTo('liste', null);
     
   } catch(e) {
     console.log('Planner price error:', e);
     // Fallback - add without prices
-    var addedCount = 0;
-    allIngredients.forEach(function(ing) {
+    var addedCount = addedCountReal;
+    stillNeeded.forEach(function(ing) {
       var alreadyInList = groceries.some(function(g){ return g.name.toLowerCase() === ing.toLowerCase(); });
       if(!alreadyInList) {
         var cat = guessCategory(ing);
@@ -6583,18 +6630,19 @@ async function generateMenuFromSpecials() {
     var parsed = JSON.parse(jsonMatch[0]);
     var menu = parsed.menu;
 
-    // Appliquer le menu au planificateur
+    // Appliquer le menu au planificateur — utilise le même format de clé à plat
+    // ("Jour-souper") que le reste de l'app, sinon les repas générés restent
+    // invisibles même s'ils sont bien sauvegardés.
     jours.forEach(function(jour, i) {
       var item = menu[i];
       if(!item) return;
-      var key = jour.toLowerCase();
-      if(!mealPlan[key]) mealPlan[key] = {};
-      mealPlan[key].souper = {
+      var key = jour + '-souper';
+      mealPlan[key] = {
         emoji: item.emoji || '🍽️',
         nom: item.repas,
         temps: item.temps || '30 min',
         etapes: [],
-        ingredients: [],
+        ingredients: '',
         special: item.special || ''
       };
     });
