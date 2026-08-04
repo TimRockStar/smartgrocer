@@ -3415,6 +3415,24 @@ function goExtra(p){if(p==='profil')setTimeout(loadProfileInputs,100);if(p==='ca
 function openPlus(){document.getElementById('plus-overlay').classList.add('open');}
 function closePlus(){document.getElementById('plus-overlay').classList.remove('open');}
 function showToast(msg,dur=3000){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
+
+// Petit bip sonore lors d'un scan réussi (code-barres produit ou carte de
+// fidélité) — généré directement en code, pas besoin de fichier audio externe.
+function playScanBeep(){
+  try{
+    var ctx = new (window.AudioContext || window.webkitAudioContext)();
+    var osc = ctx.createOscillator();
+    var gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = 880;
+    gain.gain.setValueAtTime(0.15, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.12);
+  }catch(e){ console.log('Bip non disponible:', e); }
+}
 function showPaywall(title,msg){document.getElementById('paywall-title').textContent=title;document.getElementById('paywall-msg').textContent=msg;document.getElementById('paywall').classList.add('open');}
 function closePaywall(){document.getElementById('paywall').classList.remove('open');}
 // setLang moved to i18n section
@@ -4832,6 +4850,7 @@ async function startCardNativeScan() {
       if(matchCount < REQUIRED_MATCHES) return;
 
       scanDone = true;
+      playScanBeep();
       if(_cardQuaggaTimeoutId) { clearTimeout(_cardQuaggaTimeoutId); _cardQuaggaTimeoutId = null; }
       stopCardScan();
       showCardNameModal(code);
@@ -4880,6 +4899,7 @@ function startCardQuaggaScan() {
     if(matchCount < REQUIRED_MATCHES) return;
 
     scanDone = true;
+    playScanBeep();
     stopCardScan();
     showCardNameModal(code);
   };
@@ -5012,6 +5032,7 @@ async function startNativeBarcodeScan() {
       if(matchCount < REQUIRED_MATCHES) return;
 
       scanDone = true;
+      playScanBeep();
       if(status) status.textContent = 'Code confirmé!';
       if(_quaggaTimeoutId) { clearTimeout(_quaggaTimeoutId); _quaggaTimeoutId = null; }
       setTimeout(function() { stopRealScan(); document.getElementById('prod-in').value=''; lookupBarcode(code); }, 300);
@@ -5081,6 +5102,7 @@ function startQuaggaScan() {
     if(matchCount < REQUIRED_MATCHES) return; // pas encore assez confirmé, on continue à écouter
 
     scanDone = true;
+    playScanBeep();
     if(status) status.textContent = 'Code confirmé!';
     if(_quaggaTimeoutId) { clearTimeout(_quaggaTimeoutId); _quaggaTimeoutId = null; }
     setTimeout(function() { stopRealScan(); document.getElementById('prod-in').value=''; lookupBarcode(code); }, 300);
