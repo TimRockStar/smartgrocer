@@ -7358,7 +7358,8 @@ async function analyzeCircular(input) {
     document.getElementById('circular-loading').style.display = 'none';
     document.getElementById('circular-results').style.display = 'block';
   } catch(e) {
-    console.error('Circular analysis error:', e);
+    console.log('[Circulaire] ERREUR — message:', e.message);
+    console.log('[Circulaire] ERREUR — détails complets:', String(e));
     document.getElementById('circular-loading').style.display = 'none';
     document.getElementById('circular-upload-section').style.display = 'block';
     showToast("⚠️ Erreur d'analyse de la circulaire — réessaie dans un instant (détails dans la console)");
