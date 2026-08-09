@@ -7327,7 +7327,8 @@ async function analyzeCircular(input) {
             reasoning_effort: 'none',
             max_tokens: 7000,
             temperature: 0,
-            frequency_penalty: 0.4,
+            frequency_penalty: 1.0,
+            presence_penalty: 0.6,
             messages: [{
               role: 'user',
               content: [
@@ -7399,6 +7400,7 @@ async function analyzeCircular(input) {
   } catch(e) {
     console.log('[Circulaire] ERREUR — message:', e.message);
     console.log('[Circulaire] ERREUR — détails complets:', String(e));
+    console.log('[Circulaire] ERREUR — ligne exacte (stack):', e.stack || 'non disponible');
     document.getElementById('circular-loading').style.display = 'none';
     document.getElementById('circular-upload-section').style.display = 'block';
     showToast("⚠️ Erreur d'analyse de la circulaire — réessaie dans un instant (détails dans la console)");
