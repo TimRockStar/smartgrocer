@@ -5,10 +5,13 @@
 // jamais mettre en cache les appels aux APIs externes (Groq, Stripe/Apps
 // Script, Open Food Facts) — ces données doivent toujours être fraîches,
 // jamais servies depuis un vieux cache.
-
-const CACHE_NAME = 'smartgrocer-v1';
+//
+// IMPORTANT : le numéro de version ci-dessous doit être changé à CHAQUE
+// mise à jour de ce fichier — c'est ce qui force les téléphones des
+// utilisateurs à vraiment recharger la dernière version de l'app, sans
+// qu'ils aient besoin de vider leur cache manuellement.
+const CACHE_NAME = 'smartgrocer-v2';
 const APP_SHELL = ['./', './beta.html'];
-
 // Domaines dont les requêtes ne doivent JAMAIS être mises en cache —
 // tout ce qui est dynamique (prix, IA, paiements, produits).
 const NEVER_CACHE_HOSTS = [
@@ -18,7 +21,6 @@ const NEVER_CACHE_HOSTS = [
   'api.stripe.com',
   'buy.stripe.com'
 ];
-
 self.addEventListener('install', function(event) {
   event.waitUntil(
     caches.open(CACHE_NAME).then(function(cache) {
@@ -30,7 +32,6 @@ self.addEventListener('install', function(event) {
   );
   self.skipWaiting();
 });
-
 self.addEventListener('activate', function(event) {
   event.waitUntil(
     caches.keys().then(function(keys) {
@@ -42,20 +43,22 @@ self.addEventListener('activate', function(event) {
   );
   self.clients.claim();
 });
-
 self.addEventListener('fetch', function(event) {
   var url = new URL(event.request.url);
-
   // Ne jamais intercepter les appels vers les APIs externes — toujours réseau direct.
   if (NEVER_CACHE_HOSTS.indexOf(url.hostname) !== -1) {
     return;
   }
-
   // Pour la page principale : réseau en priorité (contenu toujours à jour),
   // avec le cache comme filet de sécurité si hors ligne.
+  //
+  // IMPORTANT : {cache: 'no-store'} force un vrai appel réseau, en ignorant
+  // complètement le cache HTTP du navigateur (une couche séparée du cache
+  // du service worker) — sans ça, le navigateur pouvait répondre avec une
+  // ancienne version même quand le service worker "pensait" aller au réseau.
   if (event.request.mode === 'navigate' || url.pathname.endsWith('beta.html')) {
     event.respondWith(
-      fetch(event.request)
+      fetch(event.request, {cache: 'no-store'})
         .then(function(response) {
           var clone = response.clone();
           caches.open(CACHE_NAME).then(function(cache) { cache.put(event.request, clone); });
@@ -69,7 +72,6 @@ self.addEventListener('fetch', function(event) {
     );
     return;
   }
-
   // Tout le reste (images, polices, etc.) : cache d'abord, réseau en secours.
   event.respondWith(
     caches.match(event.request).then(function(cached) {
