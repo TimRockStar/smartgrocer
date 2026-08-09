@@ -7285,6 +7285,17 @@ async function pdfToImages(file){
   return images;
 }
 
+// Convertit un item brut de l'IA (nom/prixSpecial/prixRegulier) en format
+// standard, en rejetant les entrées invalides — réutilisé pour le chemin
+// normal ET pour la récupération d'un JSON coupé en plein milieu.
+function normalizeCircularItem(it){
+  if(!it) return null;
+  var prixSpecial = it.prixSpecial != null ? it.prixSpecial : it.prix;
+  var prixRegulier = it.prixRegulier != null ? it.prixRegulier : prixSpecial;
+  if(!it.nom || prixSpecial == null) return null;
+  return {nom: it.nom, prixSpecial: prixSpecial, prixRegulier: prixRegulier, dateFin: it.dateFin || ''};
+}
+
 async function analyzeCircular(input) {
   if(!input.files || !input.files[0]) return;
   var storeSelect = document.getElementById('circular-store-select');
@@ -7313,7 +7324,7 @@ async function analyzeCircular(input) {
         body: JSON.stringify({
           model: 'qwen/qwen3.6-27b',
           reasoning_effort: 'none',
-          max_tokens: 4000,
+          max_tokens: 7000,
           temperature: 0,
           messages: [{
             role: 'user',
@@ -7329,14 +7340,20 @@ async function analyzeCircular(input) {
       console.log('[Circulaire] Page ' + (pageIdx+1) + ' — réponse brute:', text); // diagnostic
       var jsonStr = extractJSON(text);
       if(!jsonStr) continue; // page sans spécial lisible — on continue avec les autres pages
-      var result = JSON.parse(jsonStr);
-      var pageItems = (result.items || []).map(function(it){
-        if(!it) return null;
-        var prixSpecial = it.prixSpecial != null ? it.prixSpecial : it.prix;
-        var prixRegulier = it.prixRegulier != null ? it.prixRegulier : prixSpecial;
-        if(!it.nom || prixSpecial == null) return null;
-        return {nom: it.nom, prixSpecial: prixSpecial, prixRegulier: prixRegulier, dateFin: it.dateFin || ''};
-      }).filter(Boolean);
+      var pageItems;
+      try {
+        var result = JSON.parse(jsonStr);
+        pageItems = (result.items || []).map(normalizeCircularItem).filter(Boolean);
+      } catch(parseErr) {
+        // La réponse s'est coupée en plein milieu (page trop dense) — plutôt que
+        // de tout perdre, on récupère chaque article COMPLET déjà présent dans
+        // le texte, même si la fin est cassée.
+        console.log('[Circulaire] JSON incomplet sur la page ' + (pageIdx+1) + ' — récupération partielle des articles complets.');
+        var itemMatches = jsonStr.match(/\{[^{}]*"nom"[^{}]*\}/g) || [];
+        pageItems = itemMatches.map(function(m){
+          try { return normalizeCircularItem(JSON.parse(m)); } catch(e){ return null; }
+        }).filter(Boolean);
+      }
       allItems = allItems.concat(pageItems);
     }
 
