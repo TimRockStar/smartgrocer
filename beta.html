@@ -1875,6 +1875,7 @@ var translations = {
     circ_title: '📰 Scanner une circulaire', circ_subtitle: 'Ajoute les vrais spéciaux de la semaine',
     circ_store_label: '🏪 Épicerie de cette circulaire',
     circ_hint: "💡 Photo papier, ou capture d'écran de Flipp/Reebee — une page à la fois",
+    scan_choose_pdf: "Importer un PDF de circulaire", circ_hint_pdf: "💡 Le bouton PDF t'amène directement dans tes fichiers — pratique si tu as téléchargé la circulaire depuis le site de l'épicerie",
     circ_analyzing: 'Analyse de la circulaire en cours...', circ_analyzing_sub: "L'IA extrait les spéciaux et leurs prix",
     circ_detected: '🔥 Spéciaux détectés', circ_confirm_btn: '✅ Confirmer et partager ces spéciaux',
     // Reçu
@@ -2013,6 +2014,7 @@ var translations = {
     circ_title: '📰 Scan a flyer', circ_subtitle: "Add this week's real specials",
     circ_store_label: '🏪 Store for this flyer',
     circ_hint: '💡 Paper photo, or Flipp/Reebee screenshot — one page at a time',
+    scan_choose_pdf: 'Import a flyer PDF', circ_hint_pdf: "💡 The PDF button takes you straight to your files — handy if you downloaded the flyer from the store's website",
     circ_analyzing: 'Analyzing flyer...', circ_analyzing_sub: 'AI is extracting specials and prices',
     circ_detected: '🔥 Specials detected', circ_confirm_btn: '✅ Confirm and share these specials',
     // Receipt
@@ -6996,7 +6998,7 @@ function handleStripeSuccess() {
           <label style="font-size:11px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:4px;" data-i18n="circ_store_label">🏪 Épicerie de cette circulaire</label>
           <select id="circular-store-select"><option value="">Sélectionner...</option><option>IGA</option><option>Maxi</option><option>Metro</option><option>Walmart</option><option>Super C</option><option>Costco</option></select>
         </div>
-        <div style="display:flex;gap:8px;margin-bottom:1rem;">
+        <div style="display:flex;gap:8px;margin-bottom:0.75rem;">
           <div style="flex:1;border:2px dashed var(--border);border-radius:14px;padding:1.25rem 0.5rem;text-align:center;cursor:pointer;" onclick="document.getElementById('circular-camera-input').click()">
             <div style="font-size:28px;margin-bottom:6px;">📷</div>
             <div style="font-size:12px;font-weight:700;" data-i18n="scan_take_photo">Prendre une photo</div>
@@ -7006,9 +7008,15 @@ function handleStripeSuccess() {
             <div style="font-size:12px;font-weight:700;" data-i18n="scan_choose_gallery">Choisir depuis la galerie</div>
           </div>
         </div>
+        <div style="border:2px dashed var(--gold);background:var(--gold-bg);border-radius:14px;padding:0.85rem;text-align:center;cursor:pointer;margin-bottom:1rem;display:flex;align-items:center;justify-content:center;gap:8px;" onclick="document.getElementById('circular-pdf-input').click()">
+          <span style="font-size:20px;">📄</span>
+          <span style="font-size:13px;font-weight:700;" data-i18n="scan_choose_pdf">Importer un PDF de circulaire</span>
+        </div>
         <input type="file" id="circular-camera-input" accept="image/*" capture="environment" style="display:none;" onchange="analyzeCircular(this)"/>
         <input type="file" id="circular-gallery-input" accept="image/*,application/pdf" style="display:none;" onchange="analyzeCircular(this)"/>
+        <input type="file" id="circular-pdf-input" accept="application/pdf" style="display:none;" onchange="analyzeCircular(this)"/>
         <div style="font-size:11px;color:var(--sub);text-align:center;" data-i18n="circ_hint">💡 Photo papier, ou capture d'écran de Flipp/Reebee — une page à la fois</div>
+        <div style="font-size:11px;color:var(--sub);text-align:center;margin-top:4px;" data-i18n="circ_hint_pdf">💡 Le bouton PDF t'amène directement dans tes fichiers — pratique si tu as téléchargé la circulaire depuis le site de l'épicerie</div>
       </div>
       <div id="circular-loading" style="display:none;text-align:center;padding:2rem;">
         <div style="font-size:32px;margin-bottom:8px;">⏳</div>
@@ -7250,6 +7258,7 @@ function closeCircularScanner() {
   document.getElementById('circular-modal').style.display = 'none';
   document.getElementById('circular-camera-input').value = '';
   document.getElementById('circular-gallery-input').value = '';
+  document.getElementById('circular-pdf-input').value = '';
 }
 
 // Convertit chaque page d'un PDF en image JPEG (base64), pour que le scanner de
