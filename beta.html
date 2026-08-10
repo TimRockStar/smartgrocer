@@ -3265,6 +3265,74 @@ var _k3='WGdyb3FYPUj3';
 var _k4='JuATLEpTqXL7C49hHr0J';
 var GROQ_KEY=_k1+_k2+_k3+_k4;
 
+var _gm1='AQ.Ab8RN6LUO-P-N22W85';
+var _gm2='KIxtO9NMD0KJfkSt6ocKZ9D7aaRMsXuQ';
+var GEMINI_KEY=_gm1+_gm2;
+
+// Appelle Gemini pour analyser une image, avec repli automatique vers Groq si
+// Gemini échoue pour une raison quelconque (limite atteinte, erreur réseau, etc.)
+// — Gemini a une limite gratuite BEAUCOUP plus généreuse que Groq (1M tokens/min
+// contre 8000), donc il devient le premier choix pour l'analyse d'image.
+async function callVisionWithFallback(base64Image, promptText, groqMaxTokens){
+  // Essai 1 : Gemini (premier choix)
+  try{
+    var geminiRes = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=' + GEMINI_KEY, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        contents: [{
+          parts: [
+            {inline_data: {mime_type: 'image/jpeg', data: base64Image}},
+            {text: promptText}
+          ]
+        }]
+      })
+    });
+    var geminiData = await geminiRes.json();
+    if(geminiData.candidates && geminiData.candidates[0] && geminiData.candidates[0].content){
+      var geminiText = geminiData.candidates[0].content.parts.map(function(p){ return p.text || ''; }).join('');
+      console.log('[Vision] Gemini a répondu avec succès.');
+      return { text: geminiText, provider: 'gemini' };
+    }
+    console.log('[Vision] Gemini a échoué, on essaie Groq en secours:', JSON.stringify(geminiData).substring(0, 300));
+  } catch(geminiErr){
+    console.log('[Vision] Erreur Gemini, on essaie Groq en secours:', String(geminiErr));
+  }
+
+  // Essai 2 : Groq (secours)
+  try{
+    var groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
+      body: JSON.stringify({
+        model: 'qwen/qwen3.6-27b',
+        reasoning_effort: 'none',
+        max_tokens: groqMaxTokens || 4500,
+        temperature: 0,
+        frequency_penalty: 1.0,
+        presence_penalty: 0.6,
+        messages: [{
+          role: 'user',
+          content: [
+            {type: 'image_url', image_url: {url: 'data:image/jpeg;base64,' + base64Image}},
+            {type: 'text', text: promptText}
+          ]
+        }]
+      })
+    });
+    var groqData = await groqRes.json();
+    if(groqData.choices && groqData.choices[0]){
+      console.log('[Vision] Groq (secours) a répondu avec succès.');
+      return { text: groqData.choices[0].message.content, provider: 'groq' };
+    }
+    console.log('[Vision] Groq (secours) a aussi échoué:', JSON.stringify(groqData).substring(0, 300));
+    return null;
+  } catch(groqErr){
+    console.log('[Vision] Erreur Groq (secours):', String(groqErr));
+    return null;
+  }
+}
+
 let isPremium=false,points=0,scansToday=0,recsToday=0,groceries=[],ings=[],selR=null,curRecs=[],currentProd='',camStream=null,totalScans=0; // FREEMIUM — false = free tier by default, true = Premium (via Stripe or VIP beta code)
 const LIMITS={scans:5,recs:3,list:10};
 const commRecs=[
@@ -7272,10 +7340,18 @@ async function pdfToImages(file){
   var arrayBuffer = await file.arrayBuffer();
   var pdf = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
   var maxPages = Math.min(pdf.numPages, 8);
+  var MAX_PIXELS = 30000000; // marge de sécurité sous la vraie limite de Groq (33 177 600)
   var images = [];
   for(var i = 1; i <= maxPages; i++){
     var page = await pdf.getPage(i);
-    var viewport = page.getViewport({scale: 2}); // résolution assez haute pour bien lire les prix
+    // Calcule l'échelle en fonction de la vraie taille de CETTE page précise —
+    // certains PDF ont des pages beaucoup plus grandes que d'autres, une échelle
+    // fixe pouvait donc dépasser la limite de pixels de Groq sur les gros PDF.
+    var baseViewport = page.getViewport({scale: 1});
+    var basePixels = baseViewport.width * baseViewport.height;
+    var scale = Math.sqrt(MAX_PIXELS / basePixels);
+    scale = Math.min(scale, 2); // jamais plus net que nécessaire non plus
+    var viewport = page.getViewport({scale: scale});
     var canvas = document.createElement('canvas');
     canvas.width = viewport.width;
     canvas.height = viewport.height;
@@ -7318,37 +7394,17 @@ async function analyzeCircular(input) {
     var circularPrompt = 'Tu es un outil de transcription OCR strict, pas un assistant créatif. Regarde uniquement cette image d\'une circulaire/publicité d\'épicerie et transcris EXACTEMENT les spéciaux qui y sont imprimés.\n\nRègles absolues :\n- N\'invente JAMAIS un produit qui n\'est pas visible sur l\'image.\n- Ne complète PAS avec des produits "typiques". Transcris seulement ce que tu vois réellement.\n- Copie le nom du produit tel qu\'imprimé, ne le reformule pas.\n- IMPORTANT — CHAQUE article ne doit apparaître qu\'UNE SEULE FOIS dans ta réponse, même si plusieurs variétés similaires (ex: plusieurs marques de bière) sont regroupées sous un même prix sur l\'image — dans ce cas, transcris-les comme UN SEUL article avec un nom qui liste les marques, jamais en répétant la même entrée plusieurs fois de suite. Si tu remarques que tu es en train d\'écrire deux fois la même chose, ARRÊTE et passe au prochain vrai article différent.\n- IMPORTANT — deux prix distincts à chercher pour chaque article : le "prixSpecial" est le nouveau prix mis en évidence (souvent gros caractères, couleur vive). Le "prixRegulier" est l\'ANCIEN prix, souvent affiché plus petit et BARRÉ ou avec une mention "était" / "reg." juste à côté. Ces deux prix sont presque toujours DIFFÉRENTS — cherche activement ce prix barré, ne le confonds pas avec le prix spécial. Seulement si aucun prix barré/régulier n\'est visible du tout, mets prixRegulier identique à prixSpecial.\n- Si une date de fin de la promotion est visible sur la circulaire, transcris-la au format YYYY-MM-DD. Si aucune date n\'est visible, laisse le champ vide.\n- Si l\'image n\'est pas une circulaire lisible ou si aucun spécial n\'est visible, réponds avec une liste vide.\n- N\'ajoute AUCUN texte, explication ou commentaire — uniquement le JSON.\n\nExemple représentatif (avec un vrai prix régulier différent, pas juste des zéros) :\n{"items":[{"nom":"Poitrines de poulet","prixSpecial":8.99,"prixRegulier":13.99,"dateFin":"2026-07-22"},{"nom":"Pain tranché","prixSpecial":2.49,"prixRegulier":2.49,"dateFin":""}]}\n\nFormat de réponse (JSON strict), un objet PAR ARTICLE VRAIMENT DIFFÉRENT visible sur l\'image :\n{"items":[{"nom":"...","prixSpecial":0.00,"prixRegulier":0.00,"dateFin":"YYYY-MM-DD"}]}';
 
     for(var pageIdx = 0; pageIdx < imagesToAnalyze.length; pageIdx++){
-      // Petite pause entre chaque page — la limite de Groq est par MINUTE (pas
-      // juste par appel), donc envoyer plusieurs pages trop rapidement peut
-      // dépasser le total cumulé même si chaque page individuelle est sous la limite.
-      if(pageIdx > 0) await new Promise(function(resolve){ setTimeout(resolve, 3000); });
+      // Petite pause seulement nécessaire pour Groq (le plan de secours) — Gemini,
+      // le premier choix maintenant, a une limite bien plus généreuse (1M
+      // tokens/minute), donc les pauses entre pages ne sont plus vraiment requises.
       try {
-        var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-          method: 'POST',
-          headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
-          body: JSON.stringify({
-            model: 'qwen/qwen3.6-27b',
-            reasoning_effort: 'none',
-            max_tokens: 4500,
-            temperature: 0,
-            frequency_penalty: 1.0,
-            presence_penalty: 0.6,
-            messages: [{
-              role: 'user',
-              content: [
-                {type: 'image_url', image_url: {url: 'data:image/jpeg;base64,' + imagesToAnalyze[pageIdx]}},
-                {type: 'text', text: circularPrompt}
-              ]
-            }]
-          })
-        });
-        var data = await res.json();
-        if(!data.choices || !data.choices[0]){
-          console.log('[Circulaire] Page ' + (pageIdx+1) + ' — réponse API invalide, on continue avec les autres pages:', JSON.stringify(data));
+        var visionResult = await callVisionWithFallback(imagesToAnalyze[pageIdx], circularPrompt, 4500);
+        if(!visionResult){
+          console.log('[Circulaire] Page ' + (pageIdx+1) + ' — Gemini ET Groq ont échoué, on continue avec les autres pages.');
           continue; // évite de faire planter tout le scan pour une seule page problématique
         }
-        var text = data.choices[0].message.content.replace(/```json|```/g,'').trim();
-        console.log('[Circulaire] Page ' + (pageIdx+1) + ' — réponse brute:', text); // diagnostic
+        var text = visionResult.text.replace(/```json|```/g,'').trim();
+        console.log('[Circulaire] Page ' + (pageIdx+1) + ' — réponse brute (' + visionResult.provider + '):', text); // diagnostic
         var jsonStr = extractJSON(text);
         if(!jsonStr) continue; // page sans spécial lisible — on continue avec les autres pages
         var pageItems;
