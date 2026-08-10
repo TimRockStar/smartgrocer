@@ -438,9 +438,6 @@ ml('account', '2355363');
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
   }
 </script>
-<!-- ⚠️ TEMPORAIRE — Console de débogage mobile (Eruda). À RETIRER une fois le bug PDF confirmé réglé. -->
-<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-<script>eruda.init();</script>
 </head>
 <body>
 <div class="toast" id="toast"></div>
@@ -7381,6 +7378,19 @@ async function analyzeCircular(input) {
   document.getElementById('circular-upload-section').style.display = 'none';
   document.getElementById('circular-loading').style.display = 'block';
 
+  // Empêche l'écran de s'éteindre pendant le scan — un PDF de plusieurs pages
+  // peut prendre 1-2 minutes, et le navigateur met le code en pause si l'écran
+  // se verrouille, ce qui interromprait le scan en plein milieu.
+  var wakeLock = null;
+  try{
+    if('wakeLock' in navigator){
+      wakeLock = await navigator.wakeLock.request('screen');
+      console.log('[Circulaire] Écran maintenu éveillé pendant le scan.');
+    }
+  }catch(wakeLockErr){
+    console.log('[Circulaire] Impossible de garder l\'écran éveillé (pas grave, le scan continue quand même):', String(wakeLockErr));
+  }
+
   try {
     // Si c'est un PDF, on convertit chaque page en image; sinon, une seule image.
     var isPdf = file.type === 'application/pdf';
@@ -7461,6 +7471,10 @@ async function analyzeCircular(input) {
     document.getElementById('circular-loading').style.display = 'none';
     document.getElementById('circular-upload-section').style.display = 'block';
     showToast("⚠️ Erreur d'analyse de la circulaire — réessaie dans un instant (détails dans la console)");
+  } finally {
+    if(wakeLock){
+      try{ await wakeLock.release(); console.log('[Circulaire] Écran libéré, plus besoin de rester éveillé.'); }catch(e){}
+    }
   }
 }
 
