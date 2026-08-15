@@ -1095,6 +1095,10 @@ ml('account', '2355363');
     </div>
   </div>
   <div class="px">
+    <div style="margin-bottom:0.875rem;position:relative;">
+      <label style="font-size:11px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:4px;">🔍 Rechercher un produit</label>
+      <input type="text" id="speciaux-search-input" placeholder="Ex: poulet, pommes, fromage..." oninput="renderSpeciauxList()" style="width:100%;"/>
+    </div>
     <div style="margin-bottom:0.875rem;">
       <label style="font-size:11px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:4px;">🏪 Magasin</label>
       <select id="speciaux-store-filter" onchange="renderSpeciauxList()"><option value="">Tous les magasins</option></select>
@@ -5430,15 +5434,21 @@ function renderSpeciauxList(){
   var listEl = document.getElementById('speciaux-list');
   if(!listEl) return;
   var store = document.getElementById('speciaux-store-filter').value;
+  var searchInput = document.getElementById('speciaux-search-input');
+  var searchTerm = searchInput ? searchInput.value.trim().toLowerCase() : '';
 
   var filtered = _allSpeciaux.filter(function(it){
     if(store && it.magasin !== store) return false;
     if(_speciauxCategory && it.category !== _speciauxCategory) return false;
+    if(searchTerm && it.nom.toLowerCase().indexOf(searchTerm) === -1) return false;
     return true;
   });
 
   if(filtered.length === 0){
-    listEl.innerHTML = '<div style="text-align:center;color:var(--sub);font-size:13px;padding:2rem 0;">Aucun spécial trouvé pour ce filtre.<br>Sois le premier à en ajouter!</div>';
+    var emptyMsg = searchTerm
+      ? 'Aucun spécial trouvé pour "' + searchTerm + '".<br>Essaie un autre mot, ou sois le premier à l\'ajouter!'
+      : 'Aucun spécial trouvé pour ce filtre.<br>Sois le premier à en ajouter!';
+    listEl.innerHTML = '<div style="text-align:center;color:var(--sub);font-size:13px;padding:2rem 0;">' + emptyMsg + '</div>';
     return;
   }
 
