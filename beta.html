@@ -7433,20 +7433,21 @@ async function analyzeCircular(input) {
     var allItems = [];
     var circularPrompt = 'Tu es un outil de transcription OCR strict, pas un assistant créatif. Regarde uniquement cette image d\'une circulaire/publicité d\'épicerie et transcris EXACTEMENT les spéciaux qui y sont imprimés.\n\nRègles absolues :\n- N\'invente JAMAIS un produit qui n\'est pas visible sur l\'image.\n- Ne complète PAS avec des produits "typiques". Transcris seulement ce que tu vois réellement.\n- Copie le nom du produit tel qu\'imprimé, ne le reformule pas.\n- IMPORTANT — CHAQUE article ne doit apparaître qu\'UNE SEULE FOIS dans ta réponse, même si plusieurs variétés similaires (ex: plusieurs marques de bière) sont regroupées sous un même prix sur l\'image — dans ce cas, transcris-les comme UN SEUL article avec un nom qui liste les marques, jamais en répétant la même entrée plusieurs fois de suite. Si tu remarques que tu es en train d\'écrire deux fois la même chose, ARRÊTE et passe au prochain vrai article différent.\n- IMPORTANT — deux prix distincts à chercher pour chaque article : le "prixSpecial" est le nouveau prix mis en évidence (souvent gros caractères, couleur vive). Le "prixRegulier" est l\'ANCIEN prix, souvent affiché plus petit et BARRÉ ou avec une mention "était" / "reg." juste à côté. Ces deux prix sont presque toujours DIFFÉRENTS — cherche activement ce prix barré, ne le confonds pas avec le prix spécial. Seulement si aucun prix barré/régulier n\'est visible du tout, mets prixRegulier identique à prixSpecial.\n- Si une date de fin de la promotion est visible sur la circulaire, transcris-la au format YYYY-MM-DD. Si aucune date n\'est visible, laisse le champ vide.\n- Si l\'image n\'est pas une circulaire lisible ou si aucun spécial n\'est visible, réponds avec une liste vide.\n- N\'ajoute AUCUN texte, explication ou commentaire — uniquement le JSON.\n\nExemple représentatif (avec un vrai prix régulier différent, pas juste des zéros) :\n{"items":[{"nom":"Poitrines de poulet","prixSpecial":8.99,"prixRegulier":13.99,"dateFin":"2026-07-22"},{"nom":"Pain tranché","prixSpecial":2.49,"prixRegulier":2.49,"dateFin":""}]}\n\nFormat de réponse (JSON strict), un objet PAR ARTICLE VRAIMENT DIFFÉRENT visible sur l\'image :\n{"items":[{"nom":"...","prixSpecial":0.00,"prixRegulier":0.00,"dateFin":"YYYY-MM-DD"}]}';
 
-    for(var pageIdx = 0; pageIdx < imagesToAnalyze.length; pageIdx++){
-      // Petite pause seulement nécessaire pour Groq (le plan de secours) — Gemini,
-      // le premier choix maintenant, a une limite bien plus généreuse (1M
-      // tokens/minute), donc les pauses entre pages ne sont plus vraiment requises.
+    // Traite TOUTES les pages en même temps (en parallèle), plutôt qu'une à la
+    // fois — Gemini a une limite bien assez généreuse pour ça, et ça réduit le
+    // temps total d'un scan de plusieurs pages de quelques minutes à quelques
+    // secondes seulement.
+    var pageProcessingPromises = imagesToAnalyze.map(async function(imageBase64, pageIdx){
       try {
-        var visionResult = await callVisionWithFallback(imagesToAnalyze[pageIdx], circularPrompt, 4500);
+        var visionResult = await callVisionWithFallback(imageBase64, circularPrompt, 4500);
         if(!visionResult){
           console.log('[Circulaire] Page ' + (pageIdx+1) + ' — Gemini ET Groq ont échoué, on continue avec les autres pages.');
-          continue; // évite de faire planter tout le scan pour une seule page problématique
+          return [];
         }
         var text = visionResult.text.replace(/```json|```/g,'').trim();
         console.log('[Circulaire] Page ' + (pageIdx+1) + ' — réponse brute (' + visionResult.provider + '):', text); // diagnostic
         var jsonStr = extractJSON(text);
-        if(!jsonStr) continue; // page sans spécial lisible — on continue avec les autres pages
+        if(!jsonStr) return []; // page sans spécial lisible
         var pageItems;
         try {
           var result = JSON.parse(jsonStr);
@@ -7461,15 +7462,18 @@ async function analyzeCircular(input) {
             try { return normalizeCircularItem(JSON.parse(m)); } catch(e){ return null; }
           }).filter(Boolean);
         }
-        allItems = allItems.concat(pageItems);
+        return pageItems;
       } catch(pageErr) {
         // Peu importe ce qui a mal tourné sur cette page précise (erreur réseau,
         // réponse inattendue, etc.), on continue avec les autres pages plutôt que
         // de faire planter tout le scan de la circulaire.
         console.log('[Circulaire] ERREUR sur la page ' + (pageIdx+1) + ' — message:', pageErr.message);
         console.log('[Circulaire] ERREUR sur la page ' + (pageIdx+1) + ' — détails:', String(pageErr));
+        return [];
       }
-    }
+    });
+    var allPageResults = await Promise.all(pageProcessingPromises);
+    allPageResults.forEach(function(pageItems){ allItems = allItems.concat(pageItems); });
 
     var items = allItems;
     // Filet de sécurité : si l'IA a quand même répété le même article plusieurs
