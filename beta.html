@@ -3352,6 +3352,23 @@ let activeCard=0;
 
 function startApp(){document.getElementById('landing').style.display='none';document.getElementById('onboarding').style.display='block';detectLocation();}
 function nextOb(n){document.querySelectorAll('.ob-step').forEach(s=>s.classList.remove('active'));document.getElementById('ob'+n).classList.add('active');}
+// Liste des domaines de courriels temporaires/jetables les plus connus — pas
+// exhaustive (de nouveaux services apparaissent régulièrement), mais bloque
+// les plus utilisés pour décourager la création de faux comptes multiples
+// visant à réclamer plusieurs codes bêta / abonnements Premium gratuits.
+var DISPOSABLE_EMAIL_DOMAINS = [
+  '10minutemail.com','10minutemail.net','20minutemail.com','guerrillamail.com',
+  'guerrillamail.net','guerrillamail.org','guerrillamail.biz','guerrillamail.de',
+  'sharklasers.com','mailinator.com','mailinator.net','mailinator.org',
+  'tempmail.com','temp-mail.org','temp-mail.io','tempmailo.com','tempinbox.com',
+  'throwawaymail.com','yopmail.com','yopmail.fr','yopmail.net','maildrop.cc',
+  'trashmail.com','trashmail.net','getnada.com','mohmal.com','fakeinbox.com',
+  'mytemp.email','emailondeck.com','moakt.com','dropmail.me','mintemail.com',
+  'mailnesia.com','spamgourmet.com','discard.email','burnermail.io',
+  'inboxbear.com','tempr.email','fakemailgenerator.com','crazymailing.com',
+  'mail-temporaire.fr','jetable.org','moncourrier.fr.nf'
+];
+
 function finishOb(){
   // Validate required fields
   const nameEl = document.getElementById('ob-name');
@@ -3365,6 +3382,12 @@ function finishOb(){
   if(!emailEl || !emailEl.value.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(emailEl.value.trim())){
     if(emailEl){emailEl.style.border='2px solid #ef4444';}
     showToast('⚠️ Entre un email valide (exemple: nom@exemple.com)!'); return;
+  }
+  var emailDomain = emailEl.value.trim().split('@')[1].toLowerCase();
+  if(DISPOSABLE_EMAIL_DOMAINS.indexOf(emailDomain) !== -1){
+    emailEl.style.border='2px solid #ef4444';
+    showToast('⚠️ Les adresses courriel temporaires ne sont pas acceptées — utilise ta vraie adresse!');
+    return;
   }
   if(!cityEl || !cityEl.value.trim()){
     if(cityEl) cityEl.style.border='2px solid #ef4444';
