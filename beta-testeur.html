@@ -68,7 +68,10 @@
   <div class="step">
     <h2><span class="step-num">4</span> Active ton année Premium gratuite</h2>
     <p>Va dans l'onglet <strong>Profil</strong>, trouve la section « 🎁 Tu as un code bêta? », et entre <strong>ton</strong> code personnel, juste pour toi :</p>
-    <p style="text-align:center;font-size:26px;" id="code-display">⏳ Attribution de ton code...</p>
+    <div id="code-reveal-box" style="text-align:center;">
+      <button class="btn" onclick="revealCode()" id="reveal-btn">🎁 Révéler mon code</button>
+    </div>
+    <p id="code-display" style="text-align:center;font-size:26px;display:none;"></p>
     <p style="font-size:12px;text-align:center;color:var(--sub);">Ce code t'est réservé — garde-le pour toi, il ne fonctionnera qu'une fois attribué.</p>
     <p>Toutes les fonctionnalités Premium se débloquent instantanément — scans illimités, recettes IA, tout.</p>
   </div>
@@ -113,31 +116,49 @@
   document.getElementById('confirm-group-btn').addEventListener('click', unlockStep2);
 
   // Attribution d'un vrai code bêta unique, un seul par visiteur — jamais réutilisé.
+  // IMPORTANT : le code n'est réclamé QUE lorsque la personne clique vraiment sur
+  // le bouton — jamais automatiquement à l'ouverture de la page. Sans ça, les
+  // robots des réseaux sociaux (qui visitent le lien pour générer l'aperçu, avant
+  // même qu'un vrai humain clique) consommaient de vrais codes pour rien.
   var STRIPE_API_URL = 'https://script.google.com/macros/s/AKfycbyCQ3IMSdpu8LMdnZfAsZIANnYIUsstsD3MAXpwFDh_Th3NivPfz_af7UrWjTIF7Pjq/exec';
 
-  (async function claimCode(){
+  // Si cet appareil a déjà un code (page rechargée), l'affiche directement sans
+  // repasser par le bouton.
+  var savedCode = localStorage.getItem('smartgrocer_beta_code_assigned');
+  if(savedCode){
+    document.getElementById('code-reveal-box').style.display = 'none';
+    var displayOnLoad = document.getElementById('code-display');
+    displayOnLoad.style.display = 'block';
+    displayOnLoad.innerHTML = '<code>' + savedCode + '</code>';
+  }
+
+  async function revealCode(){
+    var btn = document.getElementById('reveal-btn');
     var display = document.getElementById('code-display');
-    // Évite de redemander un nouveau code si la personne recharge la page —
-    // garde le même code déjà attribué sur cet appareil.
-    var saved = localStorage.getItem('smartgrocer_beta_code_assigned');
-    if(saved){
-      display.innerHTML = '<code>' + saved + '</code>';
-      return;
-    }
+    btn.disabled = true;
+    btn.textContent = '⏳ Attribution en cours...';
     try{
       var res = await fetch(STRIPE_API_URL + '?action=claimBetaCode');
       var data = await res.json();
       if(data.success){
         localStorage.setItem('smartgrocer_beta_code_assigned', data.code);
+        document.getElementById('code-reveal-box').style.display = 'none';
+        display.style.display = 'block';
         display.innerHTML = '<code>' + data.code + '</code>';
       } else {
+        btn.disabled = false;
+        btn.textContent = '🎁 Révéler mon code';
+        display.style.display = 'block';
         display.innerHTML = '⚠️ Tous les codes ont été attribués — écris-nous!';
       }
     } catch(e){
       console.error('Erreur attribution code:', e);
-      display.innerHTML = '⚠️ Erreur — recharge la page, ou écris-nous.';
+      btn.disabled = false;
+      btn.textContent = '🎁 Révéler mon code';
+      display.style.display = 'block';
+      display.innerHTML = '⚠️ Erreur — réessaie, ou écris-nous.';
     }
-  })();
+  }
 </script>
 
 </body>
