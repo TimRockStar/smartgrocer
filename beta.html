@@ -1485,6 +1485,14 @@ ml('account', '2355363');
       </div>
     </div>
 
+    <!-- Recettes de bien-être -->
+    <div class="sl" style="margin-top:1.5rem;">🌿 Recettes de bien-être</div>
+    <div class="card" style="margin-bottom:10px;background:#FBF1E1;border:none;">
+      <div style="font-size:12px;color:#7A5A15;line-height:1.5;">💡 Des recettes traditionnelles réconfortantes, pas des traitements médicaux. Pour un vrai problème de santé, consulte un médecin ou un pharmacien.</div>
+    </div>
+    <input type="text" id="wellness-search" placeholder="🔍 Chercher par thème ou ingrédient..." oninput="renderWellnessRecipes()" style="width:100%;margin-bottom:10px;"/>
+    <div id="wellness-recipes-list"></div>
+
   </div>
 </div>
 
@@ -3510,7 +3518,7 @@ function goTo(p,btn){ if(p==='liste') setTimeout(checkExpiryAlerts, 100);
   if(btn)btn.classList.add('active');
   else{const idx=['home','prix','recettes','liste','social','points'].indexOf(p);if(idx>=0)document.querySelectorAll('.nb')[idx].classList.add('active');}
 }
-function goExtra(p){if(p==='profil')setTimeout(loadProfileInputs,100);if(p==='carte')setTimeout(loadLocalStores,100);if(p==='planner')setTimeout(renderPlannerDays,100);if(p==='speciaux')setTimeout(loadAllSpeciaux,100);
+function goExtra(p){if(p==='profil')setTimeout(loadProfileInputs,100);if(p==='carte')setTimeout(loadLocalStores,100);if(p==='planner')setTimeout(renderPlannerDays,100);if(p==='speciaux')setTimeout(loadAllSpeciaux,100);if(p==='nutrition')setTimeout(renderWellnessRecipes,100);
   closePlus();
   document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
   document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
@@ -6104,6 +6112,80 @@ function clearTodayMeals() {
   saveNutritionData();
   updateNutritionUI();
   showToast('Journal effacé!');
+}
+
+// Recettes de bien-être — organisées par THÈME général (immunité, énergie,
+// réconfort, détente), jamais par symptôme précis. Présentées comme des
+// recettes traditionnelles réconfortantes, jamais comme des traitements —
+// aucune allégation de guérison ou d'efficacité médicale.
+var WELLNESS_RECIPES = [
+  {
+    theme: 'Immunité', emoji: '🍯',
+    nom: 'Miel aux cinq épices ("Fire Honey")',
+    desc: 'Une recette traditionnelle réconfortante, populaire en période de rhume — pas un traitement médical.',
+    ingredients: 'Miel cru (1 tasse), gingembre frais râpé (2 c. à soupe), ail émincé (2 gousses), curcuma moulu (1 c. à thé), poivre de cayenne (1 pincée), jus de citron (1 c. à soupe)',
+    etapes: 'Mélange tous les ingrédients dans un pot de verre. Laisse reposer au réfrigérateur au moins 24h avant de l\'utiliser, en brassant de temps en temps. Prends 1 cuillère à thé au besoin, dans une eau chaude ou directement.',
+  },
+  {
+    theme: 'Immunité', emoji: '🍋',
+    nom: 'Tisane citron-gingembre',
+    desc: 'Une boisson chaude réconfortante, simple et rapide à préparer.',
+    ingredients: 'Gingembre frais tranché (1 morceau de 2,5 cm), jus d\'un demi-citron, miel (1 c. à thé), eau chaude (1 tasse)',
+    etapes: 'Fais infuser le gingembre dans l\'eau chaude 5-10 minutes. Ajoute le jus de citron et le miel. Bois chaud.',
+  },
+  {
+    theme: 'Énergie', emoji: '🥤',
+    nom: 'Smoothie vert énergisant',
+    desc: 'Un smoothie nutritif pour bien commencer la journée.',
+    ingredients: 'Épinards frais (1 tasse), banane (1), lait d\'amande (1 tasse), beurre d\'arachide (1 c. à soupe), graines de chia (1 c. à thé)',
+    etapes: 'Passe tous les ingrédients au mélangeur jusqu\'à consistance lisse. Sers immédiatement.',
+  },
+  {
+    theme: 'Réconfort', emoji: '🍲',
+    nom: 'Bouillon de poulet maison',
+    desc: 'Un classique réconfortant, apprécié depuis des générations, surtout par temps froid.',
+    ingredients: 'Carcasse ou poitrines de poulet, carottes (2), céleri (2 branches), oignon (1), ail (2 gousses), eau (8 tasses), sel et poivre au goût',
+    etapes: 'Mijote tous les ingrédients ensemble pendant 1h30 à 2h à feu doux. Filtre le bouillon avant de servir.',
+  },
+  {
+    theme: 'Détente', emoji: '🌙',
+    nom: 'Lait doré au curcuma',
+    desc: 'Une boisson chaude apaisante, idéale en soirée.',
+    ingredients: 'Lait (de vache ou végétal, 1 tasse), curcuma moulu (1/2 c. à thé), cannelle (1 pincée), miel (1 c. à thé), poivre noir (1 pincée)',
+    etapes: 'Fais chauffer le lait avec le curcuma, la cannelle et le poivre à feu doux sans faire bouillir, environ 5 minutes. Ajoute le miel avant de servir.',
+  }
+];
+
+function renderWellnessRecipes(){
+  var listEl = document.getElementById('wellness-recipes-list');
+  if(!listEl) return;
+  var searchEl = document.getElementById('wellness-search');
+  var term = searchEl ? searchEl.value.trim().toLowerCase() : '';
+
+  var filtered = WELLNESS_RECIPES.filter(function(r){
+    if(!term) return true;
+    return r.theme.toLowerCase().indexOf(term) !== -1
+      || r.nom.toLowerCase().indexOf(term) !== -1
+      || r.ingredients.toLowerCase().indexOf(term) !== -1;
+  });
+
+  if(filtered.length === 0){
+    listEl.innerHTML = '<div style="text-align:center;color:var(--sub);font-size:13px;padding:1.5rem 0;">Aucune recette trouvée pour "' + term + '".</div>';
+    return;
+  }
+
+  listEl.innerHTML = filtered.map(function(r){
+    return '<div class="card" style="margin-bottom:10px;">' +
+      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">' +
+        '<span style="font-size:22px;">' + r.emoji + '</span>' +
+        '<div><div style="font-weight:700;font-size:14px;">' + r.nom + '</div>' +
+        '<div style="font-size:10px;color:var(--sub);text-transform:uppercase;">' + r.theme + '</div></div>' +
+      '</div>' +
+      '<div style="font-size:12px;color:var(--sub);margin-bottom:8px;">' + r.desc + '</div>' +
+      '<div style="font-size:12px;margin-bottom:6px;"><strong>Ingrédients :</strong> ' + r.ingredients + '</div>' +
+      '<div style="font-size:12px;"><strong>Préparation :</strong> ' + r.etapes + '</div>' +
+    '</div>';
+  }).join('');
 }
 
 function updateCalGoal(val) {
