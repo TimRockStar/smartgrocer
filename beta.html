@@ -3282,6 +3282,22 @@ var _gm1='AQ.Ab8RN6LUO-P-N22W85';
 var _gm2='KIxtO9NMD0KJfkSt6ocKZ9D7aaRMsXuQ';
 var GEMINI_KEY=_gm1+_gm2;
 
+// File d'attente pour les appels de SECOURS vers Groq — si plusieurs pages
+// échouent sur Gemini en même temps (ex: quota Gemini atteint), leurs appels
+// de secours vers Groq ne partent plus tous en même temps (ce qui surchargeait
+// instantanément la petite limite de Groq de 8000 tokens/minute) — ils
+// s'exécutent maintenant un à la fois, avec un espacement automatique.
+var _groqQueueTail = Promise.resolve();
+function queueGroqCall(fn){
+  var result = _groqQueueTail.then(function(){
+    return fn().finally(function(){
+      return new Promise(function(resolve){ setTimeout(resolve, 4000); });
+    });
+  });
+  _groqQueueTail = result.catch(function(){}); // évite qu'une erreur bloque la file pour les suivants
+  return result;
+}
+
 // Appelle Gemini pour analyser une image, avec repli automatique vers Groq si
 // Gemini échoue pour une raison quelconque (limite atteinte, erreur réseau, etc.)
 // — Gemini a une limite gratuite BEAUCOUP plus généreuse que Groq (1M tokens/min
@@ -3312,7 +3328,10 @@ async function callVisionWithFallback(base64Image, promptText, groqMaxTokens){
     console.log('[Vision] Erreur Gemini, on essaie Groq en secours:', String(geminiErr));
   }
 
-  // Essai 2 : Groq (secours)
+  // Essai 2 : Groq (secours) — passe par la file d'attente pour ne jamais
+  // surcharger la limite par minute, même si plusieurs pages y arrivent en
+  // même temps.
+  return await queueGroqCall(async function(){
   try{
     var groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
@@ -3344,6 +3363,7 @@ async function callVisionWithFallback(base64Image, promptText, groqMaxTokens){
     console.log('[Vision] Erreur Groq (secours):', String(groqErr));
     return null;
   }
+  });
 }
 
 let isPremium=false,points=0,scansToday=0,recsToday=0,groceries=[],ings=[],selR=null,curRecs=[],currentProd='',camStream=null,totalScans=0; // FREEMIUM — false = free tier by default, true = Premium (via Stripe or VIP beta code)
@@ -7522,11 +7542,14 @@ async function analyzeCircular(input) {
     var allItems = [];
     var circularPrompt = 'Tu es un outil de transcription OCR strict, pas un assistant créatif. Regarde uniquement cette image d\'une circulaire/publicité d\'épicerie et transcris EXACTEMENT les spéciaux qui y sont imprimés.\n\nRègles absolues :\n- N\'invente JAMAIS un produit qui n\'est pas visible sur l\'image.\n- Ne complète PAS avec des produits "typiques". Transcris seulement ce que tu vois réellement.\n- Copie le nom du produit tel qu\'imprimé, ne le reformule pas.\n- IMPORTANT — CHAQUE article ne doit apparaître qu\'UNE SEULE FOIS dans ta réponse, même si plusieurs variétés similaires (ex: plusieurs marques de bière) sont regroupées sous un même prix sur l\'image — dans ce cas, transcris-les comme UN SEUL article avec un nom qui liste les marques, jamais en répétant la même entrée plusieurs fois de suite. Si tu remarques que tu es en train d\'écrire deux fois la même chose, ARRÊTE et passe au prochain vrai article différent.\n- IMPORTANT — deux prix distincts à chercher pour chaque article : le "prixSpecial" est le nouveau prix mis en évidence (souvent gros caractères, couleur vive). Le "prixRegulier" est l\'ANCIEN prix, souvent affiché plus petit et BARRÉ ou avec une mention "était" / "reg." juste à côté. Ces deux prix sont presque toujours DIFFÉRENTS — cherche activement ce prix barré, ne le confonds pas avec le prix spécial. Seulement si aucun prix barré/régulier n\'est visible du tout, mets prixRegulier identique à prixSpecial.\n- Si une date de fin de la promotion est visible sur la circulaire, transcris-la au format YYYY-MM-DD. Si aucune date n\'est visible, laisse le champ vide.\n- Si l\'image n\'est pas une circulaire lisible ou si aucun spécial n\'est visible, réponds avec une liste vide.\n- N\'ajoute AUCUN texte, explication ou commentaire — uniquement le JSON.\n\nExemple représentatif (avec un vrai prix régulier différent, pas juste des zéros) :\n{"items":[{"nom":"Poitrines de poulet","prixSpecial":8.99,"prixRegulier":13.99,"dateFin":"2026-07-22"},{"nom":"Pain tranché","prixSpecial":2.49,"prixRegulier":2.49,"dateFin":""}]}\n\nFormat de réponse (JSON strict), un objet PAR ARTICLE VRAIMENT DIFFÉRENT visible sur l\'image :\n{"items":[{"nom":"...","prixSpecial":0.00,"prixRegulier":0.00,"dateFin":"YYYY-MM-DD"}]}';
 
-    // Traite TOUTES les pages en même temps (en parallèle), plutôt qu'une à la
-    // fois — Gemini a une limite bien assez généreuse pour ça, et ça réduit le
-    // temps total d'un scan de plusieurs pages de quelques minutes à quelques
-    // secondes seulement.
-    var pageProcessingPromises = imagesToAnalyze.map(async function(imageBase64, pageIdx){
+    // Traite les pages par petits groupes de 4 en même temps — plutôt que
+    // TOUTES en même temps. Gemini a une limite généreuse en VOLUME de tokens,
+    // mais une limite bien plus stricte sur le NOMBRE de requêtes par minute
+    // (environ 10-15) — envoyer 8 pages d'un coup dépassait instantanément
+    // cette limite, peu importe le volume de tokens. Par groupes de 4, ça
+    // reste rapide tout en respectant la vraie limite.
+    var GEMINI_BATCH_SIZE = 4;
+    var pageProcessor = async function(imageBase64, pageIdx){
       try {
         var visionResult = await callVisionWithFallback(imageBase64, circularPrompt, 4500);
         if(!visionResult){
@@ -7560,8 +7583,15 @@ async function analyzeCircular(input) {
         console.log('[Circulaire] ERREUR sur la page ' + (pageIdx+1) + ' — détails:', String(pageErr));
         return [];
       }
-    });
-    var allPageResults = await Promise.all(pageProcessingPromises);
+    };
+
+    var allPageResults = [];
+    for(var batchStart = 0; batchStart < imagesToAnalyze.length; batchStart += GEMINI_BATCH_SIZE){
+      var batch = imagesToAnalyze.slice(batchStart, batchStart + GEMINI_BATCH_SIZE);
+      var batchPromises = batch.map(function(imageBase64, i){ return pageProcessor(imageBase64, batchStart + i); });
+      var batchResults = await Promise.all(batchPromises);
+      allPageResults = allPageResults.concat(batchResults);
+    }
     allPageResults.forEach(function(pageItems){ allItems = allItems.concat(pageItems); });
 
     var items = allItems;
