@@ -7641,7 +7641,8 @@ async function addAllCircularItems() {
       }
     }
   } catch(e) {
-    console.log('Contribution spéciaux échouée:', e);
+    console.log('[Partage spéciaux] ERREUR — message:', e.message);
+    console.log('[Partage spéciaux] ERREUR — détails complets:', String(e));
     showToast('⚠️ Erreur de connexion — réessaie plus tard.');
   }
 
