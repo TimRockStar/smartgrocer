@@ -3364,6 +3364,15 @@ async function callVisionWithFallback(base64Image, promptText, groqMaxTokens){
 }
 
 let isPremium=false,points=0,scansToday=0,recsToday=0,groceries=[],ings=[],selR=null,curRecs=[],currentProd='',camStream=null,totalScans=0; // FREEMIUM — false = free tier by default, true = Premium (via Stripe or VIP beta code)
+// ⚠️ TEMPORAIRE — pendant la phase de test bêta, TOUT LE MONDE a accès à toutes
+// les fonctionnalités Premium, peu importe leur vrai statut d'abonnement. On
+// veut que les testeurs puissent vraiment évaluer l'app au complet. À RETIRER
+// (remettre à false) une fois la bêta terminée et l'app prête pour le vrai
+// lancement public avec le modèle freemium normal.
+const BETA_TESTING_UNLOCK_ALL = true;
+// Le propriétaire de l'app garde Premium à vie, peu importe l'état de
+// BETA_TESTING_UNLOCK_ALL ci-dessus — même une fois la bêta terminée.
+const OWNER_EMAIL = 'timmy.villeneuve@gmail.com';
 const LIMITS={scans:5,recs:3,list:10};
 const commRecs=[
   {id:1,emoji:"🍝",nom:"Pâtes Alfredo au poulet",auteur:"Marie L.",ini:"ML",temps:"30 min",tags:["pâtes","poulet"],likes:1284,viral:true,liked:false},
@@ -3601,7 +3610,7 @@ async function syncPremiumStatus(){
     var res = await fetch(STRIPE_API_URL + '?action=status&email=' + encodeURIComponent(email));
     var result = await res.json();
     if(typeof result.premium === 'boolean' && result.premium !== isPremium){
-      isPremium = result.premium;
+      isPremium = BETA_TESTING_UNLOCK_ALL || email.toLowerCase() === OWNER_EMAIL.toLowerCase() || result.premium;
       saveData();
       updatePlanUI();
       if(isPremium) showToast('🎉 Abonnement Premium confirmé!');
@@ -4819,7 +4828,7 @@ function loadData() {
     if(!saved) return false;
     const data = JSON.parse(saved);
     if(!data.onboardingDone) return false;
-    isPremium = data.isPremium || false;
+    isPremium = BETA_TESTING_UNLOCK_ALL || (data.email && data.email.toLowerCase() === OWNER_EMAIL.toLowerCase()) || data.isPremium || false;
     points = data.points || 0;
     totalScans = data.totalScans || 0;
     groceries = data.groceries || [];
@@ -5986,6 +5995,7 @@ function showApp() {
     document.getElementById('app').style.display = 'block';
     var savedCode = localStorage.getItem('sg_beta_code');
     if (savedCode && BETA_CODES.includes(savedCode)) { isPremium = true; }
+    if (BETA_TESTING_UNLOCK_ALL) { isPremium = true; }
     updateSavingsDisplay();
     updatePlanUI(); renderRewards(); renderC(); renderBCats(); renderWallet(); renderGr(); updatePointsUI(); loadSpecials();
     loadProductDB();
