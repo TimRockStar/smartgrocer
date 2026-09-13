@@ -3262,12 +3262,24 @@ function getPriceHistoryHTML(productName, currentPrice) {
 
 
 
-// Always have fallback trending recipes
-window.trendingRecipes = [
-  {emoji:'🍝', nom:'Pâtes Alfredo au poulet'},
-  {emoji:'🥘', nom:'Soupe crémeuse légumes'},
-  {emoji:'🍛', nom:'Cari de légumes'}
+// Bassin varié de recettes de secours — utilisé seulement si l'IA échoue.
+// Beaucoup plus large qu'avant (3 recettes fixes) pour éviter l'impression
+// de recettes "figées" en cas d'échecs répétés de l'IA.
+var FALLBACK_TRENDING_POOL = [
+  {emoji:'🍝', nom:'Pâtes Alfredo au poulet', auteur:'Marie L.', temps:'30 min', likes:1284},
+  {emoji:'🥘', nom:'Soupe crémeuse légumes', auteur:'Jean-F. B.', temps:'45 min', likes:893},
+  {emoji:'🍛', nom:'Cari de légumes', auteur:'Sophie T.', temps:'25 min', likes:654},
+  {emoji:'🌮', nom:'Tacos au boeuf épicés', auteur:'Marc-A. D.', temps:'20 min', likes:1102},
+  {emoji:'🍜', nom:'Pho maison rapide', auteur:'Linh T.', temps:'35 min', likes:781},
+  {emoji:'🥗', nom:'Salade César au poulet', auteur:'Émilie R.', temps:'15 min', likes:645},
+  {emoji:'🍕', nom:'Pizza maison croustillante', auteur:'Anthony P.', temps:'40 min', likes:1543},
+  {emoji:'🍲', nom:'Chili con carne réconfortant', auteur:'Karine L.', temps:'50 min', likes:932},
+  {emoji:'🥘', nom:'Risotto aux champignons', auteur:'Julien B.', temps:'35 min', likes:712},
+  {emoji:'🍱', nom:'Bol bouddha aux légumes', auteur:'Sarah K.', temps:'25 min', likes:867},
+  {emoji:'🥩', nom:'Steak grillé et patates', auteur:'David M.', temps:'30 min', likes:1021},
+  {emoji:'🍳', nom:'Frittata aux légumes du jardin', auteur:'Nadia H.', temps:'20 min', likes:598}
 ];
+window.trendingRecipes = FALLBACK_TRENDING_POOL.slice().sort(function(){ return Math.random() - 0.5; }).slice(0, 3);
 
 var _k1='gsk_iKwYCX9K';
 var _k2='ftHtPk89plW1';
@@ -5927,11 +5939,7 @@ async function loadTrendingRecipes() {
     
   } catch(e) {
     console.log('Trending error:', e);
-    var fallback = [
-      {emoji:'🍝', nom:'Pâtes Alfredo au poulet', auteur:'Marie L.', temps:'30 min', likes:1284},
-      {emoji:'🥘', nom:'Soupe crémeuse légumes', auteur:'Jean-F. B.', temps:'45 min', likes:893},
-      {emoji:'🍛', nom:'Cari de légumes', auteur:'Sophie T.', temps:'25 min', likes:654}
-    ];
+    var fallback = FALLBACK_TRENDING_POOL.slice().sort(function(){ return Math.random() - 0.5; }).slice(0, 3);
     window.trendingRecipes = fallback;
     renderTrendingRecipes(fallback, colors);
   }
