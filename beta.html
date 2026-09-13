@@ -2631,11 +2631,13 @@ function guessCategory(productName) {
   // 4. Viandes et poissons / Meat & fish
   if(/poulet|boeuf|bœuf|porc|poisson|saumon|viande|steak|jambon|bacon|dinde|crevette|thon|charcuterie|saucisse|tofu|chicken|beef|pork|fish|salmon|meat|ham|turkey|shrimp|tuna|sausage/.test(n)) return 'meat_fish';
   // 5. Fruits et légumes / Fruits & vegetables
-  if(/pomme|banane|carotte|brocoli|laitue|légume|legume|fruit|tomate|oignon|poivron|concombre|fraise|orange|citron|raisin|patate|pomme de terre|champignon|céleri|celeri|ail|persil|apple|banana|carrot|broccoli|lettuce|vegetable|tomato|onion|pepper|cucumber|strawberry|lemon|grape|potato|mushroom|celery|garlic|parsley/.test(n)) return 'fruits_veg';
-  // 6. Produits laitiers / Dairy
+  if(/pomme|banane|carotte|brocoli|laitue|légume|legume|fruit|tomate|oignon|poivron|concombre|fraise|orange|citron|raisin|patate|pomme de terre|champignon|céleri|celeri|ail|persil|avocat|avocado|apple|banana|carrot|broccoli|lettuce|vegetable|tomato|onion|pepper|cucumber|strawberry|lemon|grape|potato|mushroom|celery|garlic|parsley/.test(n)) return 'fruits_veg';
+  // 6. Boulangerie / Bakery — vérifié AVANT produits laitiers, car un nom comme
+  // "Gâteau au beurre" ou "Mélange à gâteau glaçage crème" contient des mots
+  // laitiers (beurre, crème) même si le produit est en fait une pâtisserie.
+  if(/pain|bagel|croissant|baguette|brioche|muffin|gâteau|gateau|mélange à gâteau|melange a gateau|pâtisserie|patisserie|tarte|beigne|biscotte|bread|cake|cake mix|pastry|pie|donut/.test(n)) return 'bakery';
+  // 7. Produits laitiers / Dairy
   if(/lait|fromage|yogourt|yaourt|beurre|crème|creme|oeuf|œuf|kefir|ricotta|mascarpone|milk|cheese|yogurt|butter|cream|egg/.test(n)) return 'dairy';
-  // 7. Boulangerie / Bakery
-  if(/pain|bagel|croissant|baguette|brioche|muffin|bread/.test(n)) return 'bakery';
   // 8. Boissons / Beverages
   if(/jus|boisson|soda|eau|café|cafe|thé|the|bière|biere|vin|juice|drink|water|coffee|tea|beer|wine/.test(n)) return 'beverages';
   // 9. Collations / Snacks
