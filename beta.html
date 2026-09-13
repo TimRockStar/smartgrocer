@@ -1226,6 +1226,7 @@ ml('account', '2355363');
           <div style="font-size:10px;color:var(--sub);text-align:center;margin-top:6px;" data-i18n="prof_delete_hint">Efface définitivement ton compte et toutes tes données de cet appareil</div>
         </div>
         <button class="btn bo bf" onclick="showInstallInstructions()" style="margin-top:8px;"><i class="ti ti-device-mobile"></i> 📱 Installer sur mon téléphone</button>
+        <button class="btn bo bf" onclick="openBugReport()" style="margin-top:8px;border-color:#f59e0b;color:#92400e;"><i class="ti ti-bug"></i> <span data-i18n="bug_report_btn">🐞 Signaler un bug</span></button>
       </div>
     </div>
     <div class="card">
@@ -1919,6 +1920,7 @@ var translations = {
     prof_beta_title: '🎁 Tu as un code bêta?', prof_beta_btn: 'Activer',
     prof_delete_btn: 'Supprimer mon compte',
     prof_delete_hint: 'Efface définitivement ton compte et toutes tes données de cet appareil',
+    bug_report_btn: '🐞 Signaler un bug',
     // Menu Plus (clés manquantes trouvées à la vérification finale)
     plus_header: "Plus d'options",
     plus_carte: 'Carte des épiceries', plus_carte_sub: '5 épiceries près de toi',
@@ -2058,6 +2060,7 @@ var translations = {
     prof_beta_title: '🎁 Have a beta code?', prof_beta_btn: 'Activate',
     prof_delete_btn: 'Delete my account',
     prof_delete_hint: 'Permanently erases your account and all data from this device',
+    bug_report_btn: '🐞 Report a bug',
     // Plus menu (missing keys found during final verification)
     plus_header: 'More options',
     plus_carte: 'Store map', plus_carte_sub: '5 stores near you',
@@ -5599,6 +5602,31 @@ let fbStar = 0;
 let fbReturn = '';
 let fbFeature = '';
 
+// ============================================================
+// SIGNALEMENT DE BUG — ouvre le courriel avec un message pré-rempli,
+// incluant des infos techniques utiles pour diagnostiquer (appareil,
+// version de l'app, code bêta) sans que la personne ait à les chercher.
+// ============================================================
+function openBugReport(){
+  document.getElementById('bug-report-modal').style.display = 'flex';
+}
+function closeBugReport(){
+  document.getElementById('bug-report-modal').style.display = 'none';
+}
+function submitBugReport(){
+  var desc = document.getElementById('bug-report-desc').value.trim();
+  if(!desc){ showToast('⚠️ Décris le bug avant d\'envoyer!'); return; }
+  var code = localStorage.getItem('sg_beta_code') || '?';
+  var userData = JSON.parse(localStorage.getItem('smartgrocer_data') || '{}');
+  var infoTech = 'Code bêta: ' + code + ' | Courriel: ' + (userData.email || '?') + ' | Appareil: ' + navigator.userAgent;
+  var subject = encodeURIComponent('Bug SmartGrocer - Code: ' + code);
+  var body = encodeURIComponent('Description du bug:\n' + desc + '\n\n---\nInfos techniques (ne pas modifier):\n' + infoTech);
+  window.open('mailto:smartgrocer.canada@gmail.com?subject=' + subject + '&body=' + body);
+  closeBugReport();
+  document.getElementById('bug-report-desc').value = '';
+  showToast('✅ Merci! Ton application de courriel devrait s\'ouvrir.');
+}
+
 function openFeedback(){ document.getElementById('feedback-modal').style.display='block'; document.body.style.overflow='hidden'; }
 function closeFeedback(){ document.getElementById('feedback-modal').style.display='none'; document.body.style.overflow=''; }
 function fbSetStar(n){ fbStar=n; document.querySelectorAll('#fb-stars span').forEach(function(s,i){ s.style.opacity=i<n?'1':'0.3'; }); }
@@ -7079,6 +7107,22 @@ function handleStripeSuccess() {
 
 
 
+
+<!-- BUG REPORT MODAL -->
+<div id="bug-report-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:3000;align-items:flex-end;justify-content:center;">
+  <div style="background:#fff;border-radius:24px 24px 0 0;padding:1.5rem;width:100%;max-width:480px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+      <div>
+        <div style="font-size:16px;font-weight:700;">🐞 Signaler un bug</div>
+        <div style="font-size:11px;color:var(--sub);">Décris ce qui ne fonctionne pas — on va y jeter un oeil rapidement!</div>
+      </div>
+      <button onclick="closeBugReport()" style="background:var(--light);border:none;border-radius:8px;padding:6px 10px;cursor:pointer;font-size:14px;">✕</button>
+    </div>
+    <textarea id="bug-report-desc" placeholder="Ex: quand j'appuie sur Scanner, l'écran reste noir..." style="width:100%;min-height:110px;margin-bottom:12px;resize:vertical;"></textarea>
+    <button class="btn bg bf" onclick="submitBugReport()"><i class="ti ti-send"></i> Envoyer le signalement</button>
+    <div style="font-size:10px;color:var(--sub);text-align:center;margin-top:8px;">Ça va ouvrir ton application de courriel, avec un message déjà préparé.</div>
+  </div>
+</div>
 
 <!-- FEEDBACK MODAL -->
 <div id="feedback-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:3000;overflow-y:auto;">
