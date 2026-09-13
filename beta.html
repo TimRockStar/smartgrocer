@@ -6985,6 +6985,48 @@ async function scanExpiryDate(input) {
   }
 }
 
+// ============================================================
+// NOTIFICATIONS PUSH — actives seulement dans la vraie app iOS/Android
+// (via Capacitor), jamais sur le site web normal dans un navigateur.
+// ============================================================
+function initPushNotifications() {
+  // window.Capacitor n'existe que dans la vraie app installée — un navigateur
+  // normal (site web) ignore complètement cette fonction, sans erreur.
+  if (typeof window.Capacitor === 'undefined' || !window.Capacitor.Plugins || !window.Capacitor.Plugins.PushNotifications) {
+    console.log('[Push] Capacitor non détecté — probablement le site web normal, pas l\'app.');
+    return;
+  }
+  var Push = window.Capacitor.Plugins.PushNotifications;
+
+  Push.requestPermissions().then(function(result) {
+    if (result.receive !== 'granted') {
+      console.log('[Push] Permission refusée par l\'utilisateur.');
+      return;
+    }
+    Push.register();
+  });
+
+  Push.addListener('registration', function(token) {
+    console.log('[Push] Jeton reçu:', token.value);
+    // ⚠️ Le jeton doit être envoyé à un vrai serveur (ex: Firebase) pour
+    // qu'on puisse un jour ENVOYER de vraies notifications à cette personne
+    // — ce n'est pas encore branché, juste la réception qui est prête ici.
+    try { localStorage.setItem('sg_push_token', token.value); } catch(e) {}
+  });
+
+  Push.addListener('registrationError', function(err) {
+    console.log('[Push] Erreur d\'enregistrement:', JSON.stringify(err));
+  });
+
+  Push.addListener('pushNotificationReceived', function(notification) {
+    console.log('[Push] Notification reçue (app ouverte):', notification);
+  });
+
+  Push.addListener('pushNotificationActionPerformed', function(action) {
+    console.log('[Push] Notification cliquée:', action);
+  });
+}
+
 window.addEventListener('load', function() {
   checkVersion();
   // Lancement public : accès direct pour tout le monde.
@@ -6992,6 +7034,7 @@ window.addEventListener('load', function() {
   showApp();
   handleStripeSuccess();
   syncPremiumStatus(); // vérifie le vrai statut chez Stripe (multi-appareils)
+  initPushNotifications();
 });
 
 // ============================================================
