@@ -825,6 +825,46 @@ ml('account', '2355363');
     </div>
   </div>
   <div class="px">
+    <!-- Zéro gaspillage — bien visible en haut, avant même le générateur -->
+    <div class="sl2">♻️ Zéro gaspillage</div>
+    <div class="card" style="margin-bottom:10px;background:#EAF5EC;border:none;">
+      <div style="font-size:12px;color:#1D6B3E;line-height:1.5;">💡 Tape n'importe quel résidu d'aliment (pelures, os, coquilles, tiges...) et découvre comment le réutiliser plutôt que de le jeter!</div>
+    </div>
+    <div class="card" style="margin-bottom:8px;border:2px solid var(--gold);background:var(--gold-bg);">
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <div style="font-size:26px;flex-shrink:0;">🦴</div>
+        <div>
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+            <div style="font-size:13px;font-weight:700;">Tartinade d'os à moelle</div>
+            <span class="badge bdgold">⭐ Coup de cœur du fondateur</span>
+          </div>
+          <div style="font-size:12px;color:var(--sub);line-height:1.6;">
+            Mets tes os dans la mijoteuse toute une nuit, jusqu'à ce qu'ils ramollissent complètement. Passe-les ensuite au mélangeur avec un peu du bouillon — ça devient une pâte. <b>🧀 Salée</b> : fromage fondu ou fromage à la crème. <b>🍯 Sucrée</b> : miel ou sirop d'érable, pour une tartinade protéinée (la moelle est très riche en protéines).
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:10px;border:2px solid var(--gold);background:var(--gold-bg);">
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <div style="font-size:26px;flex-shrink:0;">🍌</div>
+        <div>
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+            <div style="font-size:13px;font-weight:700;">Pelures de banane à l'airfryer</div>
+            <span class="badge bdgold">⭐ Coup de cœur du fondateur</span>
+          </div>
+          <div style="font-size:12px;color:var(--sub);line-height:1.6;">
+            Verse un peu de sirop d'érable sur les pelures, ajoute une pincée de poivre de cayenne, puis passe le tout à l'airfryer. Le contraste sucré-épicé est étonnamment bon!
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="sr">
+      <input type="text" id="zerowaste-search" placeholder="Ex: pelure de banane, os de poulet..." onkeydown="if(event.key==='Enter')searchZeroWaste()"/>
+      <button class="btn bg" onclick="searchZeroWaste()"><i class="ti ti-search"></i></button>
+    </div>
+    <div class="ld" id="zerowaste-ld"><i class="ti ti-refresh"></i> Recherche en cours...</div>
+    <div id="zerowaste-results" style="margin-bottom:1.5rem;"></div>
+
     <div class="limit-bar" id="rec-limit-bar" style="display:none;"><div style="font-size:11px;flex:1;">Recettes aujourd'hui</div><div class="limit-dots" id="rec-dots"></div><div style="font-size:11px;font-weight:700;" id="rec-count-text">0/3</div></div>
     <div class="sl2">Tes ingrédients</div>
     <div class="sr"><input type="text" id="ing-in" placeholder="Ex: poulet, riz, tomates..." data-i18n="rec_ing_placeholder"/><button class="btn bg" id="voice-ing-in" onclick="startVoice('ing-in')" style="padding:8px 12px;font-size:18px;line-height:1;">🎤</button><button class="btn bg" onclick="addIng()"><i class="ti ti-plus"></i></button></div>
@@ -841,7 +881,7 @@ ml('account', '2355363');
       <div id="p-favoris" style="display:none;">
         <div id="favorites-list"></div>
       </div>
-      <div id="p-recettes"><div class="rg" id="rg"></div><div id="db" style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1rem;margin-bottom:1rem;display:none;"><div style="display:flex;align-items:center;gap:10px;margin-bottom:0.875rem;"><div id="de" style="font-size:28px;"></div><div><div id="dn" style="font-size:14px;font-weight:700;"></div><div id="dm" style="font-size:11px;color:var(--sub);"></div></div></div><ol class="steps" id="ds"></ol><div style="display:flex;gap:8px;margin-top:0.875rem;"><button class="btn bo" style="flex:1;" id="full-rec-btn">Recette complète ↗</button><button class="btn bc" style="flex:1;" onclick="switchRT('youtube',document.getElementById('ty'),'onc')"><i class="ti ti-brand-youtube"></i> Vidéos</button></div></div></div>
+      <div id="p-recettes"><div class="rg" id="rg"></div><div id="db" style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1rem;margin-bottom:1rem;display:none;"><div style="display:flex;align-items:center;gap:10px;margin-bottom:0.875rem;"><div id="de" style="font-size:28px;"></div><div><div id="dn" style="font-size:14px;font-weight:700;"></div><div id="dm" style="font-size:11px;color:var(--sub);"></div></div></div><ol class="steps" id="ds"></ol><div id="zw-tip" style="display:none;background:var(--gold-bg);border-radius:10px;padding:10px 12px;margin-top:0.75rem;font-size:11.5px;color:#7A5A15;line-height:1.5;"></div><div style="display:flex;gap:8px;margin-top:0.875rem;"><button class="btn bo" style="flex:1;" id="full-rec-btn">Recette complète ↗</button><button class="btn bc" style="flex:1;" onclick="switchRT('youtube',document.getElementById('ty'),'onc')"><i class="ti ti-brand-youtube"></i> Vidéos</button></div></div></div>
       <div id="p-youtube" style="display:none;"><div class="vg" id="vg"></div></div>
       <div id="p-community" style="display:none;"><div class="vg" id="cg"></div></div>
     </div>
@@ -3060,7 +3100,7 @@ async function genRecipesFromSpecials() {
         model: 'qwen/qwen3.6-27b',
         reasoning_effort: 'none',
         max_tokens: 1200,
-        messages: [{role:'user',content:'Langue de reponse: '+(currentLang==="en"?"English":"francais")+'. Ces produits sont EN SPÉCIAL cette semaine: ' + specialsList + '. Génère 3 recettes économiques qui utilisent UN OU PLUSIEURS de ces produits en spécial. Mesures nord-américaines. JSON seulement: {"recettes":[{"emoji":"🍳","nom":"Nom recette","temps":"30 min","portions":"4 portions","match":"Utilise: poulet en spécial chez Maxi","etapes":["Étape 1","Étape 2","Étape 3"]}]}'}]
+        messages: [{role:'user',content:'Langue de reponse: '+(currentLang==="en"?"English":"francais")+'. Ces produits sont EN SPÉCIAL cette semaine: ' + specialsList + '. Génère 3 recettes économiques qui utilisent UN OU PLUSIEURS de ces produits en spécial. Mesures nord-américaines. Pour chaque recette, ajoute aussi un court conseil "zéro gaspillage" concret lié à un résidu réel de CETTE recette précise (ex: pelures, os, tiges, fanes) — si vraiment aucun résidu pertinent n\'existe, laisse ce champ vide plutôt que d\'inventer. JSON seulement: {"recettes":[{"emoji":"🍳","nom":"Nom recette","temps":"30 min","portions":"4 portions","match":"Utilise: poulet en spécial chez Maxi","etapes":["Étape 1","Étape 2","Étape 3"],"zeroWaste":"Conseil concret ou chaîne vide"}]}'}]
       })
     });
     var data = await res.json();
@@ -3868,7 +3908,7 @@ async function genAll(){
   document.getElementById('rec-ld').classList.add('on');
   document.getElementById('rec-res').style.display='none';
   try{
-    var res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},body:JSON.stringify({model:'qwen/qwen3.6-27b',reasoning_effort:'none',max_tokens:1400,messages:[{role:'user',content:'Chef cuisinier. Langue de réponse: '+(currentLang==="en"?"English":"français")+'. Ingrédients: '+ingredientsList+'. Génère 3 recettes + 4 vidéos YouTube. Utilise mesures nord-américaines (tasse, c. à thé, c. à soupe). JSON seulement: {"recettes":[{"emoji":"🍳","nom":"Nom recette","temps":"20 min","portions":"2 portions","match":"Utilise les ingrédients","etapes":["Étape 1","Étape 2","Étape 3","Étape 4"]}],"youtubeVideos":[{"query":"recette facile","titre":"Titre viral","channel":"Channel","views":"2.3M vues","duration":"8:42","viral":true}]}'}]})});
+    var res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},body:JSON.stringify({model:'qwen/qwen3.6-27b',reasoning_effort:'none',max_tokens:1400,messages:[{role:'user',content:'Chef cuisinier. Langue de réponse: '+(currentLang==="en"?"English":"français")+'. Ingrédients: '+ingredientsList+'. Génère 3 recettes + 4 vidéos YouTube. Utilise mesures nord-américaines (tasse, c. à thé, c. à soupe). Pour chaque recette, ajoute aussi un court conseil "zéro gaspillage" concret lié à un résidu réel de CETTE recette précise (ex: pelures, os, tiges, fanes) — si vraiment aucun résidu pertinent n\'existe pour cette recette, laisse ce champ vide plutôt que d\'inventer. JSON seulement: {"recettes":[{"emoji":"🍳","nom":"Nom recette","temps":"20 min","portions":"2 portions","match":"Utilise les ingrédients","etapes":["Étape 1","Étape 2","Étape 3","Étape 4"],"zeroWaste":"Conseil concret ou chaîne vide"}],"youtubeVideos":[{"query":"recette facile","titre":"Titre viral","channel":"Channel","views":"2.3M vues","duration":"8:42","viral":true}]}'}]})});
     var data=await res.json();
     var text=data.choices[0].message.content.replace(/```json|```/g,'').trim();
     var parsed=JSON.parse(text);
@@ -3892,6 +3932,13 @@ function selRec(i){
   document.getElementById('dn').textContent=selR.nom;
   document.getElementById('dm').textContent=selR.temps+' · '+selR.portions;
   document.getElementById('ds').innerHTML=selR.etapes.map((e,j)=>`<li><div class="snum">${j+1}</div><span>${e}</span></li>`).join('');
+  var zwTip = document.getElementById('zw-tip');
+  if(selR.zeroWaste && selR.zeroWaste.trim()){
+    zwTip.style.display = 'block';
+    zwTip.innerHTML = '♻️ <b>Zéro gaspillage :</b> ' + selR.zeroWaste;
+  } else {
+    zwTip.style.display = 'none';
+  }
   document.getElementById('full-rec-btn').onclick=()=>sendPrompt('Recette complète avec quantités pour '+selR.nom+' avec: '+ings.join(', '));
   
   // Add share button
@@ -6411,6 +6458,63 @@ var WELLNESS_RECIPES = [
     etapes: 'Fais chauffer le lait avec le curcuma, la cannelle et le poivre à feu doux sans faire bouillir, environ 5 minutes. Ajoute le miel avant de servir.',
   }
 ];
+
+// ============================================================
+// ZÉRO GASPILLAGE — recherche libre, générée par IA à la demande.
+// Contrairement aux recettes de bien-être (liste fixe écrite à la main),
+// impossible de prévoir d'avance TOUS les résidus que les gens vont chercher
+// (pelure de banane, coquilles d'œufs, os, etc.) — donc générée en direct.
+// ============================================================
+async function searchZeroWaste(){
+  var fr = currentLang !== 'en';
+  var query = document.getElementById('zerowaste-search').value.trim();
+  if(!query){ showToast(fr ? '⚠️ Écris un résidu à chercher!' : '⚠️ Type a food scrap to search!'); return; }
+
+  document.getElementById('zerowaste-ld').classList.add('on');
+  document.getElementById('zerowaste-results').innerHTML = '';
+
+  try {
+    var prompt = fr
+      ? 'Une personne veut réutiliser ce résidu alimentaire au lieu de le jeter: "' + query + '". Donne 2 à 3 façons concrètes, sécuritaires et réalistes de le réutiliser à la maison (recette, remède maison, usage pratique). Si ce résidu précis n\'est vraiment pas réutilisable ou pose un risque pour la santé (ex: os cuits qui éclatent facilement, moisissure), dis-le honnêtement plutôt que d\'inventer une utilisation. Réponds UNIQUEMENT en JSON: {"items":[{"emoji":"🍌","titre":"Titre court","description":"1-2 phrases expliquant comment faire"}]}'
+      : 'A person wants to reuse this food scrap instead of throwing it away: "' + query + '". Give 2 to 3 concrete, safe, realistic ways to reuse it at home (recipe, home remedy, practical use). If this specific scrap truly isn\'t reusable or poses a health risk (e.g. cooked bones that splinter easily, mold), say so honestly rather than inventing a use. Respond ONLY in JSON: {"items":[{"emoji":"🍌","titre":"Short title","description":"1-2 sentences explaining how"}]}';
+
+    var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
+      body: JSON.stringify({
+        model: 'qwen/qwen3.6-27b',
+        reasoning_effort: 'none',
+        max_tokens: 700,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    var data = await res.json();
+    document.getElementById('zerowaste-ld').classList.remove('on');
+    if(!data.choices || !data.choices[0]) throw new Error('Réponse invalide');
+    var text = data.choices[0].message.content.replace(/```json|```/g,'').trim();
+    var jsonMatch = text.match(/\{[\s\S]*\}/);
+    if(!jsonMatch) throw new Error('Format inattendu');
+    var parsed = JSON.parse(jsonMatch[0]);
+    var items = parsed.items || [];
+
+    if(!items.length){
+      document.getElementById('zerowaste-results').innerHTML = '<div style="text-align:center;color:var(--sub);font-size:12px;padding:1rem;">' + (fr ? 'Aucune suggestion trouvée pour ça.' : 'No suggestions found for that.') + '</div>';
+      return;
+    }
+    document.getElementById('zerowaste-results').innerHTML = items.map(function(it){
+      return '<div class="card" style="margin-bottom:8px;">' +
+        '<div style="display:flex;gap:10px;align-items:flex-start;">' +
+        '<div style="font-size:24px;flex-shrink:0;">' + (it.emoji||'♻️') + '</div>' +
+        '<div><div style="font-size:13px;font-weight:700;margin-bottom:3px;">' + it.titre + '</div>' +
+        '<div style="font-size:12px;color:var(--sub);line-height:1.5;">' + it.description + '</div></div>' +
+        '</div></div>';
+    }).join('');
+  } catch(e){
+    document.getElementById('zerowaste-ld').classList.remove('on');
+    document.getElementById('zerowaste-results').innerHTML = '<div style="text-align:center;color:var(--sub);font-size:12px;padding:1rem;">⚠️ ' + (fr ? 'Erreur — réessaie dans un instant.' : 'Error — try again in a moment.') + '</div>';
+    console.log('[ZeroWaste] Erreur:', e);
+  }
+}
 
 function renderWellnessRecipes(){
   var listEl = document.getElementById('wellness-recipes-list');
