@@ -1191,26 +1191,32 @@ ml('account', '2355363');
           <div class="social-input-row">
             <div class="social-input-icon" style="background:#1877f2;">📘</div>
             <input type="url" id="pp-facebook" placeholder="facebook.com/mapage" onchange="saveProfile()"/>
+            <button type="button" onclick="openSocialLink('pp-facebook')" style="background:var(--light);border:none;border-radius:8px;padding:0 12px;cursor:pointer;font-size:16px;flex-shrink:0;" title="Ouvrir">↗</button>
           </div>
           <div class="social-input-row">
             <div class="social-input-icon" style="background:linear-gradient(135deg,#f09433,#dc2743);">📷</div>
             <input type="url" id="pp-instagram" placeholder="instagram.com/moncompte" onchange="saveProfile()"/>
+            <button type="button" onclick="openSocialLink('pp-instagram')" style="background:var(--light);border:none;border-radius:8px;padding:0 12px;cursor:pointer;font-size:16px;flex-shrink:0;" title="Ouvrir">↗</button>
           </div>
           <div class="social-input-row">
             <div class="social-input-icon" style="background:#010101;">🎵</div>
             <input type="url" id="pp-tiktok" placeholder="tiktok.com/@moncompte" onchange="saveProfile()"/>
+            <button type="button" onclick="openSocialLink('pp-tiktok')" style="background:var(--light);border:none;border-radius:8px;padding:0 12px;cursor:pointer;font-size:16px;flex-shrink:0;" title="Ouvrir">↗</button>
           </div>
           <div class="social-input-row">
             <div class="social-input-icon" style="background:#ff0000;">▶️</div>
             <input type="url" id="pp-youtube" placeholder="youtube.com/@machaîne" onchange="saveProfile()"/>
+            <button type="button" onclick="openSocialLink('pp-youtube')" style="background:var(--light);border:none;border-radius:8px;padding:0 12px;cursor:pointer;font-size:16px;flex-shrink:0;" title="Ouvrir">↗</button>
           </div>
           <div class="social-input-row">
             <div class="social-input-icon" style="background:#e60023;">📌</div>
             <input type="url" id="pp-pinterest" placeholder="pinterest.com/moncompte" onchange="saveProfile()"/>
+            <button type="button" onclick="openSocialLink('pp-pinterest')" style="background:var(--light);border:none;border-radius:8px;padding:0 12px;cursor:pointer;font-size:16px;flex-shrink:0;" title="Ouvrir">↗</button>
           </div>
           <div class="social-input-row">
             <div class="social-input-icon" style="background:#000;">🐦</div>
             <input type="url" id="pp-twitter" placeholder="x.com/moncompte" onchange="saveProfile()"/>
+            <button type="button" onclick="openSocialLink('pp-twitter')" style="background:var(--light);border:none;border-radius:8px;padding:0 12px;cursor:pointer;font-size:16px;flex-shrink:0;" title="Ouvrir">↗</button>
           </div>
         </div></div>
         <button class="btn bg bf" onclick="saveProfile();showToast('✅ ' + t('prof_saved_toast'))"><i class="ti ti-check"></i> <span data-i18n="prof_save_btn">Sauvegarder</span></button>
@@ -1226,6 +1232,7 @@ ml('account', '2355363');
           <div style="font-size:10px;color:var(--sub);text-align:center;margin-top:6px;" data-i18n="prof_delete_hint">Efface définitivement ton compte et toutes tes données de cet appareil</div>
         </div>
         <button class="btn bo bf" onclick="showInstallInstructions()" style="margin-top:8px;"><i class="ti ti-device-mobile"></i> 📱 Installer sur mon téléphone</button>
+        <button class="btn bo bf" onclick="shareAppNative()" style="margin-top:8px;border-color:#3730a3;color:#3730a3;"><i class="ti ti-share"></i> 🙌 Inviter mes amis</button>
         <button class="btn bo bf" onclick="openBugReport()" style="margin-top:8px;border-color:#f59e0b;color:#92400e;"><i class="ti ti-bug"></i> <span data-i18n="bug_report_btn">🐞 Signaler un bug</span></button>
       </div>
     </div>
@@ -3518,11 +3525,15 @@ function finishOb_complete() {
   // C'est ICI, et seulement ici, que les données sont vraiment sauvegardées —
   // après que le code de vérification ait été confirmé. Empêche de contourner
   // la vérification en fermant/rouvrant l'app avant d'entrer le bon code.
+  // Code de parrainage unique — un simple identifiant court, généré une fois,
+  // pour que le lien que la personne partage puisse être suivi (même sommairement).
+  const referralCode = 'SG' + Math.random().toString(36).substring(2, 8).toUpperCase();
+
   const savedData = {
     name: name, email: email, city: fullCity,
     diet: 'Aucun', onboardingDone: true,
     isPremium: (BETA_CODES.includes(localStorage.getItem('sg_beta_code'))), points: 0, totalScans: 0, totalSaved: 0,
-    groceries: [], walletCards: []
+    groceries: [], walletCards: [], referralCode: referralCode, firstUseDate: new Date().toISOString()
   };
   try { localStorage.setItem('smartgrocer_data', JSON.stringify(savedData)); } catch(e) { console.error('Save error:', e); }
   updateSavingsDisplay();
@@ -4148,7 +4159,9 @@ async function submitUp(){
   try {
     await fetch(STRIPE_API_URL, {
       method: 'POST',
-      body: JSON.stringify({ action: 'recipeSave', nom: n, auteur: userName, instagram: igHandle, ingredients: ig, preparation: prep, youtube: yt })
+      body: JSON.stringify({ action: 'recipeSave', nom: n, auteur: userName, instagram: igHandle, ingredients: ig, preparation: prep, youtube: yt,
+        socialFacebook: userSocial.facebook || '', socialInstagram: userSocial.instagram || '', socialTiktok: userSocial.tiktok || '',
+        socialYoutube: userSocial.youtube || '', socialPinterest: userSocial.pinterest || '', socialTwitter: userSocial.twitter || '' })
     });
   } catch(e) {
     console.log('Partage de recette échoué:', e);
@@ -4223,7 +4236,10 @@ async function loadCommunityRecipes() {
         id: r.id, emoji: '🍳', nom: r.nom, auteur: r.auteur,
         ini: (r.auteur||'?').substring(0,2).toUpperCase(), temps: '?',
         tags: [], likes: Number(r.likes)||0, viral: false, liked: false,
-        prep: r.preparation, youtube: r.youtube, social: {instagram: r.instagram}
+        prep: r.preparation, youtube: r.youtube, social: {
+          facebook: r.socialFacebook || '', instagram: r.socialInstagram || r.instagram || '', tiktok: r.socialTiktok || '',
+          youtube: r.socialYoutube || '', pinterest: r.socialPinterest || '', twitter: r.socialTwitter || ''
+        }
       };
     });
     // Remplace les recettes de démo par les vraies, une fois qu'il y en a
@@ -4713,6 +4729,14 @@ function confirmAddCard() {
   showToast('✅ Carte ' + name + ' ajoutée!');
 }
 
+
+function openSocialLink(inputId){
+  var el = document.getElementById(inputId);
+  var val = el ? el.value.trim() : '';
+  if(!val){ showToast('⚠️ Aucun lien à ouvrir — entre-le d\'abord!'); return; }
+  var url = /^https?:\/\//i.test(val) ? val : 'https://' + val;
+  window.open(url, '_blank');
+}
 
 function saveProfile() {
   const name = document.getElementById('pp-name-input')?.value?.trim();
@@ -6022,6 +6046,44 @@ function toggleFavFromModal() {
   if(btn) btn.textContent = isFavorite(rec.nom) ? '⭐' : '☆';
 }
 
+// ============================================================
+// PARRAINAGE + SONDAGE DE RECOMMANDATION — apparaît une seule fois, 7 jours
+// après la création du compte, jamais avant, jamais deux fois.
+// ============================================================
+function getReferralLink(){
+  var data = JSON.parse(localStorage.getItem('smartgrocer_data') || '{}');
+  var code = data.referralCode || 'SG';
+  return 'https://smartgrocer.health?ref=' + code;
+}
+
+function shareAppNative(){
+  var fr = currentLang !== 'en';
+  var shareText = fr ? '🛒 J\'utilise SmartGrocer pour économiser sur l\'épicerie chaque semaine — essaie-le!' : '🛒 I use SmartGrocer to save on groceries every week — try it out!';
+  var shareUrl = getReferralLink();
+  if(navigator.share){
+    navigator.share({ title: 'SmartGrocer', text: shareText, url: shareUrl }).catch(function(e){ console.log('[Partage app] Annulé:', e); });
+  } else if(navigator.clipboard){
+    navigator.clipboard.writeText(shareText + ' ' + shareUrl).then(function(){
+      showToast(fr ? '📋 Lien copié — colle-le où tu veux!' : '📋 Link copied — paste it wherever you want!');
+    });
+  }
+}
+
+function checkRecommendSurvey(){
+  var data = JSON.parse(localStorage.getItem('smartgrocer_data') || '{}');
+  if(!data.firstUseDate) return; // compte créé avant l'ajout de cette fonctionnalité — pas de date connue
+  if(localStorage.getItem('sg_survey_answered')) return; // déjà répondu (ou fermé) une fois — jamais deux fois
+  var daysSince = (Date.now() - new Date(data.firstUseDate).getTime()) / (1000 * 60 * 60 * 24);
+  if(daysSince < 7) return;
+  setTimeout(function(){ document.getElementById('recommend-survey-modal').style.display = 'flex'; }, 2000);
+}
+
+function answerRecommendSurvey(yes){
+  localStorage.setItem('sg_survey_answered', '1');
+  document.getElementById('recommend-survey-modal').style.display = 'none';
+  if(yes) shareAppNative();
+}
+
 function shareCurrentModalRecipe(){
   var rec = window._currentModalRecipe;
   if(!rec) return;
@@ -6086,6 +6148,7 @@ function showApp() {
     if(lfInit) lfInit.className = 'lang-btn' + (currentLang !== 'en' ? ' active' : '');
     if(leInit) leInit.className = 'lang-btn' + (currentLang === 'en' ? ' active' : '');
     showToast(t('toast_welcome'));
+    checkRecommendSurvey();
   } else {
     document.getElementById('onboarding').style.display = 'block';
     document.getElementById('app').style.display = 'none';
@@ -7140,6 +7203,19 @@ function handleStripeSuccess() {
 
 
 
+
+<!-- RECOMMEND SURVEY MODAL -->
+<div id="recommend-survey-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:3000;align-items:center;justify-content:center;padding:1.5rem;">
+  <div style="background:#fff;border-radius:20px;padding:1.75rem;width:100%;max-width:380px;text-align:center;">
+    <div style="font-size:40px;margin-bottom:10px;">🤔</div>
+    <div style="font-size:16px;font-weight:700;margin-bottom:8px;">Recommanderais-tu SmartGrocer à quelqu'un?</div>
+    <div style="font-size:12px;color:var(--sub);margin-bottom:1.25rem;">Ça prend 2 secondes, et ça nous aide énormément!</div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn bo bf" onclick="answerRecommendSurvey(false)">Pas maintenant</button>
+      <button class="btn bg bf" onclick="answerRecommendSurvey(true)">🙌 Oui!</button>
+    </div>
+  </div>
+</div>
 
 <!-- BUG REPORT MODAL -->
 <div id="bug-report-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:3000;align-items:flex-end;justify-content:center;">
