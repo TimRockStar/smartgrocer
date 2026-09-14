@@ -1384,7 +1384,26 @@ ml('account', '2355363');
       </div>
     </div>
 
-    <!-- Analyser un repas -->
+    <!-- Suivi de l'eau -->
+    <div class="card" style="margin-bottom:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <div style="font-size:13px;font-weight:700;">💧 Eau aujourd'hui</div>
+        <div style="font-size:12px;color:var(--sub);" id="nut-water-display">0 / 8 verres</div>
+      </div>
+      <div style="background:var(--light);border-radius:999px;height:10px;overflow:hidden;margin-bottom:10px;">
+        <div id="nut-water-bar" style="height:100%;border-radius:999px;background:linear-gradient(90deg,#378ADD,#5FA8E8);width:0%;transition:width 0.5s;"></div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn bo" style="flex:1;" onclick="adjustWater(-1)">− 1 verre</button>
+        <button class="btn bb" style="flex:1;" onclick="adjustWater(1)">+ 1 verre 💧</button>
+      </div>
+    </div>
+
+    <!-- Historique — derniers jours -->
+    <div class="card" style="margin-bottom:10px;">
+      <div style="font-size:13px;font-weight:700;margin-bottom:10px;">📈 Historique — 7 derniers jours</div>
+      <div id="nut-history-chart" style="display:flex;align-items:flex-end;gap:6px;height:90px;"></div>
+    </div>
     <div class="sl" data-i18n="nut_analyze_title">📸 Analyser un repas</div>
     <div class="card">
       <div style="display:flex;flex-direction:column;gap:10px;">
@@ -6191,6 +6210,8 @@ function redeemBetaCodeProfile() {
 var nutritionLog = [];
 var calGoal = 2000;
 var _pendingMeal = null;
+var waterCount = 0;
+var WATER_GOAL = 8;
 
 function loadNutritionData() {
   loadSavedPlan();
@@ -6203,7 +6224,16 @@ function loadNutritionData() {
       calGoal = data.goal || 2000;
     }
   } catch(e) { nutritionLog = []; }
+  try {
+    var savedWater = localStorage.getItem('sg_water');
+    if(savedWater) {
+      var wd = JSON.parse(savedWater);
+      var today2 = new Date().toISOString().split('T')[0];
+      waterCount = (wd.date === today2) ? (wd.count || 0) : 0;
+    }
+  } catch(e) { waterCount = 0; }
   updateNutritionUI();
+  renderNutritionHistoryChart();
 }
 
 function saveNutritionData() {
@@ -6211,6 +6241,69 @@ function saveNutritionData() {
   localStorage.setItem('sg_nutrition', JSON.stringify({
     date: today, meals: nutritionLog, goal: calGoal
   }));
+  saveTodayToHistory();
+}
+
+function saveWaterData() {
+  var today = new Date().toISOString().split('T')[0];
+  localStorage.setItem('sg_water', JSON.stringify({ date: today, count: waterCount }));
+  saveTodayToHistory();
+}
+
+function adjustWater(delta) {
+  waterCount = Math.max(0, waterCount + delta);
+  saveWaterData();
+  updateWaterUI();
+}
+
+function updateWaterUI() {
+  var display = document.getElementById('nut-water-display');
+  if(display) display.textContent = waterCount + ' / ' + WATER_GOAL + ' verres';
+  var bar = document.getElementById('nut-water-bar');
+  if(bar) bar.style.width = Math.min(Math.round(waterCount / WATER_GOAL * 100), 100) + '%';
+}
+
+// Garde un vrai historique quotidien (calories + eau), pour le graphique des
+// derniers jours — distinct du journal détaillé "nutritionLog" qui, lui, ne
+// garde que les repas du jour même et se vide chaque nouvelle journée.
+function saveTodayToHistory() {
+  var today = new Date().toISOString().split('T')[0];
+  var totalCal = nutritionLog.reduce(function(s,m){ return s + (m.calories||0); }, 0);
+  var history = {};
+  try { history = JSON.parse(localStorage.getItem('sg_nutrition_history') || '{}'); } catch(e) { history = {}; }
+  history[today] = { calories: totalCal, water: waterCount, goal: calGoal };
+  // Garde seulement les 30 derniers jours — pas besoin d'accumuler indéfiniment
+  var dates = Object.keys(history).sort();
+  while(dates.length > 30) { delete history[dates.shift()]; }
+  localStorage.setItem('sg_nutrition_history', JSON.stringify(history));
+}
+
+function renderNutritionHistoryChart() {
+  var container = document.getElementById('nut-history-chart');
+  if(!container) return;
+  var history = {};
+  try { history = JSON.parse(localStorage.getItem('sg_nutrition_history') || '{}'); } catch(e) { history = {}; }
+
+  var fr = currentLang !== 'en';
+  var dayLabels = fr ? ['D','L','M','M','J','V','S'] : ['S','M','T','W','T','F','S'];
+  var days = [];
+  for(var i = 6; i >= 0; i--) {
+    var d = new Date();
+    d.setDate(d.getDate() - i);
+    var key = d.toISOString().split('T')[0];
+    days.push({ key: key, label: dayLabels[d.getDay()], cal: (history[key] && history[key].calories) || 0, goal: (history[key] && history[key].goal) || calGoal });
+  }
+  var maxVal = Math.max.apply(null, days.map(function(d){ return Math.max(d.cal, d.goal); }).concat([1]));
+
+  container.innerHTML = days.map(function(d) {
+    var heightPct = Math.round((d.cal / maxVal) * 100);
+    var isToday = d.key === new Date().toISOString().split('T')[0];
+    var barColor = d.cal > d.goal ? '#e53935' : (isToday ? '#1D9E75' : '#86efac');
+    return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end;">' +
+      '<div style="width:100%;max-width:24px;height:' + heightPct + '%;min-height:2px;background:' + barColor + ';border-radius:4px 4px 0 0;"></div>' +
+      '<div style="font-size:9px;color:var(--sub);font-weight:' + (isToday?'700':'400') + ';">' + d.label + '</div>' +
+      '</div>';
+  }).join('');
 }
 
 function updateNutritionUI() {
@@ -6236,6 +6329,7 @@ function updateNutritionUI() {
   if(grasEl) grasEl.textContent = Math.round(totalGras) + 'g';
   var carbsEl = document.getElementById('nut-carbs');
   if(carbsEl) carbsEl.textContent = Math.round(totalCarbs) + 'g';
+  updateWaterUI();
   renderMealHistory();
 }
 
