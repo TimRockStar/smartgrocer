@@ -900,6 +900,7 @@ ml('account', '2355363');
     </div>
   </div>
   <div class="px">
+    <div id="grocery-tabs" style="display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;margin-bottom:10px;scrollbar-width:none;"></div>
     <div class="limit-bar" id="list-limit-bar" style="display:none;"><div style="font-size:11px;flex:1;">Articles (max 10 gratuit)</div><div style="font-size:11px;font-weight:700;" id="list-count-text">0/10</div></div>
     <div class="sr"><input type="text" id="gr-in" placeholder="Ajouter un article / Add item..." data-i18n="liste_placeholder"/><button class="btn bg" id="voice-gr-in" onclick="startVoice('gr-in')" style="padding:8px 12px;font-size:18px;line-height:1;">🎤</button><button class="btn bg" onclick="addGr()"><i class="ti ti-plus"></i> <span data-i18n="liste_add_btn">Ajouter</span></button></div>
     <button class="btn bo" style="width:100%;margin-bottom:10px;" onclick="openReceiptScanner()">🧾 Scanner un reçu / Scan a receipt</button>
@@ -2903,6 +2904,7 @@ async function generateNewRecipeForDay() {
 
 
 async function generatePlannerList() {
+  switchGroceryList('default'); // les ingrédients générés vont toujours dans la liste fixe, peu importe l'onglet actif
   var keys = Object.keys(mealPlan);
   if(keys.length === 0) {
     showToast('⚠️ Ajoute au moins un repas à ton plan!');
@@ -3445,6 +3447,62 @@ async function callVisionWithFallback(base64Image, promptText, groqMaxTokens){
 }
 
 let isPremium=false,points=0,scansToday=0,recsToday=0,groceries=[],ings=[],selR=null,curRecs=[],currentProd='',camStream=null,totalScans=0; // FREEMIUM — false = free tier by default, true = Premium (via Stripe or VIP beta code)
+
+// ============================================================
+// LISTES MULTIPLES — "groceries" reste la liste ACTIVE (même variable
+// utilisée partout ailleurs dans le code, inchangée). groceryLists garde
+// juste les noms/métadonnées; allListsData garde le vrai contenu de
+// chaque liste. La liste "default" (Recettes générées) est fixe — les
+// fonctions de génération de recettes y basculent explicitement avant
+// d'ajouter des ingrédients, peu importe l'onglet que la personne regarde.
+// ============================================================
+var groceryLists = [{ id: 'default', name: 'Recettes générées', fixed: true }];
+var activeListId = 'default';
+var allListsData = { default: [] };
+
+function switchGroceryList(id){
+  allListsData[activeListId] = groceries; // sauvegarde la liste qu'on quitte
+  if(!allListsData[id]) allListsData[id] = [];
+  activeListId = id;
+  groceries = allListsData[id];
+  renderGroceryTabs();
+  renderGr();
+  saveData();
+}
+
+function createGroceryList(){
+  var fr = currentLang !== 'en';
+  var name = prompt(fr ? 'Nom de la nouvelle liste :' : 'New list name:');
+  if(!name || !name.trim()) return;
+  var id = 'list_' + Date.now();
+  groceryLists.push({ id: id, name: name.trim(), fixed: false });
+  allListsData[id] = [];
+  switchGroceryList(id);
+}
+
+function deleteGroceryList(id, evt){
+  if(evt) evt.stopPropagation();
+  var fr = currentLang !== 'en';
+  var list = groceryLists.find(function(l){ return l.id === id; });
+  if(!list || list.fixed) return; // la liste fixe ne peut jamais être supprimée
+  if(!confirm((fr ? 'Supprimer la liste "' : 'Delete the list "') + list.name + '" ?')) return;
+  groceryLists = groceryLists.filter(function(l){ return l.id !== id; });
+  delete allListsData[id];
+  if(activeListId === id) switchGroceryList('default');
+  else { renderGroceryTabs(); saveData(); }
+}
+
+function renderGroceryTabs(){
+  var el = document.getElementById('grocery-tabs');
+  if(!el) return;
+  el.innerHTML = groceryLists.map(function(l){
+    var isActive = l.id === activeListId;
+    var deleteBtn = l.fixed ? '' : '<span onclick="deleteGroceryList(\'' + l.id + '\',event)" style="margin-left:6px;opacity:0.6;">✕</span>';
+    return '<button onclick="switchGroceryList(\'' + l.id + '\')" style="flex-shrink:0;padding:7px 14px;border-radius:999px;border:none;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;background:' +
+      (isActive ? 'var(--g)' : 'var(--light)') + ';color:' + (isActive ? '#fff' : 'var(--text)') + ';">' + l.name + deleteBtn + '</button>';
+  }).join('') + '<button onclick="createGroceryList()" style="flex-shrink:0;width:34px;height:34px;border-radius:50%;border:1.5px dashed var(--border);background:none;cursor:pointer;font-size:16px;color:var(--sub);">+</button>';
+}
+
 // ⚠️ TEMPORAIRE — pendant la phase de test bêta, TOUT LE MONDE a accès à toutes
 // les fonctionnalités Premium, peu importe leur vrai statut d'abonnement. On
 // veut que les testeurs puissent vraiment évaluer l'app au complet. À RETIRER
@@ -4033,6 +4091,7 @@ function toggleGr(i){groceries[i].done=!groceries[i].done;renderGr();saveData();
 function delGr(i){groceries.splice(i,1);renderGr();saveData();}
 function getGrList(){return groceries.map(g=>g.name).join(', ');}
 function renderGr(){
+  renderGroceryTabs();
   const toBuy = groceries.filter(g => !g.done);
   const inCart = groceries.filter(g => g.done);
   const total = groceries.reduce((s,g) => s + g.price, 0);
@@ -4915,6 +4974,7 @@ function saveData() {
     const emailEl = document.getElementById('pp-email-input');
     const cityEl = document.getElementById('pct');
     const countryEl = document.getElementById('pp-country-input');
+    allListsData[activeListId] = groceries; // synchronise la liste active avant de sauvegarder
     const data = {
       name: (nameEl && nameEl.textContent) ? nameEl.textContent : existing.name || '',
       email: (emailEl && emailEl.value) ? emailEl.value : existing.email || '',
@@ -4922,7 +4982,7 @@ function saveData() {
       country: (countryEl && countryEl.value) ? countryEl.value : existing.country || 'Canada',
       onboardingDone: true, isPremium: isPremium,
       points: points, totalScans: totalScans,
-      groceries: groceries, walletCards: walletCards
+      groceryLists: groceryLists, activeListId: activeListId, allListsData: allListsData, walletCards: walletCards
     };
     localStorage.setItem('smartgrocer_data', JSON.stringify(data));
   } catch(e) { console.error('saveData error:', e); }
@@ -4937,7 +4997,24 @@ function loadData() {
     isPremium = BETA_TESTING_UNLOCK_ALL || (data.email && data.email.toLowerCase() === OWNER_EMAIL.toLowerCase()) || data.isPremium || false;
     points = data.points || 0;
     totalScans = data.totalScans || 0;
-    groceries = data.groceries || [];
+    if(data.groceryLists && data.allListsData) {
+      groceryLists = data.groceryLists;
+      allListsData = data.allListsData;
+      activeListId = data.activeListId || groceryLists[0].id;
+    } else if(data.groceries) {
+      // MIGRATION — les personnes qui utilisaient déjà l'app avant cet ajout
+      // gardent leurs articles existants, déplacés vers une nouvelle liste
+      // "Épicerie" personnelle. La liste fixe "Recettes générées" démarre
+      // vide, prête à recevoir les prochaines recettes générées séparément.
+      var frMig = currentLang !== 'en';
+      groceryLists = [
+        { id: 'default', name: frMig ? 'Recettes générées' : 'Generated recipes', fixed: true },
+        { id: 'perso', name: frMig ? 'Épicerie' : 'Groceries', fixed: false }
+      ];
+      allListsData = { default: [], perso: data.groceries };
+      activeListId = 'perso';
+    }
+    groceries = allListsData[activeListId] || [];
     walletCards = data.walletCards || [];
     if(data.name) {
       ['h-name','pnm'].forEach(function(id){const el=document.getElementById(id);if(el)el.textContent=data.name;});
@@ -5619,6 +5696,7 @@ function renderSpeciauxList(){
 function addSpecialToList(idx){
   var it = _allSpeciaux[idx];
   if(!it) return;
+  switchGroceryList('default'); // les ingrédients générés vont toujours dans la liste fixe, peu importe l'onglet actif
   if(!isPremium && groceries.length >= LIMITS.list){ showPaywall('Liste pleine!', 'Tu as atteint la limite de 10 articles. Passe à Premium!'); return; }
   groceries.push({name: it.nom, price: Number(it.prixSpecial), done: false, category: it.category, store: it.magasin, uid: Date.now()+Math.random()});
   renderGr();
