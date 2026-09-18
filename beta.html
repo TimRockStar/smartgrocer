@@ -5615,6 +5615,45 @@ var _allSpeciaux = [];
 var _speciauxCategory = '';
 var CATEGORY_EMOJI = {'fruits_veg':'🥦','meat_fish':'🍗','dairy':'🥛','dry_goods':'🛒','bakery':'🍞','frozen':'🧊','beverages':'🥤','snacks':'🍪','household':'🧼','other':'📦'};
 
+// ============================================================
+// PHOTOS RÉELLES POUR LES SPÉCIAUX — via Pexels (gratuit). Une seule
+// vraie photo par CATÉGORIE (pas par article) — largement suffisant
+// visuellement, et ça garde le nombre de requêtes minuscule (10 catégories
+// max, jamais 200/heure même avec des centaines d'articles affichés).
+// Mise en cache en mémoire ET dans localStorage, pour ne jamais redemander
+// la même catégorie deux fois, même entre deux sessions.
+// ============================================================
+var PEXELS_API_KEY = 'ywExzDv21lBLOJbYrMo4WRb4GduGvWZvysqYaVgMIOSivw7tEfEEPBkY';
+var CATEGORY_PHOTO_QUERY = {
+  frozen: 'frozen food', household: 'cleaning products', dry_goods: 'pantry grocery shelf',
+  meat_fish: 'meat fish grocery', fruits_veg: 'fresh vegetables fruits', dairy: 'dairy products milk cheese',
+  bakery: 'bakery bread', beverages: 'beverages drinks bottles', snacks: 'snacks chips', other: 'grocery shopping'
+};
+var categoryPhotoCache = {};
+(function loadCategoryPhotoCache(){
+  try { categoryPhotoCache = JSON.parse(localStorage.getItem('sg_category_photos') || '{}'); } catch(e) { categoryPhotoCache = {}; }
+})();
+
+async function getCategoryPhoto(category){
+  if(categoryPhotoCache[category]) return categoryPhotoCache[category];
+  var query = CATEGORY_PHOTO_QUERY[category] || 'grocery';
+  try {
+    var res = await fetch('https://api.pexels.com/v1/search?query=' + encodeURIComponent(query) + '&per_page=1&orientation=square', {
+      headers: { Authorization: PEXELS_API_KEY }
+    });
+    var data = await res.json();
+    var url = data.photos && data.photos[0] ? data.photos[0].src.medium : null;
+    if(url){
+      categoryPhotoCache[category] = url;
+      try { localStorage.setItem('sg_category_photos', JSON.stringify(categoryPhotoCache)); } catch(e){}
+    }
+    return url;
+  } catch(e){
+    console.log('[Pexels] Erreur pour la catégorie ' + category + ':', e);
+    return null;
+  }
+}
+
 async function loadAllSpeciaux(){
   var listEl = document.getElementById('speciaux-list');
   if(!listEl) return;
@@ -5654,7 +5693,7 @@ function setSpeciauxCategory(cat, btn){
   renderSpeciauxList();
 }
 
-function renderSpeciauxList(){
+async function renderSpeciauxList(){
   var listEl = document.getElementById('speciaux-list');
   if(!listEl) return;
   var store = document.getElementById('speciaux-store-filter').value;
@@ -5676,12 +5715,24 @@ function renderSpeciauxList(){
     return;
   }
 
+  // Précharge une seule photo par catégorie présente dans les résultats —
+  // jamais une requête par article, peu importe combien de spéciaux s'affichent.
+  var neededCategories = Array.from(new Set(filtered.map(function(it){ return it.category; })));
+  var photosByCategory = {};
+  await Promise.all(neededCategories.map(async function(cat){
+    photosByCategory[cat] = await getCategoryPhoto(cat);
+  }));
+
   listEl.innerHTML = filtered.map(function(it, i){
     var idx = _allSpeciaux.indexOf(it);
     var pct = it.prixRegulier > it.prixSpecial ? Math.round((1 - it.prixSpecial/it.prixRegulier)*100) : 0;
     var emoji = CATEGORY_EMOJI[it.category] || '🛒';
+    var photoUrl = photosByCategory[it.category];
+    var visual = photoUrl
+      ? '<img src="'+photoUrl+'" style="width:44px;height:44px;border-radius:10px;object-fit:cover;flex-shrink:0;" onerror="this.replaceWith(document.createTextNode(\''+emoji+'\'))"/>'
+      : '<div style="font-size:22px;">'+emoji+'</div>';
     return '<div class="card" style="display:flex;align-items:center;gap:10px;padding:0.75rem;margin-bottom:8px;">'
-      + '<div style="font-size:22px;">'+emoji+'</div>'
+      + visual
       + '<div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+it.nom+'</div>'
       + '<div style="font-size:10px;color:var(--sub);">'+it.magasin+'</div></div>'
       + '<div style="text-align:right;">'
