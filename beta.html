@@ -8074,10 +8074,12 @@ async function analyzeCircular(input) {
     };
 
     var allPageResults = [];
+    var pagesWithNoItems = 0;
     for(var batchStart = 0; batchStart < imagesToAnalyze.length; batchStart += GEMINI_BATCH_SIZE){
       var batch = imagesToAnalyze.slice(batchStart, batchStart + GEMINI_BATCH_SIZE);
       var batchPromises = batch.map(function(imageBase64, i){ return pageProcessor(imageBase64, batchStart + i); });
       var batchResults = await Promise.all(batchPromises);
+      batchResults.forEach(function(pageItems){ if(pageItems.length === 0) pagesWithNoItems++; });
       allPageResults = allPageResults.concat(batchResults);
     }
     allPageResults.forEach(function(pageItems){ allItems = allItems.concat(pageItems); });
@@ -8093,6 +8095,14 @@ async function analyzeCircular(input) {
       return true;
     });
     if(items.length === 0) throw new Error('No items detected across ' + imagesToAnalyze.length + ' page(s)');
+
+    // Avertissement visible — avant, une page qui échouait silencieusement
+    // (limite de requêtes, erreur réseau, réponse cassée) ne laissait aucune
+    // trace pour la personne, qui se retrouvait juste avec "moins d'articles
+    // que prévu" sans savoir pourquoi. Maintenant, elle le sait et peut réessayer.
+    if(pagesWithNoItems > 0){
+      showToast('⚠️ ' + pagesWithNoItems + ' page(s) sur ' + imagesToAnalyze.length + " n'ont donné aucun résultat — réessaie le scan si le total te semble trop bas.", 6000);
+    }
 
     window._circularItems = items;
     var listEl = document.getElementById('circular-items-list');
