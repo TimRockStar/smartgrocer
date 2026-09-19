@@ -5617,39 +5617,59 @@ var CATEGORY_EMOJI = {'fruits_veg':'🥦','meat_fish':'🍗','dairy':'🥛','dry
 
 // ============================================================
 // PHOTOS RÉELLES POUR LES SPÉCIAUX — via Pexels (gratuit). Une seule
-// vraie photo par CATÉGORIE (pas par article) — largement suffisant
-// visuellement, et ça garde le nombre de requêtes minuscule (10 catégories
-// max, jamais 200/heure même avec des centaines d'articles affichés).
-// Mise en cache en mémoire ET dans localStorage, pour ne jamais redemander
-// la même catégorie deux fois, même entre deux sessions.
+// vraie photo par PRODUIT (pas par catégorie) — une recherche par
+// catégorie donnait des résultats trop approximatifs (ex: "boisson de malt
+// alcoolisé" recevait une photo de fruits, juste parce que les deux
+// tombaient dans la même case générale). Mise en cache par mot-clé simplifié,
+// pour ne jamais repayer une recherche pour un produit déjà vu.
 // ============================================================
 var PEXELS_API_KEY = 'ywExzDv21lBLOJbYrMo4WRb4GduGvWZvysqYaVgMIOSivw7tEfEEPBkY';
-var CATEGORY_PHOTO_QUERY = {
-  frozen: 'frozen food', household: 'cleaning products', dry_goods: 'pantry grocery shelf',
-  meat_fish: 'meat fish grocery', fruits_veg: 'fresh vegetables fruits', dairy: 'dairy products milk cheese',
-  bakery: 'bakery bread', beverages: 'beverages drinks bottles', snacks: 'snacks chips', other: 'grocery shopping'
-};
-var categoryPhotoCache = {};
-(function loadCategoryPhotoCache(){
-  try { categoryPhotoCache = JSON.parse(localStorage.getItem('sg_category_photos') || '{}'); } catch(e) { categoryPhotoCache = {}; }
+var productPhotoCache = {};
+(function loadProductPhotoCache(){
+  try { productPhotoCache = JSON.parse(localStorage.getItem('sg_product_photos') || '{}'); } catch(e) { productPhotoCache = {}; }
 })();
 
-async function getCategoryPhoto(category){
-  if(categoryPhotoCache[category]) return categoryPhotoCache[category];
-  var query = CATEGORY_PHOTO_QUERY[category] || 'grocery';
+// Quelques traductions FR→EN pour les mots-clés les plus fréquents dans les
+// circulaires — Pexels donne de bien meilleurs résultats en anglais.
+// Volontairement limité aux mots les plus communs plutôt qu'un dictionnaire
+// complet — pour le reste, la recherche part directement du mot français.
+var FOOD_KEYWORD_FR_EN = {
+  'bière':'beer','lait':'milk','fromage':'cheese','poulet':'chicken','boeuf':'beef','porc':'pork',
+  'crevette':'shrimp','poisson':'fish','café':'coffee','biscuit':'cookie','biscuits':'cookies',
+  'gaufre':'waffle','gaufres':'waffles','crêpe':'pancake','crêpes':'pancakes','algue':'seaweed','algues':'seaweed',
+  'pain':'bread','gâteau':'cake','gâteaux':'cakes','jus':'juice','yogourt':'yogurt','oeufs':'eggs',
+  'pâtes':'pasta','riz':'rice','soupe':'soup','sauce':'sauce','confiture':'jam','céréales':'cereal',
+  'pommes':'apples','raisins':'grapes','tomates':'tomatoes','oignons':'onions','pommes de terre':'potatoes',
+  'chocolat':'chocolate','vin':'wine','thé':'tea','miel':'honey','beurre':'butter'
+};
+
+// Extrait un mot-clé simple et pertinent d'un nom d'article de circulaire
+// souvent complexe ("bière Corona, Heineken ou Heineken Silver...") — garde
+// seulement le premier produit mentionné, avant la première virgule ou "ou".
+function extractProductKeyword(name){
+  var cleaned = String(name || '').split(/,| ou | OU |\//)[0].trim().toLowerCase();
+  // Retire les majuscules-mots-clés de circulaire ("EN SPÉCIAL", etc.) — rare mais possible
+  cleaned = cleaned.replace(/\s+/g, ' ');
+  var words = cleaned.split(' ');
+  var translated = words.map(function(w){ return FOOD_KEYWORD_FR_EN[w] || w; }).join(' ');
+  return translated || 'grocery';
+}
+
+async function getProductPhoto(keyword){
+  if(productPhotoCache[keyword]) return productPhotoCache[keyword];
   try {
-    var res = await fetch('https://api.pexels.com/v1/search?query=' + encodeURIComponent(query) + '&per_page=1&orientation=square', {
+    var res = await fetch('https://api.pexels.com/v1/search?query=' + encodeURIComponent(keyword) + '&per_page=1&orientation=square', {
       headers: { Authorization: PEXELS_API_KEY }
     });
     var data = await res.json();
     var url = data.photos && data.photos[0] ? data.photos[0].src.medium : null;
     if(url){
-      categoryPhotoCache[category] = url;
-      try { localStorage.setItem('sg_category_photos', JSON.stringify(categoryPhotoCache)); } catch(e){}
+      productPhotoCache[keyword] = url;
+      try { localStorage.setItem('sg_product_photos', JSON.stringify(productPhotoCache)); } catch(e){}
     }
     return url;
   } catch(e){
-    console.log('[Pexels] Erreur pour la catégorie ' + category + ':', e);
+    console.log('[Pexels] Erreur pour "' + keyword + '":', e);
     return null;
   }
 }
@@ -5715,19 +5735,20 @@ async function renderSpeciauxList(){
     return;
   }
 
-  // Précharge une seule photo par catégorie présente dans les résultats —
-  // jamais une requête par article, peu importe combien de spéciaux s'affichent.
-  var neededCategories = Array.from(new Set(filtered.map(function(it){ return it.category; })));
-  var photosByCategory = {};
-  await Promise.all(neededCategories.map(async function(cat){
-    photosByCategory[cat] = await getCategoryPhoto(cat);
+  // Précharge une photo par MOT-CLÉ PRODUIT unique (pas par catégorie) —
+  // plusieurs articles au nom très proche partagent souvent le même mot-clé
+  // simplifié, donc ça reste léger même avec beaucoup d'articles affichés.
+  var neededKeywords = Array.from(new Set(filtered.map(function(it){ return extractProductKeyword(it.nom); })));
+  var photosByKeyword = {};
+  await Promise.all(neededKeywords.map(async function(kw){
+    photosByKeyword[kw] = await getProductPhoto(kw);
   }));
 
   listEl.innerHTML = filtered.map(function(it, i){
     var idx = _allSpeciaux.indexOf(it);
     var pct = it.prixRegulier > it.prixSpecial ? Math.round((1 - it.prixSpecial/it.prixRegulier)*100) : 0;
     var emoji = CATEGORY_EMOJI[it.category] || '🛒';
-    var photoUrl = photosByCategory[it.category];
+    var photoUrl = photosByKeyword[extractProductKeyword(it.nom)];
     var visual = photoUrl
       ? '<img src="'+photoUrl+'" style="width:44px;height:44px;border-radius:10px;object-fit:cover;flex-shrink:0;" onerror="this.replaceWith(document.createTextNode(\''+emoji+'\'))"/>'
       : '<div style="font-size:22px;">'+emoji+'</div>';
