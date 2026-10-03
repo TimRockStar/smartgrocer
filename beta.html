@@ -3354,9 +3354,6 @@ window.trendingRecipes = FALLBACK_TRENDING_POOL.slice().sort(function(){ return 
 
 // La cle Groq n'est plus dans ce fichier : elle est gardee dans le relais Cloudflare.
 
-var _gm1='AQ.Ab8RN6LUO-P-N22W85';
-var _gm2='KIxtO9NMD0KJfkSt6ocKZ9D7aaRMsXuQ';
-var GEMINI_KEY=_gm1+_gm2;
 
 // File d'attente pour les appels de SECOURS vers Groq — si plusieurs pages
 // échouent sur Gemini en même temps (ex: quota Gemini atteint), leurs appels
@@ -3381,7 +3378,7 @@ function queueGroqCall(fn){
 async function callVisionWithFallback(base64Image, promptText, groqMaxTokens){
   // Essai 1 : Gemini (premier choix)
   try{
-    var geminiRes = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=' + GEMINI_KEY, {
+    var geminiRes = await fetch('https://relais-groq.smartgrocer.workers.dev/gemini/gemini-3.6-flash', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({
@@ -5647,7 +5644,6 @@ var CATEGORY_EMOJI = {'fruits_veg':'🥦','meat_fish':'🍗','dairy':'🥛','dry
 // tombaient dans la même case générale). Mise en cache par mot-clé simplifié,
 // pour ne jamais repayer une recherche pour un produit déjà vu.
 // ============================================================
-var PEXELS_API_KEY = 'ywExzDv21lBLOJbYrMo4WRb4GduGvWZvysqYaVgMIOSivw7tEfEEPBkY';
 var productPhotoCache = {};
 (function loadProductPhotoCache(){
   try { productPhotoCache = JSON.parse(localStorage.getItem('sg_product_photos') || '{}'); } catch(e) { productPhotoCache = {}; }
@@ -5682,9 +5678,7 @@ function extractProductKeyword(name){
 async function getProductPhoto(keyword){
   if(productPhotoCache[keyword]) return productPhotoCache[keyword];
   try {
-    var res = await fetch('https://api.pexels.com/v1/search?query=' + encodeURIComponent(keyword) + '&per_page=1&orientation=square', {
-      headers: { Authorization: PEXELS_API_KEY }
-    });
+    var res = await fetch('https://relais-groq.smartgrocer.workers.dev/pexels?query=' + encodeURIComponent(keyword) + '&per_page=1&orientation=square');
     var data = await res.json();
     var url = data.photos && data.photos[0] ? data.photos[0].src.medium : null;
     if(url){
