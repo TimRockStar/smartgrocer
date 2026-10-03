@@ -1807,9 +1807,9 @@ async function openStore(name, icon, address, mapsQuery) {
   document.getElementById('sm-specials').innerHTML = '<div style="text-align:center;padding:1rem;color:#6b7280;font-size:12px;">⏳ Chargement...</div>';
   
   try {
-    var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    var res = await fetch('https://relais-groq.smartgrocer.workers.dev', {
       method: 'POST',
-      headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
+      headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
         model: 'qwen/qwen3.8-27b',
         reasoning_effort: 'none',
@@ -2359,9 +2359,9 @@ async function showCompareModal(query) {
   document.getElementById('rm-content').innerHTML = '<div style="text-align:center;padding:1rem;color:var(--sub);">⏳ Comparaison en cours...</div>';
   
   try {
-    var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    var res = await fetch('https://relais-groq.smartgrocer.workers.dev', {
       method: 'POST',
-      headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
+      headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
         model: 'qwen/qwen3.8-27b',
         reasoning_effort: 'none',
@@ -2519,9 +2519,9 @@ async function showPricePicker(productName) {
   }
 
   try {
-    var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    var res = await fetch('https://relais-groq.smartgrocer.workers.dev', {
       method: 'POST',
-      headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
+      headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
         model: 'qwen/qwen3.8-27b',
         reasoning_effort: 'none',
@@ -2598,9 +2598,9 @@ async function loadLocalStores() {
   
   // Fallback to Groq for unknown cities
   try {
-    var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    var res = await fetch('https://relais-groq.smartgrocer.workers.dev', {
       method: 'POST',
-      headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
+      headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
         model: 'qwen/qwen3.8-27b',
         reasoning_effort: 'none',
@@ -2855,9 +2855,9 @@ async function generateNewRecipeForDay() {
   // Try up to 2 times
   for(var attempt = 0; attempt < 2; attempt++) {
     try {
-      var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      var res = await fetch('https://relais-groq.smartgrocer.workers.dev', {
         method: 'POST',
-        headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
+        headers: {'Content-Type':'application/json'},
         body: JSON.stringify({
           model: 'qwen/qwen3.8-27b',
         reasoning_effort: 'none',
@@ -2994,9 +2994,9 @@ async function generatePlannerList() {
   }
   
   try {
-    var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    var res = await fetch('https://relais-groq.smartgrocer.workers.dev', {
       method: 'POST',
-      headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
+      headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
         model: 'qwen/qwen3.8-27b',
         reasoning_effort: 'none',
@@ -3095,9 +3095,9 @@ async function genRecipesFromSpecials() {
   showToast('🔥 Génération de recettes avec les spéciaux...', 4000);
   
   try {
-    var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    var res = await fetch('https://relais-groq.smartgrocer.workers.dev', {
       method: 'POST',
-      headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
+      headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
         model: 'qwen/qwen3.8-27b',
         reasoning_effort: 'none',
@@ -3154,9 +3154,9 @@ function showHealthScoreInResults(productName) {
 
 async function getHealthScore(productName) {
   try {
-    var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    var res = await fetch('https://relais-groq.smartgrocer.workers.dev', {
       method: 'POST',
-      headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
+      headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
         model: 'qwen/qwen3.8-27b',
         reasoning_effort: 'none',
@@ -3352,11 +3352,7 @@ var FALLBACK_TRENDING_POOL = [
 ];
 window.trendingRecipes = FALLBACK_TRENDING_POOL.slice().sort(function(){ return Math.random() - 0.5; }).slice(0, 3);
 
-var _k1='gsk_iKwYCX9K';
-var _k2='ftHtPk89plW1';
-var _k3='WGdyb3FYPUj3';
-var _k4='JuATLEpTqXL7C49hHr0J';
-var GROQ_KEY=_k1+_k2+_k3+_k4;
+// La cle Groq n'est plus dans ce fichier : elle est gardee dans le relais Cloudflare.
 
 var _gm1='AQ.Ab8RN6LUO-P-N22W85';
 var _gm2='KIxtO9NMD0KJfkSt6ocKZ9D7aaRMsXuQ';
@@ -3413,9 +3409,9 @@ async function callVisionWithFallback(base64Image, promptText, groqMaxTokens){
   // même temps.
   return await queueGroqCall(async function(){
   try{
-    var groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    var groqRes = await fetch('https://relais-groq.smartgrocer.workers.dev', {
       method: 'POST',
-      headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
+      headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
         model: 'qwen/qwen3.8-27b',
         reasoning_effort: 'none',
@@ -3899,9 +3895,9 @@ async function searchProd(){
   document.getElementById('fb').style.display='none';
   document.getElementById('sg').innerHTML='';
   try{
-    const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{
+    const res=await fetch('https://relais-groq.smartgrocer.workers.dev',{
       method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
+      headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
         model:'qwen/qwen3.8-27b',reasoning_effort:'none',
         max_tokens:1000,
@@ -3966,7 +3962,7 @@ async function genAll(){
   document.getElementById('rec-ld').classList.add('on');
   document.getElementById('rec-res').style.display='none';
   try{
-    var res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},body:JSON.stringify({model:'qwen/qwen3.8-27b',reasoning_effort:'none',max_tokens:1400,messages:[{role:'user',content:'Chef cuisinier. Langue de réponse: '+(currentLang==="en"?"English":"français")+'. Ingrédients: '+ingredientsList+'. Génère 3 recettes + 4 vidéos YouTube. Utilise mesures nord-américaines (tasse, c. à thé, c. à soupe). Pour chaque recette, ajoute aussi un court conseil "zéro gaspillage" concret lié à un résidu réel de CETTE recette précise (ex: pelures, os, tiges, fanes) — si vraiment aucun résidu pertinent n\'existe pour cette recette, laisse ce champ vide plutôt que d\'inventer. JSON seulement: {"recettes":[{"emoji":"🍳","nom":"Nom recette","temps":"20 min","portions":"2 portions","match":"Utilise les ingrédients","etapes":["Étape 1","Étape 2","Étape 3","Étape 4"],"zeroWaste":"Conseil concret ou chaîne vide"}],"youtubeVideos":[{"query":"recette facile","titre":"Titre viral","channel":"Channel","views":"2.3M vues","duration":"8:42","viral":true}]}'}]})});
+    var res=await fetch('https://relais-groq.smartgrocer.workers.dev',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'qwen/qwen3.8-27b',reasoning_effort:'none',max_tokens:1400,messages:[{role:'user',content:'Chef cuisinier. Langue de réponse: '+(currentLang==="en"?"English":"français")+'. Ingrédients: '+ingredientsList+'. Génère 3 recettes + 4 vidéos YouTube. Utilise mesures nord-américaines (tasse, c. à thé, c. à soupe). Pour chaque recette, ajoute aussi un court conseil "zéro gaspillage" concret lié à un résidu réel de CETTE recette précise (ex: pelures, os, tiges, fanes) — si vraiment aucun résidu pertinent n\'existe pour cette recette, laisse ce champ vide plutôt que d\'inventer. JSON seulement: {"recettes":[{"emoji":"🍳","nom":"Nom recette","temps":"20 min","portions":"2 portions","match":"Utilise les ingrédients","etapes":["Étape 1","Étape 2","Étape 3","Étape 4"],"zeroWaste":"Conseil concret ou chaîne vide"}],"youtubeVideos":[{"query":"recette facile","titre":"Titre viral","channel":"Channel","views":"2.3M vues","duration":"8:42","viral":true}]}'}]})});
     var data=await res.json();
     var text=data.choices[0].message.content.replace(/```json|```/g,'').trim();
     var parsed=JSON.parse(text);
@@ -4326,9 +4322,9 @@ async function submitUp(){
 // de sécurité pour ce qui échapperait à cette vérification).
 async function moderateContent(text) {
   try {
-    var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    var res = await fetch('https://relais-groq.smartgrocer.workers.dev', {
       method: 'POST',
-      headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
+      headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
         model: 'qwen/qwen3.8-27b',
         reasoning_effort: 'none',
@@ -4743,9 +4739,9 @@ async function showRecipeModal(nom, emoji, recipeObj) {
         document.getElementById('rm-content').innerHTML = '<div style="text-align:center;padding:2rem;color:#6b7280;"><div style="font-size:32px;margin-bottom:8px;">⏳</div><div style="font-size:14px;">' + (currentLang === 'en' ? 'Retrying...' : 'Nouvelle tentative...') + '</div></div>';
         await new Promise(function(r){ setTimeout(r, attempt === 1 ? 1200 : 3000); });
       }
-      var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      var res = await fetch('https://relais-groq.smartgrocer.workers.dev', {
         method: 'POST',
-        headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
+        headers: {'Content-Type':'application/json'},
         body: JSON.stringify({
           model: 'qwen/qwen3.8-27b',
           reasoning_effort: 'none',
@@ -5592,9 +5588,9 @@ async function lookupBarcode(code) {
     
     // Get prices from Groq
     showToast('Comparaison des prix...');
-    var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    var res = await fetch('https://relais-groq.smartgrocer.workers.dev', {
       method: 'POST',
-      headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
+      headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
         model: 'qwen/qwen3.8-27b',
         reasoning_effort: 'none',
@@ -5830,9 +5826,9 @@ async function loadSpecials() {
     var jours = ['dim','lun','mar','mer','jeu','ven','sam'];
     var dateNow = new Date();
     var expiry = jours[(dateNow.getDay()+3)%7] + '.';
-    var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    var res = await fetch('https://relais-groq.smartgrocer.workers.dev', {
       method: 'POST',
-      headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
+      headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
         model: 'qwen/qwen3.8-27b',
         reasoning_effort: 'none',
@@ -6018,9 +6014,9 @@ async function analyzeProductPhoto(input) {
 
   try {
     var base64 = await resizeImageToBase64(file, 1200);
-    var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    var res = await fetch('https://relais-groq.smartgrocer.workers.dev', {
       method: 'POST',
-      headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
+      headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
         model: 'qwen/qwen3.8-27b',
         reasoning_effort: 'none',
@@ -6238,9 +6234,9 @@ async function loadTrendingRecipes() {
   }
   
   try {
-    var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    var res = await fetch('https://relais-groq.smartgrocer.workers.dev', {
       method: 'POST',
-      headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
+      headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
         model: 'qwen/qwen3.8-27b',
         reasoning_effort: 'none',
@@ -6656,9 +6652,9 @@ async function searchZeroWaste(){
       ? 'Une personne veut réutiliser ce résidu alimentaire au lieu de le jeter: "' + query + '". Donne 2 à 3 façons concrètes, sécuritaires et réalistes de le réutiliser à la maison (recette, remède maison, usage pratique). Si ce résidu précis n\'est vraiment pas réutilisable ou pose un risque pour la santé (ex: os cuits qui éclatent facilement, moisissure), dis-le honnêtement plutôt que d\'inventer une utilisation. Réponds UNIQUEMENT en JSON: {"items":[{"emoji":"🍌","titre":"Titre court","description":"1-2 phrases expliquant comment faire"}]}'
       : 'A person wants to reuse this food scrap instead of throwing it away: "' + query + '". Give 2 to 3 concrete, safe, realistic ways to reuse it at home (recipe, home remedy, practical use). If this specific scrap truly isn\'t reusable or poses a health risk (e.g. cooked bones that splinter easily, mold), say so honestly rather than inventing a use. Respond ONLY in JSON: {"items":[{"emoji":"🍌","titre":"Short title","description":"1-2 sentences explaining how"}]}';
 
-    var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    var res = await fetch('https://relais-groq.smartgrocer.workers.dev', {
       method: 'POST',
-      headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
+      headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
         model: 'qwen/qwen3.8-27b',
         reasoning_effort: 'none',
@@ -6742,9 +6738,9 @@ async function analyzeNutritionPhoto(input) {
   try {
     var base64 = await resizeImageToBase64(file, 1200);
     
-    var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    var res = await fetch('https://relais-groq.smartgrocer.workers.dev', {
       method: 'POST',
-      headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
+      headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
         model: 'qwen/qwen3.8-27b',
         reasoning_effort: 'none',
@@ -6778,9 +6774,9 @@ async function analyzeNutritionText() {
   showToast('⏳ Analyse en cours...', 3000);
   
   try {
-    var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    var res = await fetch('https://relais-groq.smartgrocer.workers.dev', {
       method: 'POST',
-      headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
+      headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
         model: 'qwen/qwen3.8-27b',
         reasoning_effort: 'none',
@@ -7371,9 +7367,9 @@ async function generateMenuFromSpecials() {
   var jours = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
 
   try {
-    var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    var res = await fetch('https://relais-groq.smartgrocer.workers.dev', {
       method: 'POST',
-      headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
+      headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
         model: 'qwen/qwen3.8-27b',
         reasoning_effort: 'none',
@@ -7433,9 +7429,9 @@ async function scanExpiryDate(input) {
       reader.readAsDataURL(file);
     });
 
-    var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    var res = await fetch('https://relais-groq.smartgrocer.workers.dev', {
       method: 'POST',
-      headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
+      headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
         model: 'qwen/qwen3.8-27b',
         reasoning_effort: 'none',
@@ -7953,9 +7949,9 @@ async function analyzeReceipt(input) {
   try {
     var base64 = await resizeImageToBase64(file, 2000);
 
-    var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    var res = await fetch('https://relais-groq.smartgrocer.workers.dev', {
       method: 'POST',
-      headers: {'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
+      headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
         model: 'qwen/qwen3.8-27b',
         reasoning_effort: 'none',
