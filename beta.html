@@ -1272,7 +1272,7 @@ ml('account', '2355363');
         <div style="margin-top:2rem;padding-top:1rem;border-top:1px solid var(--border);">
           <button class="btn bo" style="border-color:#dc2626;color:#dc2626;" onclick="confirmDeleteAccount()"><i class="ti ti-trash"></i> <span data-i18n="prof_delete_btn">Supprimer mon compte</span></button>
           <div style="font-size:10px;color:var(--sub);text-align:center;margin-top:6px;" data-i18n="prof_delete_hint">Efface définitivement ton compte et toutes tes données de cet appareil</div>
-          <div id="sg-build" style="font-size:10px;color:var(--sub);text-align:center;margin-top:14px;opacity:.8;">Version du 5 octobre, 17 h 50</div>
+          <div id="sg-build" style="font-size:10px;color:var(--sub);text-align:center;margin-top:14px;opacity:.8;">Version du 5 octobre, 18 h 10</div>
         </div>
         <button class="btn bo bf" onclick="showInstallInstructions()" style="margin-top:8px;"><i class="ti ti-device-mobile"></i> 📱 Installer sur mon téléphone</button>
         <button class="btn bo bf" onclick="shareAppNative()" style="margin-top:8px;border-color:#3730a3;color:#3730a3;"><i class="ti ti-share"></i> 🙌 Inviter mes amis</button>
@@ -2747,7 +2747,7 @@ function renderPlannerDays() {
       html += '<div style="display:flex;align-items:center;gap:8px;">';
       html += '<div onclick="openPlannerMeal(' + i + ')" style="display:flex;align-items:center;gap:10px;flex:1;cursor:pointer;">';
       html += '<div style="width:40px;height:40px;background:linear-gradient(135deg,#D85A30,#B84520);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;">' + safeEmoji + '</div>';
-      html += '<div style="flex:1;"><div style="font-size:13px;font-weight:600;">' + safeNom + '</div>';
+      html += '<div style="flex:1;"><div class="sg-nom" style="font-size:13px;font-weight:600;">' + safeNom + '</div>';
       html += '<div style="font-size:10px;color:var(--sub);">Appuie pour voir la recette 👆</div></div>';
       html += '</div>';
       html += '<button onclick="changePlannerDay(' + i + ')" style="background:var(--light);border:none;border-radius:8px;padding:4px 8px;font-size:10px;cursor:pointer;color:var(--sub);">Changer</button>';
@@ -8393,34 +8393,41 @@ if('serviceWorker' in navigator) {
   // ----- Noms venant des données (produits des circulaires, titres de recettes) -----
   // Ils ne sont pas dans le dictionnaire : en anglais, on les fait traduire une fois par l'IA,
   // puis on garde la traduction en mémoire sur l'appareil.
-  var NOMS_CLE = 'sg_noms_en', nomsEnCours = false, nomsMinuterie = null;
-  function lireNoms(){ try { return JSON.parse(localStorage.getItem(NOMS_CLE) || '{}'); } catch(e){ return {}; } }
-  function ecrireNoms(m){ try { var k = Object.keys(m); if(k.length > 600){ var n = {}; k.slice(-400).forEach(function(x){ n[x] = m[x]; }); m = n; } localStorage.setItem(NOMS_CLE, JSON.stringify(m)); } catch(e){} }
+  var nomsEnCours = false, nomsMinuterie = null;
+  // Mots qui trahissent un nom écrit en anglais (pour le remettre en français quand l'application est en français)
+  var MOTS_ANGLAIS = /\b(and|with|of|lbs?|cheese|chicken|beef|pork|onions?|potato(?:es)?|carrots?|garlic|butter|milk|eggs?|bread|rice|peppers?|oil|salt|sugar|flour|cream|tomato(?:es)?|lemons?|apples?|fresh|ground|chopped|sliced|cups?|cloves?|breasts?|thighs?|beans?|corn|lettuce|mushrooms?|shrimps?|salmon|honey|vinegar|broth|stock|noodles|spinach|celery|cucumbers?|parsley|basil|thyme|ginger|limes?|yogurt|bell|green|red|white|black|whole|dried|frozen|canned|juice|water|wine|roasted|baked|stew|grilled|soup|salad|pie|cake)\b/i;
+  function cleNoms(l){ return 'sg_noms_' + l; }
+  function lireNoms(l){ try { return JSON.parse(localStorage.getItem(cleNoms(l)) || '{}'); } catch(e){ return {}; } }
+  function ecrireNoms(l, m){ try { var k = Object.keys(m); if(k.length > 600){ var n = {}; k.slice(-400).forEach(function(x){ n[x] = m[x]; }); m = n; } localStorage.setItem(cleNoms(l), JSON.stringify(m)); } catch(e){} }
   function appliquerNoms(){
-    var en = langue() === 'en', memo = lireNoms(), manquants = [];
+    var l = langue(), en = l === 'en', memo = lireNoms(l), manquants = [];
     document.querySelectorAll('.sg-nom').forEach(function(el){
       var actuel = el.textContent;
-      if(el._sgEcrit !== actuel){ el._sgFr = actuel; }           // nouveau contenu écrit par l'application
-      var fr = el._sgFr || actuel, k = cle(fr);
-      var cible = fr;
+      if(el._sgEcrit !== actuel){ el._sgOrig = actuel; }          // nouveau contenu écrit par l'application
+      var orig = el._sgOrig || actuel, k = cle(orig);
+      var cible = orig;
       if(en){ if(EN[k] !== undefined) cible = EN[k]; else if(memo[k]) cible = memo[k]; else if(k && manquants.indexOf(k) < 0) manquants.push(k); }
+      else if(MOTS_ANGLAIS.test(k)){ if(memo[k]) cible = memo[k]; else if(manquants.indexOf(k) < 0) manquants.push(k); }
       el._sgEcrit = cible; if(cible !== actuel) el.textContent = cible;
     });
-    if(en && manquants.length && !nomsEnCours) demanderNoms(manquants.slice(0, 40));
+    if(manquants.length && !nomsEnCours) demanderNoms(manquants.slice(0, 40), l);
   }
-  function demanderNoms(liste){
+  function demanderNoms(liste, l){
     nomsEnCours = true;
+    var consigne = l === 'en'
+      ? 'Translate these grocery product names and recipe titles to English. If an item is already in English, return it unchanged.'
+      : 'Traduis ces noms de produits d\'épicerie et titres de recettes en français du Québec. Si un élément est déjà en français, retourne-le tel quel.';
     fetch('https://relais-groq.smartgrocer.workers.dev', { method: 'POST', headers: {'Content-Type':'application/json'},
       body: JSON.stringify({ model: 'qwen/qwen3.8-27b', reasoning_effort: 'none', max_tokens: 1500, temperature: 0,
-        messages: [{ role: 'user', content: 'Translate these French grocery product names and recipe titles to English. Keep brand names, sizes and numbers unchanged. Reply ONLY with a JSON array of strings, same order, same length: ' + JSON.stringify(liste) }] }) })
+        messages: [{ role: 'user', content: consigne + ' Keep brand names, quantities and numbers unchanged. Reply ONLY with a JSON array of strings, same order, same length: ' + JSON.stringify(liste) }] }) })
     .then(function(r){ return r.json(); })
     .then(function(d){
       var t = d.choices[0].message.content.replace(/```json|```/g,'').trim();
       var a = JSON.parse(t.slice(t.indexOf('['), t.lastIndexOf(']') + 1));
-      if(Array.isArray(a) && a.length === liste.length){ var m = lireNoms(); liste.forEach(function(fr, i){ if(typeof a[i] === 'string' && a[i].trim()) m[fr] = a[i].trim(); }); ecrireNoms(m); }
+      if(Array.isArray(a) && a.length === liste.length){ var m = lireNoms(l); liste.forEach(function(o, i){ if(typeof a[i] === 'string' && a[i].trim()) m[o] = a[i].trim(); }); ecrireNoms(l, m); }
     })
-    .catch(function(e){ console.log('Traduction des noms impossible, on garde le français :', e); })
-    .then(function(){ nomsEnCours = false; var m = lireNoms(); if(liste.some(function(fr){ return m[fr]; })) appliquerNoms(); });
+    .catch(function(e){ console.log('Traduction des noms impossible, on garde le texte d\'origine :', e); })
+    .then(function(){ nomsEnCours = false; var m = lireNoms(l); if(liste.some(function(o){ return m[o]; })) appliquerNoms(); });
   }
   function planifierNoms(){ clearTimeout(nomsMinuterie); nomsMinuterie = setTimeout(appliquerNoms, 350); }
   window.sgTraduireTout = function(){ try { parcourir(document.body); planifierNoms(); } catch(e){ console.error('Traduction:', e); } };
