@@ -8400,8 +8400,9 @@ if('serviceWorker' in navigator) {
   // Ils ne sont pas dans le dictionnaire : en anglais, on les fait traduire une fois par l'IA,
   // puis on garde la traduction en mémoire sur l'appareil.
   var nomsEnCours = false, nomsMinuterie = null;
+  var nomsPasAvant = 0;   // heure avant laquelle on n'envoie aucune demande de traduction de noms
   // Mots qui trahissent un nom écrit en anglais (pour le remettre en français quand l'application est en français)
-  var MOTS_ANGLAIS = /\b(and|with|of|lbs?|cheese|chicken|beef|pork|onions?|potato(?:es)?|carrots?|garlic|butter|milk|eggs?|bread|rice|peppers?|oil|salt|sugar|flour|cream|tomato(?:es)?|lemons?|apples?|fresh|ground|chopped|sliced|cups?|cloves?|breasts?|thighs?|beans?|corn|lettuce|mushrooms?|shrimps?|salmon|honey|vinegar|broth|stock|noodles|spinach|celery|cucumbers?|parsley|basil|thyme|ginger|limes?|yogurt|bell|green|red|white|black|whole|dried|frozen|canned|juice|water|wine|roasted|baked|stew|grilled|soup|salad|pie|cake)\b/i;
+  var MOTS_ANGLAIS = /\b(with|cheese|chicken|beef|pork|onions?|potato(?:es)?|carrots?|garlic|butter|milk|eggs?|bread|rice|peppers?|oil|salt|sugar|flour|cream|tomato(?:es)?|lemons?|apples?|fresh|ground|chopped|sliced|cloves?|breasts?|thighs?|beans?|lettuce|mushrooms?|shrimps?|salmon|honey|vinegar|broth|noodles|spinach|celery|cucumbers?|parsley|basil|thyme|ginger|yogurt|dried|frozen|canned|juice|roasted|baked|stew|grilled|soup|salad)\b/i;
   // Indices qu'un nom est encore en français (accents ou petits mots français) : sert à repérer
   // une « traduction » que l'IA a renvoyée telle quelle, pour la redemander au lieu de la garder.
   var MOTS_FRANCAIS = /[àâçéèêëîïôûùœ]|\b(de|du|des|au|aux|et|avec|sans|le|la|les)\b/i;
@@ -8418,13 +8419,14 @@ if('serviceWorker' in navigator) {
       var orig = el._sgOrig || actuel, k = cle(orig);
       var cible = orig;
       if(en){ if(EN[k] !== undefined) cible = EN[k]; else { if(memo[k]) cible = memo[k]; if(k && nonTraduit(k, memo[k]) && (essaisNoms[k] || 0) < 2 && manquants.indexOf(k) < 0) manquants.push(k); } }
-      else if(MOTS_ANGLAIS.test(k)){ if(memo[k]) cible = memo[k]; else if(manquants.indexOf(k) < 0) manquants.push(k); }
+      else if(MOTS_ANGLAIS.test(k)){ if(memo[k]) cible = memo[k]; else if((essaisNoms[k] || 0) < 2 && manquants.indexOf(k) < 0) manquants.push(k); }
       el._sgEcrit = cible; if(cible !== actuel) el.textContent = cible;
     });
-    if(manquants.length && !nomsEnCours) demanderNoms(manquants.slice(0, 40), l);
+    if(manquants.length && !nomsEnCours && Date.now() >= nomsPasAvant) demanderNoms(manquants.slice(0, 40), l);
   }
   function demanderNoms(liste, l){
     nomsEnCours = true;
+    nomsPasAvant = Date.now() + 8000;                      // au plus une demande toutes les 8 secondes
     liste.forEach(function(o){ essaisNoms[o] = (essaisNoms[o] || 0) + 1; });
     var consigne = l === 'en'
       ? 'Translate these grocery product names and recipe titles to English. Every item must come back in English: translate every French word (for example "mélange à sauce" becomes "sauce mix", "sucre blanc granulé" becomes "granulated white sugar"). Only if an item is already entirely in English, return it unchanged.'
@@ -8432,13 +8434,13 @@ if('serviceWorker' in navigator) {
     fetch('https://relais-groq.smartgrocer.workers.dev', { method: 'POST', headers: {'Content-Type':'application/json'},
       body: JSON.stringify({ model: 'qwen/qwen3.8-27b', reasoning_effort: 'none', max_tokens: 1500, temperature: 0,
         messages: [{ role: 'user', content: consigne + ' Keep brand names, quantities and numbers unchanged. Reply ONLY with a JSON array of strings, same order, same length: ' + JSON.stringify(liste) }] }) })
-    .then(function(r){ return r.json(); })
+    .then(function(r){ if(!r.ok) throw new Error('relais occupé (' + r.status + ')'); return r.json(); })
     .then(function(d){
       var t = d.choices[0].message.content.replace(/```json|```/g,'').trim();
       var a = JSON.parse(t.slice(t.indexOf('['), t.lastIndexOf(']') + 1));
       if(Array.isArray(a) && a.length === liste.length){ var m = lireNoms(l); liste.forEach(function(o, i){ if(typeof a[i] === 'string' && a[i].trim()) m[o] = a[i].trim(); }); ecrireNoms(l, m); }
     })
-    .catch(function(e){ console.log('Traduction des noms impossible, on garde le texte d\'origine :', e); })
+    .catch(function(e){ nomsPasAvant = Date.now() + 90000; console.log('Traduction des noms impossible, on garde le texte d\'origine (nouvel essai dans 90 s au plus tôt) :', e); })
     .then(function(){ nomsEnCours = false; var m = lireNoms(l); if(liste.some(function(o){ return m[o] && m[o] !== o; })) appliquerNoms(); });
   }
   function planifierNoms(){ clearTimeout(nomsMinuterie); nomsMinuterie = setTimeout(appliquerNoms, 350); }
