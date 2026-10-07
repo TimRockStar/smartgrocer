@@ -2986,7 +2986,7 @@ async function generatePlannerList() {
   realMatches.forEach(function(item){
     var alreadyInList = groceries.some(function(g){ return g.name.toLowerCase() === item.nom.toLowerCase(); });
     if(!alreadyInList){
-      groceries.push({ name: item.nom, price: item.prix, done: false, category: guessCategory(item.nom), store: item.store || '', real: true });
+      groceries.push({ name: item.nom, price: Number(item.prix) || 0, done: false, category: guessCategory(item.nom), store: item.store || '', real: true }); // le prix d'un vrai spécial peut être enregistré comme du texte
       addedCountReal++;
     }
   });
@@ -4089,6 +4089,9 @@ function toggleGr(i){groceries[i].done=!groceries[i].done;renderGr();saveData();
 function delGr(i){groceries.splice(i,1);renderGr();saveData();}
 function getGrList(){return groceries.map(g=>g.name).join(', ');}
 function renderGr(){
+  // Un prix enregistré comme du texte (ex. "3.99") faisait planter l'affichage : on le remet en nombre,
+  // y compris pour les articles déjà sauvegardés.
+  groceries.forEach(function(g){ if(g && typeof g.price !== 'number'){ g.price = Number(g.price) || 0; } });
   renderGroceryTabs();
   const toBuy = groceries.filter(g => !g.done);
   const inCart = groceries.filter(g => g.done);
