@@ -4724,6 +4724,15 @@ async function showRecipeModal(nom, emoji, recipeObj) {
     ? ('Recette complete de ' + nom + '. Reponds en francais avec ces 2 sections exactement. INGRÉDIENTS: liste avec tirets et quantites en mesures nord-americaines. PRÉPARATION: etapes numerotees.')
     : ('Full recipe for ' + nom + '. Reply in English with these 2 sections exactly. INGREDIENTS: dashed list with North American measurements. PREPARATION: numbered steps.');
 
+  // Ingrédients déjà prévus au planificateur : on les donne à l'IA pour une recette cohérente avec la liste d'épicerie.
+  var _ingHint = (recipeObj && typeof recipeObj.ingredients === 'string') ? recipeObj.ingredients.trim() : '';
+  if(_ingHint) prompt += fr ? (' Ingredients deja prevus: ' + _ingHint + '.') : (' Planned ingredients: ' + _ingHint + '.');
+
+  // Recette déjà générée plus tôt ? On la réaffiche instantanément (mémoire locale de l'appareil).
+  var _cacheKey = (fr ? 'fr|' : 'en|') + nom.toLowerCase().trim();
+  var _cachedText = '';
+  try { _cachedText = (JSON.parse(localStorage.getItem('sg_recipe_cache') || '{}')[_cacheKey] || {}).t || ''; } catch(e) {}
+
   // Jusqu'à 3 essais — Groq répond parfois sans "choices" quand il est très
   // sollicité (ex: juste après un scan de circulaires + génération de plusieurs
   // recettes d'un coup). On attend un peu plus longtemps à chaque nouvel essai.
@@ -4733,22 +4742,32 @@ async function showRecipeModal(nom, emoji, recipeObj) {
         document.getElementById('rm-content').innerHTML = '<div style="text-align:center;padding:2rem;color:#6b7280;"><div style="font-size:32px;margin-bottom:8px;">⏳</div><div style="font-size:14px;">' + (currentLang === 'en' ? 'Retrying...' : 'Nouvelle tentative...') + '</div></div>';
         await new Promise(function(r){ setTimeout(r, attempt === 1 ? 1200 : 3000); });
       }
-      var res = await fetch('https://relais-groq.smartgrocer.workers.dev', {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({
-          model: 'qwen/qwen3.8-27b',
-          reasoning_effort: 'none',
-          max_tokens: 600,
-          messages: [{role:'user',content: prompt}]
-        })
-      });
-      var data = await res.json();
-      if(!data.choices || !data.choices[0]){
-        var errMsg = (data.error && data.error.message) ? data.error.message : ('No response (HTTP ' + res.status + ')');
-        throw new Error(errMsg);
+      var recipeText = _cachedText;
+      if(!recipeText){
+        var res = await fetch('https://relais-groq.smartgrocer.workers.dev', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({
+            model: 'qwen/qwen3.8-27b',
+            reasoning_effort: 'none',
+            max_tokens: 600,
+            messages: [{role:'user',content: prompt}]
+          })
+        });
+        var data = await res.json();
+        if(!data.choices || !data.choices[0]){
+          var errMsg = (data.error && data.error.message) ? data.error.message : ('No response (HTTP ' + res.status + ')');
+          throw new Error(errMsg);
+        }
+        recipeText = data.choices[0].message.content.trim();
+        try {
+          var _c = JSON.parse(localStorage.getItem('sg_recipe_cache') || '{}');
+          _c[_cacheKey] = {t: recipeText, d: Date.now()};
+          var _ks = Object.keys(_c);
+          if(_ks.length > 60){ _ks.sort(function(x,y){ return _c[x].d - _c[y].d; }); for(var q=0;q<_ks.length-60;q++) delete _c[_ks[q]]; }
+          localStorage.setItem('sg_recipe_cache', JSON.stringify(_c));
+        } catch(e) {}
       }
-      var recipeText = data.choices[0].message.content.trim();
 
       var html = formatRecipeText(recipeText);
 
