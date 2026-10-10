@@ -7381,13 +7381,17 @@ function loadSavedPlan() {
 }
 
 
+var _menuGenerating = false;
+
 async function generateMenuFromSpecials() {
+  if(_menuGenerating) return; // évite les doubles clics
   if(_weeklySpecials.length === 0) {
     showToast('⏳ Chargement des spéciaux en cours — réessaie dans un instant!');
     loadSpecials();
     return;
   }
 
+  _menuGenerating = true;
   showToast('🔥 Génération du menu basé sur les spéciaux...', 5000);
 
   var specialsList = _weeklySpecials.map(function(s) {
@@ -7395,34 +7399,50 @@ async function generateMenuFromSpecials() {
   }).join(', ');
 
   var jours = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
+  // Une base différente par jour pour que la semaine soit variée, même si les 7 appels partent en même temps.
+  var bases = ['poulet','boeuf ou porc','poisson ou fruits de mer','pates','soupe ou mijote','plat vegetarien','plat reconfortant du dimanche'];
+  var langue = (currentLang==="en" ? "English" : "francais");
+  var t0 = Date.now();
+
+  // Génère UN repas pour UN jour (3 essais max, car Groq répond parfois sans "choices")
+  async function genererUnJour(jour, base) {
+    var prompt = 'Langue de reponse pour "repas", "special" et "ingredients": ' + langue + '. Ces produits sont EN SPECIAL cette semaine: ' + specialsList + '. Genere UN SEUL repas principal pour ' + jour + ', qui utilise si possible les produits en special pertinents pour economiser. Pour varier la semaine, base ce repas sur: ' + base + '. Donne une courte liste de 3 a 5 ingredients principaux separes par des virgules. IMPORTANT: chaque ingredient doit etre un vrai produit d\'epicerie simple et courant (ex: poulet, riz, oignon) — jamais un nom invente ou compose bizarre. IMPORTANT AUSSI: inclus la quantite necessaire directement avec chaque ingredient (ex: "poulet (2 poitrines)", "riz (1 tasse)"), jamais juste le nom seul. JSON seulement: {"jour":"' + jour + '","emoji":"🍗","repas":"Poulet roti aux herbes","special":"Utilise: poulet en special","temps":"45 min","ingredients":"poulet (2 poitrines), herbes de Provence (1 c. a table), pommes de terre (4), carottes (3)"}';
+    for(var essai = 1; essai <= 3; essai++) {
+      try {
+        var res = await fetch('https://relais-groq.smartgrocer.workers.dev', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({
+            model: 'qwen/qwen3.8-27b',
+            reasoning_effort: 'none',
+            max_tokens: 400,
+            messages: [{role:'user', content: prompt}]
+          })
+        });
+        var data = await res.json();
+        var text = data.choices[0].message.content.replace(/```json|```/g,'').trim();
+        var jsonMatch = text.match(/\{[\s\S]*\}/);
+        if(!jsonMatch) throw new Error('No JSON');
+        var item = JSON.parse(jsonMatch[0]);
+        if(!item.repas) throw new Error('Repas vide');
+        console.log('[Menu] ' + jour + ' prêt en ' + (Date.now() - t0) + ' ms (essai ' + essai + ')');
+        return item;
+      } catch(e) {
+        console.warn('[Menu] ' + jour + ' essai ' + essai + ' échoué:', e);
+        if(essai < 3) await new Promise(function(r){ setTimeout(r, 1500 * essai); });
+      }
+    }
+    return null;
+  }
 
   try {
-    var res = await fetch('https://relais-groq.smartgrocer.workers.dev', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({
-        model: 'qwen/qwen3.8-27b',
-        reasoning_effort: 'none',
-        max_tokens: 2200,
-        messages: [{role:'user',content:'Langue de reponse pour "repas", "special" et "ingredients": '+(currentLang==="en"?"English":"francais")+'. Ces produits sont EN SPECIAL cette semaine: ' + specialsList + '. Genere un menu pour 7 jours qui utilise au maximum ces produits en special pour economiser. Un repas principal par jour, avec une courte liste de 3 a 5 ingredients principaux separes par des virgules. IMPORTANT: chaque ingredient doit etre un vrai produit d\'epicerie simple et courant (ex: poulet, riz, oignon) — jamais un nom invente ou compose bizarre. IMPORTANT AUSSI: inclus la quantite necessaire directement avec chaque ingredient (ex: "poulet (2 poitrines)", "riz (1 tasse)"), jamais juste le nom seul — c\'est essentiel pour que la personne achete la bonne quantite, surtout si le meme ingredient revient dans plusieurs repas de la semaine. JSON seulement: {"menu":[{"jour":"Lundi","emoji":"🍗","repas":"Poulet roti aux herbes","special":"Utilise: poulet en special","temps":"45 min","ingredients":"poulet (2 poitrines), herbes de Provence (1 c. a table), pommes de terre (4), carottes (3)"},{"jour":"Mardi","emoji":"🥘","repas":"Soupe aux legumes","special":"Utilise: carottes en special","temps":"30 min","ingredients":"carottes (2), celeri (2 branches), oignon (1), bouillon de legumes (1L)"}]}'}]
-      })
-    });
-
-    var data = await res.json();
-    var text = data.choices[0].message.content.replace(/```json|```/g,'').trim();
-    var jsonMatch = text.match(/\{[\s\S]*\}/);
-    if(!jsonMatch) throw new Error('No JSON');
-    var parsed = JSON.parse(jsonMatch[0]);
-    var menu = parsed.menu;
-
-    // Appliquer le menu au planificateur — utilise le même format de clé à plat
-    // ("Jour-souper") que le reste de l'app, sinon les repas générés restent
-    // invisibles même s'ils sont bien sauvegardés.
-    jours.forEach(function(jour, i) {
-      var item = menu[i];
+    var reussis = 0;
+    // Les 7 jours partent en parallèle; chaque repas s'affiche dès qu'il arrive.
+    await Promise.all(jours.map(async function(jour, i) {
+      var item = await genererUnJour(jour, bases[i]);
       if(!item) return;
-      var key = jour + '-souper';
-      mealPlan[key] = {
+      // Même format de clé à plat ("Jour-souper") que le reste de l'app.
+      mealPlan[jour + '-souper'] = {
         emoji: item.emoji || '🍽️',
         nom: item.repas,
         temps: item.temps || '30 min',
@@ -7430,15 +7450,24 @@ async function generateMenuFromSpecials() {
         ingredients: item.ingredients || '',
         special: item.special || ''
       };
-    });
+      reussis++;
+      saveMealPlan();
+      renderPlannerDays();
+    }));
 
-    saveMealPlan();
-    renderPlannerDays();
-    showToast('✅ Menu basé sur les spéciaux généré! ' + menu.length + ' repas économiques!', 4000);
-
+    console.log('[Menu] Terminé en ' + (Date.now() - t0) + ' ms — ' + reussis + '/7 repas');
+    if(reussis === 7) {
+      showToast('✅ Menu basé sur les spéciaux généré! 7 repas économiques!', 4000);
+    } else if(reussis > 0) {
+      showToast('⚠️ ' + reussis + '/7 repas générés — relance pour compléter!', 4000);
+    } else {
+      showToast('⚠️ Erreur — réessaie!');
+    }
   } catch(e) {
     console.error('Erreur génération menu spéciaux:', e);
     showToast('⚠️ Erreur — réessaie!');
+  } finally {
+    _menuGenerating = false;
   }
 }
 
