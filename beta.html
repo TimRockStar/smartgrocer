@@ -2866,7 +2866,7 @@ async function generateNewRecipeForDay() {
         body: JSON.stringify({
           model: 'qwen/qwen3.8-27b',
         reasoning_effort: 'none',
-          max_tokens: 200,
+          max_tokens: 500,
           messages: [{role:'user',content:'Reponds UNIQUEMENT en JSON valide sans texte avant ou apres. Langue de reponse: '+(currentLang==="en"?"English":"francais")+'. ' + promptCore + ' ' + avoidText + ' IMPORTANT: inclus la quantite necessaire directement avec chaque ingredient (ex: "poulet (2 poitrines)", "riz (1 tasse)"), jamais juste le nom seul. JSON: {"emoji":"🍝","nom":"Nom court","ingredients":"ingredient1 (quantite), ingredient2 (quantite), ingredient3 (quantite), ingredient4 (quantite)"}'}]
         })
       });
@@ -2891,20 +2891,9 @@ async function generateNewRecipeForDay() {
     }
   }
   
-  // Final fallback - use a default recipe
-  var fallbackRecipes = [
-    {emoji:'🍝', nom:'Pâtes bolognaise', ingredients:'boeuf haché, pâtes, sauce tomate, oignons, ail'},
-    {emoji:'🍳', nom:'Omelette aux légumes', ingredients:'oeufs, poivron, oignons, fromage, sel, poivre'},
-    {emoji:'🍛', nom:'Riz au poulet économique', ingredients:'riz, bouillon de poulet, carottes, céleri, oignons'},
-    {emoji:'🌮', nom:'Tacos au boeuf', ingredients:'boeuf haché, tortillas, laitue, tomates, fromage râpé'},
-    {emoji:'🥘', nom:'Chili con carne', ingredients:'boeuf haché, haricots rouges, tomates, oignons, épices'}
-  ];
-  var fallback = fallbackRecipes[Math.floor(Math.random() * fallbackRecipes.length)];
-  mealPlan[_pendingPlannerSlot] = fallback;
-  saveMealPlan();
-  renderPlannerDays();
-  closeDayPicker();
-  showToast('🍳 ' + fallback.nom + ' ajouté!');
+  // Échec après 2 essais : on le dit clairement au lieu d'ajouter en cachette
+  // une recette générique que la personne n'a pas demandée.
+  showToast(currentLang==="en" ? '⚠️ Could not generate a recipe right now — please try again in a moment.' : '⚠️ Impossible de générer une recette pour le moment — réessaie dans un instant.', 4000);
 }
 
 
