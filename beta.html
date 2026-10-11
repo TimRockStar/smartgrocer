@@ -1457,6 +1457,11 @@ ml('account', '2355363');
           <div style="font-size:11px;color:var(--sub);margin-top:4px;" data-i18n="nut_ai_desc">L'IA identifie les aliments et calcule les calories</div>
         </div>
         <input type="file" id="nut-photo-input" accept="image/*" capture="environment" style="display:none;" onchange="analyzeNutritionPhoto(this)"/>
+        <div style="background:var(--light);border-radius:12px;padding:1rem;text-align:center;cursor:pointer;border:2px dashed var(--border);" onclick="startNutritionBarcodeScan()">
+          <div style="font-size:30px;margin-bottom:4px;">🏷️</div>
+          <div style="font-size:13px;font-weight:700;" data-i18n="nut_scan_barcode">Scanner un code-barres</div>
+          <div style="font-size:11px;color:var(--sub);margin-top:4px;" data-i18n="nut_scan_barcode_desc">Affiche les infos nutritionnelles du produit</div>
+        </div>
         <div style="display:flex;align-items:center;gap:8px;">
           <div style="flex:1;height:1px;background:var(--border);"></div>
           <div style="font-size:11px;color:var(--sub);">ou entre manuellement</div>
@@ -1503,7 +1508,7 @@ ml('account', '2355363');
             <div style="font-size:10px;color:var(--sub);">Glucides</div>
           </div>
         </div>
-        <div id="nut-details" style="font-size:12px;color:var(--sub);margin-bottom:12px;line-height:1.6;"></div>
+        <div id="nut-details" style="white-space:pre-line;font-size:12px;color:var(--sub);margin-bottom:12px;line-height:1.6;"></div>
         <button class="btn bg bf" onclick="addMealToHistory()">
           <i class="ti ti-plus"></i> Ajouter à mon journal
         </button>
@@ -1917,7 +1922,7 @@ var translations = {
     page_liste_sub: "Liste d'épicerie", page_wallet_sub: 'Portefeuille numérique',
     page_alertes_sub: 'Alertes spéciaux', page_speciaux_sub: '🔥 Spéciaux de la semaine — vrais prix',
     page_profil_sub: 'Mon profil', page_premium_sub: 'Plans & Abonnements',
-    page_planner_sub: '📅 Planificateur de repas', page_nutrition_sub: '🍎 Analyse Nutritionnelle IA',
+    page_planner_sub: '📅 Planificateur de repas', page_nutrition_sub: '🍎 Analyse Nutritionnelle IA', nut_scan_barcode: 'Scanner un code-barres', nut_scan_barcode_desc: 'Affiche les infos nutritionnelles du produit',
     // Profil
     prof_saved_toast: 'Profil sauvegardé!',
     // Premium
@@ -2057,7 +2062,7 @@ var translations = {
     page_liste_sub: 'Grocery list', page_wallet_sub: 'Digital wallet',
     page_alertes_sub: 'Price alerts', page_speciaux_sub: '🔥 Specials this week — real prices',
     page_profil_sub: 'My profile', page_premium_sub: 'Plans & Subscriptions',
-    page_planner_sub: '📅 Meal planner', page_nutrition_sub: '🍎 AI Nutrition Analysis',
+    page_planner_sub: '📅 Meal planner', page_nutrition_sub: '🍎 AI Nutrition Analysis', nut_scan_barcode: 'Scan a barcode', nut_scan_barcode_desc: 'Shows the product\'s nutrition facts',
     // Profile
     prof_saved_toast: 'Profile saved!',
     // Premium
@@ -3670,7 +3675,7 @@ function finishOb_complete() {
   // inscription, jamais revu par la suite (startTour() vérifie déjà sg_tour_done).
   setTimeout(startTour, 1200);
 }
-function goTo(p,btn){ if(p==='liste') setTimeout(checkExpiryAlerts, 100);
+function goTo(p,btn){ if(p!=='prix') window._scanForNutrition=false; if(p==='liste') setTimeout(checkExpiryAlerts, 100);
   document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
   document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
   document.getElementById(p).classList.add('active');
@@ -5397,7 +5402,7 @@ async function startNativeBarcodeScan() {
       playScanBeep();
       if(status) status.textContent = 'Code confirmé!';
       if(_quaggaTimeoutId) { clearTimeout(_quaggaTimeoutId); _quaggaTimeoutId = null; }
-      setTimeout(function() { stopRealScan(); document.getElementById('prod-in').value=''; lookupBarcode(code); }, 300);
+      setTimeout(function() { stopRealScan(); document.getElementById('prod-in').value=''; routeScannedCode(code); }, 300);
     } catch(e) {
       console.error('[Scanner] Erreur détection native:', e);
     }
@@ -5467,7 +5472,7 @@ function startQuaggaScan() {
     playScanBeep();
     if(status) status.textContent = 'Code confirmé!';
     if(_quaggaTimeoutId) { clearTimeout(_quaggaTimeoutId); _quaggaTimeoutId = null; }
-    setTimeout(function() { stopRealScan(); document.getElementById('prod-in').value=''; lookupBarcode(code); }, 300);
+    setTimeout(function() { stopRealScan(); document.getElementById('prod-in').value=''; routeScannedCode(code); }, 300);
   };
   Quagga.onDetected(_quaggaDetectedHandler);
 
@@ -6822,6 +6827,58 @@ async function analyzeNutritionText() {
     showNutritionResults(result);
   } catch(e) {
     showToast('⚠️ Erreur — réessaie!');
+  }
+}
+
+// ===== SCAN CODE-BARRES -> INFOS NUTRITIONNELLES =====
+window._scanForNutrition = false;
+function startNutritionBarcodeScan() {
+  window._scanForNutrition = true;
+  goTo('prix');
+  setTimeout(function(){ startRealScan(); }, 150);
+}
+function routeScannedCode(code) {
+  if (window._scanForNutrition) {
+    window._scanForNutrition = false;
+    lookupNutritionByBarcode(code);
+  } else {
+    lookupBarcode(code);
+  }
+}
+async function lookupNutritionByBarcode(code) {
+  var fr = currentLang !== 'en';
+  goTo('nutrition');
+  showToast(fr ? '⏳ Recherche du produit...' : '⏳ Looking up product...', 4000);
+  try {
+    var r = await fetch('https://world.openfoodfacts.org/api/v2/product/' + encodeURIComponent(code) +
+      '.json?fields=product_name,product_name_fr,product_name_en,brands,quantity,serving_size,nutriments,nutriscore_grade,nova_group,allergens_tags,ingredients_text_fr,ingredients_text_en,ingredients_text');
+    var d = await r.json();
+    if (!d || d.status !== 1 || !d.product) throw new Error('not found');
+    var pr = d.product, n = pr.nutriments || {};
+    var hasServ = n['energy-kcal_serving'] != null;
+    var sfx = hasServ ? '_serving' : '_100g';
+    var kcal = n['energy-kcal' + sfx];
+    if (kcal == null && n['energy' + sfx] != null) kcal = n['energy' + sfx] / 4.184;
+    if (kcal == null) throw new Error('no nutrition');
+    var rd = function(v){ return v == null ? 0 : Math.round(v * 10) / 10; };
+    var nom = (fr ? (pr.product_name_fr || pr.product_name) : (pr.product_name_en || pr.product_name)) || code;
+    if (pr.brands) nom += ' — ' + pr.brands.split(',')[0].trim();
+    var basis = hasServ ? (fr ? 'Par portion' : 'Per serving') + (pr.serving_size ? ' (' + pr.serving_size + ')' : '')
+                        : (fr ? 'Par 100 g' : 'Per 100 g');
+    var parts = [basis];
+    if (n['sugars' + sfx] != null) parts.push((fr ? 'Sucres ' : 'Sugars ') + rd(n['sugars' + sfx]) + 'g');
+    if (n['fiber' + sfx] != null) parts.push((fr ? 'Fibres ' : 'Fiber ') + rd(n['fiber' + sfx]) + 'g');
+    if (n['sodium' + sfx] != null) parts.push((fr ? 'Sodium ' : 'Sodium ') + Math.round(n['sodium' + sfx] * 1000) + 'mg');
+    if (pr.nutriscore_grade) parts.push('Nutri-Score ' + String(pr.nutriscore_grade).toUpperCase());
+    if (pr.nova_group) parts.push('NOVA ' + pr.nova_group);
+    var det = parts.join(' · ');
+    if (pr.allergens_tags && pr.allergens_tags.length) {
+      det += '\n⚠️ ' + (fr ? 'Allergènes: ' : 'Allergens: ') + pr.allergens_tags.map(function(a){ return a.replace(/^[a-z]{2}:/, '').replace(/-/g, ' '); }).join(', ');
+    }
+    showNutritionResults({ emoji: '🏷️', nom: nom, calories: Math.round(kcal),
+      proteines: rd(n['proteins' + sfx]), gras: rd(n['fat' + sfx]), glucides: rd(n['carbohydrates' + sfx]), details: det });
+  } catch (e) {
+    showToast(fr ? '⚠️ Produit introuvable — prends une photo de l\'étiquette ou entre-le manuellement!' : '⚠️ Product not found — take a photo of the label or enter it manually!', 5000);
   }
 }
 
