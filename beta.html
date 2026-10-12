@@ -910,6 +910,7 @@ ml('account', '2355363');
     <div id="gr-foot" style="display:none;">
       <div class="card"><div style="display:flex;justify-content:space-between;align-items:center;"><div><div style="font-size:12px;color:var(--sub);">Total estimé / Estimated total</div></div><div style="font-size:20px;font-weight:700;" id="gr-total">$0.00</div></div></div>
       <button class="btn bg bf" onclick="sendPrompt('Compare le coût total de cette liste entre IGA, Maxi, Metro et Walmart')">Comparer le total entre épiceries ↗</button>
+      <button class="btn bo bf" style="margin-top:8px;color:#dc2626;border-color:#fca5a5;" onclick="clearAllGr()">🗑️ <span data-i18n="liste_clear_all">Tout effacer</span></button>
     </div>
   </div>
 </div>
@@ -1900,7 +1901,7 @@ var translations = {
     rec_loading: '⏳ Génération en cours...',
     // Liste
     liste_title: "Liste d'épicerie", liste_placeholder: 'Ajouter un article...',
-    liste_add_btn: '+ Ajouter', liste_empty: 'Ta liste est vide!',
+    liste_add_btn: '+ Ajouter', liste_empty: 'Ta liste est vide!', liste_clear_all: 'Tout effacer',
     liste_total: 'Total estimé', liste_compare: 'Comparer le total entre épiceries ↗',
     // Social
     social_trending: '🔥 Tendances', social_recent: '🕐 Récentes', social_share: '📤 Partager',
@@ -2040,7 +2041,7 @@ var translations = {
     rec_loading: '⏳ Generating...',
     // Liste
     liste_title: 'Grocery list', liste_placeholder: 'Add an item...',
-    liste_add_btn: '+ Add', liste_empty: 'Your list is empty!',
+    liste_add_btn: '+ Add', liste_empty: 'Your list is empty!', liste_clear_all: 'Clear all',
     liste_total: 'Estimated total', liste_compare: 'Compare total between stores ↗',
     // Social
     social_trending: '🔥 Trending', social_recent: '🕐 Recent', social_share: '📤 Share',
@@ -4083,6 +4084,16 @@ function addGr(){
 }
 function toggleGr(i){groceries[i].done=!groceries[i].done;renderGr();saveData();}
 function delGr(i){groceries.splice(i,1);renderGr();saveData();}
+function clearAllGr(){
+  if(!groceries.length) return;
+  var en = (typeof currentLang !== 'undefined' && currentLang === 'en');
+  var msg = en ? 'Delete all ' + groceries.length + ' items from this list?' : 'Effacer les ' + groceries.length + ' articles de cette liste?';
+  if(!confirm(msg)) return;
+  groceries.splice(0, groceries.length);
+  renderGr();
+  saveData();
+  showToast(en ? '🗑️ List cleared' : '🗑️ Liste effacée');
+}
 function getGrList(){return groceries.map(g=>g.name).join(', ');}
 function renderGr(){
   // Un prix enregistré comme du texte (ex. "3.99") faisait planter l'affichage : on le remet en nombre,
