@@ -490,7 +490,8 @@ function submitForm(){
     alert(currentLang === 'fr' ? 'Veuillez entrer votre prénom.' : 'Please enter your first name.');
     return;
   }
-  if(!email || !email.includes('@')){
+  email = email.toLowerCase().replace(/^[<"'\s]+|[>"',;:.\s]+$/g, '');
+  if(!/^[a-z0-9._%+\-]+@[a-z0-9](?:[a-z0-9\-]*[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9\-]*[a-z0-9])?)*\.[a-z]{2,}$/.test(email) || /\.\./.test(email)){
     alert(currentLang === 'fr' ? 'Veuillez entrer un courriel valide.' : 'Please enter a valid email.');
     return;
   }

@@ -664,7 +664,8 @@ ml('account', '2355363');
       onkeydown="if(event.key==='Enter')verifyCode()"/>
     <div id="verify-error" style="display:none;color:#ef4444;font-size:12px;margin-bottom:8px;">❌ Code incorrect — réessaie!</div>
     <button onclick="verifyCode()" style="width:100%;background:linear-gradient(135deg,#1554EB,#0B2F99);color:#fff;border:none;border-radius:12px;padding:14px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px;">✅ Vérifier / Verify</button>
-    <button onclick="resendCode()" style="width:100%;background:none;border:1px solid #e5e7eb;border-radius:12px;padding:10px;font-size:12px;font-weight:700;cursor:pointer;color:#6b7280;" id="resend-btn">📤 Renvoyer le code / Resend code</button>
+    <button onclick="resendCode()" style="width:100%;background:none;border:1px solid #e5e7eb;border-radius:12px;padding:10px;font-size:12px;font-weight:700;cursor:pointer;color:#6b7280;margin-bottom:8px;" id="resend-btn">📤 Renvoyer le code / Resend code</button>
+    <button onclick="editVerifyEmail()" style="width:100%;background:none;border:1px solid #e5e7eb;border-radius:12px;padding:10px;font-size:12px;font-weight:700;cursor:pointer;color:#6b7280;" id="edit-email-btn">✏️ Modifier mon adresse / Edit my email</button>
   </div>
   <div style="font-size:11px;color:#9ca3af;">Vérifie ton dossier spam si tu ne vois pas l'email</div>
 </div>
@@ -3563,11 +3564,12 @@ function finishOb(){
     if(nameEl) nameEl.style.border='2px solid #ef4444';
     showToast('⚠️ Entre ton prénom!'); return;
   }
-  if(!emailEl || !emailEl.value.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(emailEl.value.trim())){
+  if(!emailEl || !sgCleanEmail(emailEl.value)){
     if(emailEl){emailEl.style.border='2px solid #ef4444';}
     showToast('⚠️ Entre un email valide (exemple: nom@exemple.com)!'); return;
   }
-  var emailDomain = emailEl.value.trim().split('@')[1].toLowerCase();
+  emailEl.value = sgCleanEmail(emailEl.value);
+  var emailDomain = emailEl.value.split('@')[1].toLowerCase();
   if(DISPOSABLE_EMAIL_DOMAINS.indexOf(emailDomain) !== -1){
     emailEl.style.border='2px solid #ef4444';
     showToast('⚠️ Les adresses courriel temporaires ne sont pas acceptées — utilise ta vraie adresse!');
@@ -4618,11 +4620,35 @@ function generateCode() {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
+// Nettoie et valide une adresse courriel (ASCII seulement, comme l'exige EmailJS).
+// Retourne l'adresse nettoyée, ou '' si elle est invalide.
+function sgCleanEmail(raw) {
+  var e = String(raw || '').trim().toLowerCase();
+  e = e.replace(/^[<"'\s]+|[>"',;:.\s]+$/g, '');
+  if (e.length > 254) return '';
+  if (/\.\./.test(e)) return '';
+  if (!/^[a-z0-9._%+\-]+@[a-z0-9](?:[a-z0-9\-]*[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9\-]*[a-z0-9])?)*\.[a-z]{2,}$/.test(e)) return '';
+  return e;
+}
+
+// Permet de corriger une faute de frappe dans l'adresse sans recommencer l'app
+function editVerifyEmail() {
+  document.getElementById('verification').style.display = 'none';
+  document.getElementById('onboarding').style.display = 'block';
+  var el = document.getElementById('ob-email');
+  if (el) { el.focus(); el.select(); }
+}
+
 async function sendVerificationEmail(name, email) {
+  email = sgCleanEmail(email);
+  if (!email) {
+    // Adresse invalide : on n'appelle pas EmailJS (évite l'erreur 422 « adresse corrompue »)
+    return false;
+  }
   sgVerifyCode = generateCode();
   sgVerifyEmail = email;
   sgVerifyName = name;
-  
+
   try {
     await emailjs.send('service_lleoy3h', 'template_fa18vqs', {
       to_name: name,
