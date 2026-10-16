@@ -592,8 +592,9 @@ ml('account', '2355363');
     <img src="icon-512.png" alt="SmartGrocer" width="70" height="70"/>
   </div>
   <div style="font-size:22px;font-weight:800;text-align:center;margin-bottom:6px;"><span style="color:var(--g);">Smart</span><span style="color:var(--gold);">Grocer</span></div>
+  <div class="lang-toggle" style="max-width:280px;margin:0 auto 10px;"><button class="lang-btn" id="ob-lang-fr" onclick="setLang('fr')">🇫🇷 Français</button><button class="lang-btn" id="ob-lang-en" onclick="setLang('en')">🇬🇧 English</button></div>
   <div style="font-size:13px;color:var(--sub);text-align:center;margin-bottom:1.25rem;">Crée ton compte en 30 secondes!</div>
-  
+
   <div style="background:#dcfce7;border:1px solid #86efac;border-radius:12px;padding:10px;margin-bottom:1.25rem;text-align:center;">
     <div style="font-size:13px;font-weight:700;color:#166534;">🎉 Essai Premium 30 jours gratuits!</div>
     <div style="font-size:11px;color:#166534;margin-top:3px;">Les 1000 premiers membres · Essai Premium inclus!</div>
@@ -1854,7 +1855,8 @@ async function openStore(name, icon, address, mapsQuery) {
 
 
 // ===== LANGUAGE SYSTEM =====
-var currentLang = localStorage.getItem('sg_lang') || 'fr';
+// Anglais par défaut pour les nouveaux utilisateurs; un utilisateur existant sans choix enregistré reste en français
+var currentLang = localStorage.getItem('sg_lang') || (localStorage.getItem('smartgrocer_data') ? 'fr' : 'en');
 
 // ============================================================
 // DÉTECTION TWA (app installée via Google Play) — conformité
@@ -2182,6 +2184,9 @@ function setLang(lang) {
   var le = document.getElementById('lang-en');
   if(lf) lf.className = 'lang-btn' + (fr ? ' active' : '');
   if(le) le.className = 'lang-btn' + (!fr ? ' active' : '');
+  var olf = document.getElementById('ob-lang-fr'), ole = document.getElementById('ob-lang-en');
+  if(olf) olf.className = 'lang-btn' + (fr ? ' active' : '');
+  if(ole) ole.className = 'lang-btn' + (!fr ? ' active' : '');
 
   applyTranslations();
 
@@ -6471,6 +6476,9 @@ function showApp() {
   } else {
     document.getElementById('onboarding').style.display = 'block';
     document.getElementById('app').style.display = 'none';
+    var obLf = document.getElementById('ob-lang-fr'), obLe = document.getElementById('ob-lang-en');
+    if(obLf) obLf.className = 'lang-btn' + (currentLang !== 'en' ? ' active' : '');
+    if(obLe) obLe.className = 'lang-btn' + (currentLang === 'en' ? ' active' : '');
     detectLocation();
     console.log('No data - showing onboarding');
   }
