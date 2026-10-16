@@ -1219,6 +1219,13 @@ ml('account', '2355363');
     </div>
     <div class="sl">Langue / Language</div>
     <div class="lang-toggle"><button class="lang-btn active" id="lang-fr" onclick="setLang('fr')">🇫🇷 Français</button><button class="lang-btn" id="lang-en" onclick="setLang('en')">🇬🇧 English</button></div>
+    <div id="sg-notif-card" style="display:none;margin-bottom:1rem;">
+      <div class="sl" id="sg-notif-title"></div>
+      <div class="card" style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+        <div style="font-size:12px;color:var(--sub);" id="sg-notif-desc"></div>
+        <button type="button" class="btn bg" id="sg-notif-btn" onclick="sgToggleNotifs()" style="flex-shrink:0;padding:8px 12px;font-size:12px;"></button>
+      </div>
+    </div>
     <div class="sl">Mon profil</div>
     <div class="card">
       <div style="display:flex;flex-direction:column;gap:8px;">
@@ -2196,6 +2203,7 @@ function setLang(lang) {
   if(typeof renderSpeciauxList === 'function') renderSpeciauxList();
   if(typeof renderAlerts === 'function') renderAlerts();
   if(typeof updatePointsUI === 'function') updatePointsUI();
+  if(typeof sgSyncLangNotifs === 'function') sgSyncLangNotifs();
 
   showToast(fr ? '🇫🇷 Français activé' : '🇬🇧 English activated');
 }
@@ -7699,6 +7707,7 @@ window.addEventListener('load', function() {
   handleStripeSuccess();
   syncPremiumStatus(); // vérifie le vrai statut chez Stripe (multi-appareils)
   initPushNotifications();
+  if(typeof sgInitNotifs === 'function') sgInitNotifs(); // notifications web (Android / navigateur)
 });
 
 // ============================================================
@@ -8486,6 +8495,120 @@ if('serviceWorker' in navigator) {
       .then(function(reg) { console.log('SW registered:', reg.scope); })
       .catch(function(err) { console.log('SW error:', err); });
   });
+}
+</script>
+
+<script>
+/* ===== NOTIFICATIONS WEB (app Android et navigateur) =====
+   Le bouton du profil n'apparaît que si le téléphone sait recevoir des notifications
+   ET que le serveur de notifications répond. Sinon, rien n'est affiché.
+   La permission n'est demandée que quand la personne appuie sur le bouton.
+   Le serveur ne garde que l'adresse technique d'envoi du téléphone et la langue. */
+var SG_PUSH_URL = 'https://smartgrocer-push.smartgrocer.workers.dev';
+var sgPushCle = null;
+
+function sgUrlB64(b64) {
+  var rempli = (b64 + '='.repeat((4 - b64.length % 4) % 4)).replace(/-/g, '+').replace(/_/g, '/');
+  var brut = atob(rempli), sortie = new Uint8Array(brut.length);
+  for (var i = 0; i < brut.length; i++) sortie[i] = brut.charCodeAt(i);
+  return sortie;
+}
+
+// Garde la langue pour que le service worker affiche la notification dans la bonne langue.
+async function sgSauverLangue() {
+  try {
+    var c = await caches.open('sg-prefs');
+    await c.put('/sg-lang', new Response(currentLang === 'en' ? 'en' : 'fr'));
+  } catch (e) {}
+}
+
+async function sgEnvoyerAbonnement(sub) {
+  var r = await fetch(SG_PUSH_URL + '/subscribe', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ subscription: { endpoint: sub.endpoint }, lang: currentLang === 'en' ? 'en' : 'fr' })
+  });
+  if (!r.ok) throw new Error('abonnement refusé (' + r.status + ')');
+}
+
+async function sgRenderNotifs() {
+  var carte = document.getElementById('sg-notif-card');
+  if (!carte || !sgPushCle) return;
+  var fr = currentLang !== 'en', actif = false;
+  try {
+    var reg = await navigator.serviceWorker.ready;
+    actif = !!(await reg.pushManager.getSubscription()) && Notification.permission === 'granted';
+  } catch (e) {}
+  document.getElementById('sg-notif-title').textContent = 'Notifications';
+  document.getElementById('sg-notif-desc').textContent = fr
+    ? 'Un rappel chaque jeudi quand les nouveaux circulaires sont là.'
+    : 'A reminder every Thursday when the new flyers are in.';
+  var bouton = document.getElementById('sg-notif-btn');
+  bouton.textContent = actif ? (fr ? 'Désactiver' : 'Turn off') : (fr ? 'Activer' : 'Turn on');
+  carte.style.display = 'block';
+}
+
+async function sgToggleNotifs() {
+  var fr = currentLang !== 'en';
+  try {
+    var reg = await navigator.serviceWorker.ready;
+    var sub = await reg.pushManager.getSubscription();
+    if (sub) {
+      var adresse = sub.endpoint;
+      await sub.unsubscribe();
+      try { await fetch(SG_PUSH_URL + '/unsubscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ endpoint: adresse }) }); } catch (e) {}
+      showToast(fr ? '🔕 Notifications désactivées' : '🔕 Notifications turned off');
+    } else {
+      if (Notification.permission === 'denied') {
+        showToast(fr ? 'Les notifications sont bloquées dans les réglages du téléphone.' : 'Notifications are blocked in your phone settings.', 4000);
+        return;
+      }
+      var permission = await Notification.requestPermission();
+      if (permission !== 'granted') {
+        showToast(fr ? 'Notifications non activées' : 'Notifications not turned on');
+        return;
+      }
+      sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: sgUrlB64(sgPushCle) });
+      try {
+        await sgEnvoyerAbonnement(sub);
+      } catch (e) {
+        await sub.unsubscribe();
+        throw e;
+      }
+      await sgSauverLangue();
+      showToast(fr ? '🔔 Notifications activées' : '🔔 Notifications turned on');
+    }
+  } catch (e) {
+    console.log('[Notifications web] erreur', e);
+    showToast(fr ? '⚠️ Impossible pour le moment — réessaie plus tard.' : '⚠️ Not possible right now — please try again later.', 4000);
+  }
+  sgRenderNotifs();
+}
+
+// Appelée quand la langue change : met à jour le texte du bouton et la langue gardée côté serveur.
+async function sgSyncLangNotifs() {
+  if (!sgPushCle) return;
+  sgRenderNotifs();
+  try {
+    var reg = await navigator.serviceWorker.ready;
+    var sub = await reg.pushManager.getSubscription();
+    if (sub && Notification.permission === 'granted') { await sgSauverLangue(); await sgEnvoyerAbonnement(sub); }
+  } catch (e) {}
+}
+
+async function sgInitNotifs() {
+  try {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) return;
+    if (typeof window.Capacitor !== 'undefined') return; // iOS : autre chemin (Capacitor)
+    var r = await fetch(SG_PUSH_URL + '/vapid-key');
+    if (!r.ok) return;
+    var d = await r.json();
+    if (!d || !d.publicKey) return;
+    sgPushCle = d.publicKey;
+    await sgSauverLangue();
+    sgRenderNotifs();
+  } catch (e) {
+    console.log('[Notifications web] indisponibles', e);
+  }
 }
 </script>
 
