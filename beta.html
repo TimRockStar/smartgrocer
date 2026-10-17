@@ -1841,7 +1841,7 @@ async function openStore(name, icon, address, mapsQuery) {
       })
     });
     var data = await res.json();
-    var text = data.choices[0].message.content.replace(/```json|```/g,'').trim();
+    var _msg = data.choices[0].message; var text = (_msg.content || _msg.reasoning || '').replace(/```json|```/g,'').trim();
     var jsonMatch = text.match(/\[[\s\S]*\]/);
     if(!jsonMatch) throw new Error('No JSON');
     var specials = JSON.parse(jsonMatch[0]);
@@ -2593,7 +2593,9 @@ async function showPricePicker(productName) {
       + '<div style="font-size:10px;color:var(--sub);text-align:center;margin-top:6px;">⚠️ Prix estimés par IA — aucune donnée réelle trouvée pour ce produit</div>';
     
   } catch(e) {
-    document.getElementById('pp-prices-list').innerHTML = '<div style="text-align:center;padding:1rem;color:var(--sub);font-size:12px;">Prix non disponibles</div>';
+    console.log('Prix IA indisponibles:', e);
+    var _nomRetry = String(productName).replace(/\\/g,'').replace(/'/g,"\\'");
+    document.getElementById('pp-prices-list').innerHTML = '<div style="text-align:center;padding:1rem;color:var(--sub);font-size:12px;">Prix non disponibles / Prices unavailable<br><button class="btn bg" style="margin-top:8px;" onclick="showPricePicker(\'' + _nomRetry + '\')">🔄 Réessayer / Retry</button></div>';
   }
 }
 
@@ -6206,33 +6208,46 @@ function initVoice() {
   if('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
     var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     recognition = new SpeechRecognition();
-    recognition.continuous = false;
-    recognition.interimResults = false;
-    recognition.lang = 'fr-CA';
-    
-    recognition.onresult = function(e) {
-      var transcript = e.results[0][0].transcript;
-      if(currentVoiceTarget) {
-        var el = document.getElementById(currentVoiceTarget);
+    // Le micro attend maintenant ~1,8 s de silence avant de s'arrêter, pour laisser finir les phrases
+    // (ex. « sucre de noix de coco » ne se coupe plus à « sucre »).
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = (typeof currentLang !== 'undefined' && currentLang === 'en') ? 'en-CA' : 'fr-CA';
+    var _voixFinal = '', _voixTimer = null;
+    var _voixTerminer = function() {
+      if(_voixTimer) { clearTimeout(_voixTimer); _voixTimer = null; }
+      var transcript = _voixFinal.trim();
+      var cible = currentVoiceTarget;
+      _voixFinal = '';
+      if(cible && transcript) {
+        var el = document.getElementById(cible);
         if(el) {
           el.value = transcript;
           el.focus();
-          // Trigger the right action based on target
-          if(currentVoiceTarget === 'prod-in') searchProd();
-          else if(currentVoiceTarget === 'ing-in') addIng();
-          else if(currentVoiceTarget === 'gr-in') addGr();
+          if(cible === 'prod-in') searchProd();
+          else if(cible === 'ing-in') addIng();
+          else if(cible === 'gr-in') addGr();
         }
       }
       stopVoice();
     };
-    
+
+    recognition.onresult = function(e) {
+      var texte = '';
+      for(var i = 0; i < e.results.length; i++) texte += e.results[i][0].transcript + ' ';
+      _voixFinal = texte;
+      if(currentVoiceTarget) { var champ = document.getElementById(currentVoiceTarget); if(champ) champ.value = texte.trim(); }
+      if(_voixTimer) clearTimeout(_voixTimer);
+      _voixTimer = setTimeout(_voixTerminer, 1800);
+    };
+
     recognition.onerror = function(e) {
       showToast('🎤 Erreur micro — réessaie!');
       stopVoice();
     };
     
     recognition.onend = function() {
-      stopVoice();
+      if(_voixFinal.trim()) _voixTerminer(); else stopVoice();
     };
     
     return true;
