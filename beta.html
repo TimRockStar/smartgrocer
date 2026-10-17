@@ -905,7 +905,7 @@ ml('account', '2355363');
     </div>
   </div>
   <div class="px">
-    <div id="grocery-tabs" style="display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;margin-bottom:10px;scrollbar-width:none;"></div>
+    <div id="grocery-tabs" style="display:flex;flex-wrap:wrap;gap:6px;padding-bottom:8px;margin-bottom:10px;"></div>
     <div class="limit-bar" id="list-limit-bar" style="display:none;"><div style="font-size:11px;flex:1;">Articles (max 10 gratuit)</div><div style="font-size:11px;font-weight:700;" id="list-count-text">0/10</div></div>
     <div class="sr"><input type="text" id="gr-in" placeholder="Ajouter un article / Add item..." data-i18n="liste_placeholder"/><button class="btn bg" id="voice-gr-in" onclick="startVoice('gr-in')" style="padding:8px 12px;font-size:18px;line-height:1;">🎤</button><button class="btn bg" onclick="addGr()"><i class="ti ti-plus"></i> <span data-i18n="liste_add_btn">Ajouter</span></button></div>
     <button class="btn bo" style="width:100%;margin-bottom:10px;" onclick="openReceiptScanner()">🧾 Scanner un reçu / Scan a receipt</button>
@@ -2928,6 +2928,7 @@ async function generateNewRecipeForDay() {
 
 async function generatePlannerList() {
   switchGroceryList('default'); // les ingrédients générés vont toujours dans la liste fixe, peu importe l'onglet actif
+  var startIdx = groceries.length; // pour ne trier par magasin que les nouveaux articles
   var keys = Object.keys(mealPlan);
   if(keys.length === 0) {
     showToast('⚠️ Ajoute au moins un repas à ton plan!');
@@ -3010,6 +3011,7 @@ async function generatePlannerList() {
   });
 
   if(stillNeeded.length === 0){
+    routeToStoreLists(startIdx);
     renderGr(); saveData();
     showToast('🛒 ' + addedCountReal + ' ingrédients ajoutés — tous trouvés dans tes vrais spéciaux! 🔥');
     goTo('liste', null);
@@ -3068,6 +3070,7 @@ async function generatePlannerList() {
       }
     });
     
+    routeToStoreLists(startIdx);
     renderGr();
     saveData();
     showToast('🛒 ' + addedCount + ' ingrédients ajoutés' + (addedCountReal > 0 ? ' (' + addedCountReal + ' à vrais prix spéciaux 🔥)' : ' avec les meilleurs prix!'));
@@ -3085,6 +3088,7 @@ async function generatePlannerList() {
         addedCount++;
       }
     });
+    routeToStoreLists(startIdx);
     renderGr();
     saveData();
     showToast('🛒 ' + addedCount + ' ingrédients ajoutés (prix non disponibles)');
@@ -3506,6 +3510,33 @@ function deleteGroceryList(id, evt){
   delete allListsData[id];
   if(activeListId === id) switchGroceryList('default');
   else { renderGroceryTabs(); saveData(); }
+}
+
+// Après une génération, envoie chaque nouvel ingrédient dans la liste qui porte
+// le nom de son épicerie (ex: store "Maxi" → liste "Maxi"). Comparaison sans
+// accents ni majuscules. Ce qui n'a pas d'épicerie, ou dont l'épicerie n'a pas
+// de liste, reste dans "Recettes générées". startIdx = longueur de la liste
+// fixe AVANT la génération, pour ne jamais déplacer les anciens articles.
+function routeToStoreLists(startIdx){
+  function norm(s){
+    return (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]/g, '');
+  }
+  var byStore = {};
+  groceryLists.forEach(function(l){ if(!l.fixed) byStore[norm(l.name)] = l.id; });
+  var src = allListsData['default'];
+  var moved = 0;
+  for(var i = src.length - 1; i >= startIdx; i--){
+    var item = src[i];
+    var targetId = item.store ? byStore[norm(item.store)] : null;
+    if(!targetId) continue;
+    if(!allListsData[targetId]) allListsData[targetId] = [];
+    var target = allListsData[targetId];
+    var dup = target.some(function(g){ return g.name.toLowerCase() === item.name.toLowerCase(); });
+    if(!dup) target.push(item);
+    src.splice(i, 1); // en place : "groceries" pointe sur ce même tableau
+    moved++;
+  }
+  return moved;
 }
 
 function renderGroceryTabs(){
