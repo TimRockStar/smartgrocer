@@ -1977,7 +1977,7 @@ var translations = {
     circ_title: '📰 Scanner une circulaire', circ_subtitle: 'Ajoute les vrais spéciaux de la semaine',
     circ_store_label: '🏪 Épicerie de cette circulaire',
     circ_hint: "💡 Photo papier, ou capture d'écran de Flipp/Reebee — une page à la fois",
-    scan_choose_pdf: "Importer un PDF de circulaire", circ_hint_pdf: "💡 Le bouton PDF t'amène directement dans tes fichiers — pratique si tu as téléchargé la circulaire depuis le site de l'épicerie",
+    scan_choose_pdf: "Importer un PDF de circulaire", circ_hint_pdf: "💡 Le bouton PDF t'amène directement dans tes fichiers — pratique si tu as téléchargé la circulaire depuis le site de l'épicerie", circ_how_btn: "❓ Comment faire ?", circ_how_title: "Ajouter les circulaires de ta région", circ_how_1: "1. Trouve la circulaire de ta ville : sur le site de ton épicerie (IGA, Maxi, Metro…) ou dans Flipp / Reebee.", circ_how_2: "2. Choisis ta méthode :", circ_how_pdf: "📄 PDF (le plus précis) : télécharge la circulaire en PDF, puis touche « Importer un PDF de circulaire ».", circ_how_shot: "🖼️ Capture d'écran : fais une capture de chaque page avec les boutons de ton téléphone, puis « Choisir depuis la galerie ».", circ_how_photo: "📷 Circulaire papier : touche « Prendre une photo ».", circ_how_3: "3. Choisis l'épicerie, puis envoie une page à la fois. L'IA trouve les rabais pour toi.", circ_how_tip: "💡 Astuce : tu peux supprimer ensuite les PDF (dossier Téléchargements) ou les captures (Galerie) pour libérer de l'espace. Sur ordinateur, ça marche aussi : ouvre smartgrocer.health.",
     circ_analyzing: 'Analyse de la circulaire en cours...', circ_analyzing_sub: "L'IA extrait les spéciaux et leurs prix",
     circ_detected: '🔥 Spéciaux détectés', circ_confirm_btn: '✅ Confirmer et partager ces spéciaux',
     // Reçu
@@ -2118,7 +2118,7 @@ var translations = {
     circ_title: '📰 Scan a flyer', circ_subtitle: "Add this week's real specials",
     circ_store_label: '🏪 Store for this flyer',
     circ_hint: '💡 Paper photo, or Flipp/Reebee screenshot — one page at a time',
-    scan_choose_pdf: 'Import a flyer PDF', circ_hint_pdf: "💡 The PDF button takes you straight to your files — handy if you downloaded the flyer from the store's website",
+    scan_choose_pdf: 'Import a flyer PDF', circ_hint_pdf: "💡 The PDF button takes you straight to your files — handy if you downloaded the flyer from the store's website", circ_how_btn: "❓ How to?", circ_how_title: "Add the flyers for your area", circ_how_1: "1. Find your city's flyer: on your grocery store's website (IGA, Maxi, Metro…) or in Flipp / Reebee.", circ_how_2: "2. Pick your method:", circ_how_pdf: "📄 PDF (most accurate): download the flyer as a PDF, then tap “Import a flyer PDF”.", circ_how_shot: "🖼️ Screenshot: take a screenshot of each page with your phone's buttons, then “Choose from gallery”.", circ_how_photo: "📷 Paper flyer: tap “Take a photo”.", circ_how_3: "3. Pick the store, then send one page at a time. The AI finds the deals for you.", circ_how_tip: "💡 Tip: you can delete the PDFs (Downloads folder) or screenshots (Gallery) afterwards to free up space. It also works on a computer: open smartgrocer.health.",
     circ_analyzing: 'Analyzing flyer...', circ_analyzing_sub: 'AI is extracting specials and prices',
     circ_detected: '🔥 Specials detected', circ_confirm_btn: '✅ Confirm and share these specials',
     // Receipt
@@ -7987,6 +7987,13 @@ function handleStripeSuccess() {
         <input type="file" id="circular-pdf-input" accept="application/pdf" style="display:none;" onchange="analyzeCircular(this)"/>
         <div style="font-size:11px;color:var(--sub);text-align:center;" data-i18n="circ_hint">💡 Photo papier, ou capture d'écran de Flipp/Reebee — une page à la fois</div>
         <div style="font-size:11px;color:var(--sub);text-align:center;margin-top:4px;" data-i18n="circ_hint_pdf">💡 Le bouton PDF t'amène directement dans tes fichiers — pratique si tu as téléchargé la circulaire depuis le site de l'épicerie</div>
+        <div style="text-align:center;margin-top:8px;"><button type="button" onclick="var b=document.getElementById('circ-how');b.style.display=b.style.display==='none'?'block':'none';" style="background:none;border:none;color:var(--gold);font-weight:700;font-size:13px;cursor:pointer;" data-i18n="circ_how_btn">❓ Comment faire ?</button></div>
+        <div id="circ-how" style="display:none;background:var(--gold-bg);border-radius:12px;padding:0.85rem;margin-top:6px;font-size:12px;line-height:1.5;text-align:left;">
+          <div style="font-weight:700;margin-bottom:6px;" data-i18n="circ_how_title">Ajouter les circulaires de ta région</div>
+          <div data-i18n="circ_how_1"></div><div data-i18n="circ_how_2" style="margin-top:4px;"></div>
+          <div style="margin:2px 0 2px 8px;" data-i18n="circ_how_pdf"></div><div style="margin:2px 0 2px 8px;" data-i18n="circ_how_shot"></div><div style="margin:2px 0 2px 8px;" data-i18n="circ_how_photo"></div>
+          <div style="margin-top:4px;" data-i18n="circ_how_3"></div><div style="margin-top:6px;color:var(--sub);" data-i18n="circ_how_tip"></div>
+        </div>
       </div>
       <div id="circular-loading" style="display:none;text-align:center;padding:2rem;">
         <div style="font-size:32px;margin-bottom:8px;">⏳</div>

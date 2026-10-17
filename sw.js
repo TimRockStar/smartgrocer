@@ -10,7 +10,7 @@
 // mise à jour de ce fichier — c'est ce qui force les téléphones des
 // utilisateurs à vraiment recharger la dernière version de l'app, sans
 // qu'ils aient besoin de vider leur cache manuellement.
-const CACHE_NAME = 'smartgrocer-v3';
+const CACHE_NAME = 'smartgrocer-v4';
 // Petit cache à part qui garde la langue choisie (pour les notifications). Ne jamais l'effacer.
 const PREFS_CACHE = 'sg-prefs';
 const APP_SHELL = ['./', './beta.html'];
@@ -58,8 +58,8 @@ self.addEventListener('push', function(event) {
         var en = lang === 'en';
         return self.registration.showNotification('SmartGrocer', {
           body: en
-            ? 'New week, new deals! Open the app to see this week’s flyers and plan your meals.'
-            : 'Nouvelle semaine, nouveaux rabais! Ouvre l’app pour voir les circulaires et planifier tes repas.',
+            ? 'New week! Download your area’s flyers and plan your meals with SmartGrocer.'
+            : 'Nouvelle semaine! Télécharge les circulaires de ta région et planifie tes repas avec SmartGrocer.',
           icon: 'icon-192.png',
           badge: 'icon-192.png',
           tag: 'sg-hebdo',
