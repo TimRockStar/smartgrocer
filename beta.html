@@ -2996,6 +2996,12 @@ async function generatePlannerList() {
   var localStores = window._localStores 
     ? window._localStores.map(function(s){return s.nom;}).join(', ') 
     : 'IGA, Maxi, Metro, Walmart';
+  // Les listes créées par la personne (Walmart, Maxi...) comptent aussi comme magasins,
+  // sauf celles qui ne sont pas des épiceries (pharmacie, recettes, etc.).
+  groceryLists.forEach(function(l){
+    if(l.fixed || /pharm|picerie|grocer|recette|recipe/i.test(l.name)) return;
+    if(localStores.toLowerCase().indexOf(l.name.toLowerCase()) === -1) localStores += ', ' + l.name;
+  });
   
   showToast('⏳ Recherche des meilleurs prix...', 5000);
 
@@ -3523,11 +3529,23 @@ function routeToStoreLists(startIdx){
   }
   var byStore = {};
   groceryLists.forEach(function(l){ if(!l.fixed) byStore[norm(l.name)] = l.id; });
+  // exact d'abord; sinon le nom de la liste est contenu dans celui du magasin (ou l'inverse),
+  // en prenant le nom de liste le plus long (ex: "Super C" plutôt que "C").
+  function findListId(store){
+    var s = norm(store);
+    if(!s) return null;
+    if(byStore[s]) return byStore[s];
+    var best = null, bestLen = 0;
+    Object.keys(byStore).forEach(function(k){
+      if(k.length >= 3 && k.length > bestLen && (s.indexOf(k) !== -1 || k.indexOf(s) !== -1)){ best = byStore[k]; bestLen = k.length; }
+    });
+    return best;
+  }
   var src = allListsData['default'];
   var moved = 0;
   for(var i = src.length - 1; i >= startIdx; i--){
     var item = src[i];
-    var targetId = item.store ? byStore[norm(item.store)] : null;
+    var targetId = findListId(item.store);
     if(!targetId) continue;
     if(!allListsData[targetId]) allListsData[targetId] = [];
     var target = allListsData[targetId];
