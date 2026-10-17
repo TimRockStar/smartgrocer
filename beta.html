@@ -3025,57 +3025,60 @@ async function generatePlannerList() {
   }
   
   try {
-    var res = await fetch('https://relais-groq.smartgrocer.workers.dev', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({
-        model: 'qwen/qwen3.8-27b',
-        reasoning_effort: 'none',
-        max_tokens: 2500,
-        messages: [{role:'user',content:'Reponds UNIQUEMENT en JSON valide. Langue pour "nom": '+(currentLang==="en"?"English":"francais")+'. Pour CHAQUE ingredient de la liste ci-dessous, sans exception, donne le prix le moins cher, l epicerie, ET la bonne categorie d epicerie — ne saute aucun ingredient. Categories valides (utilise EXACTEMENT une de ces valeurs): frozen, meat_fish, fruits_veg, dairy, bakery, beverages, snacks, dry_goods, household, other. Epiceries disponibles: '+localStores+'. Ingredients: '+stillNeeded.slice(0,30).join(', ')+'. Format strict: [{"nom":"boeuf hache","prix":6.99,"store":"Maxi","categorie":"meat_fish"},{"nom":"olives noires","prix":3.49,"store":"IGA","categorie":"dry_goods"}]'}]
-      })
-    });
-    
-    var data = await res.json();
-    if(!data.choices || !data.choices[0]) throw new Error('No response');
-    
-    var text = data.choices[0].message.content.replace(/```json|```/g,'').trim();
-    var jsonMatch = text.match(/\[[\s\S]*\]/);
-    if(!jsonMatch) throw new Error('No JSON array found: ' + text.substring(0,100));
-    
-    var priceData = JSON.parse(jsonMatch[0]);
-    var addedCount = addedCountReal;
-    
     var VALID_CATS = ['frozen','meat_fish','fruits_veg','dairy','bakery','beverages','snacks','dry_goods','household','other'];
-    priceData.forEach(function(item) {
-      if(!item.nom || !item.prix) return;
-      var alreadyInList = groceries.some(function(g){ return g.name.toLowerCase() === item.nom.toLowerCase(); });
-      if(!alreadyInList) {
-        // L'IA fournit directement la bonne catégorie — beaucoup plus fiable que
-        // deviner après coup avec des mots-clés. On garde guessCategory() en
-        // filet de sécurité seulement si l'IA n'a rien fourni de valide.
-        var cat = (item.categorie && VALID_CATS.indexOf(item.categorie) !== -1) ? item.categorie : guessCategory(item.nom);
-        groceries.push({
-          name: item.nom, 
-          price: parseFloat(item.prix) || 0, 
-          done: false, 
-          category: cat, 
-          store: item.store || ''
-        });
-        addedCount++;
+
+    // Par petits groupes : un seul gros appel (30 ingrédients max, le reste jamais pricé)
+    // laissait des articles à 0 $. Chaque groupe est retenté une fois s'il échoue.
+    async function priceBatch(batch){
+      var numbered = batch.map(function(ing, k){ return (k + 1) + '. ' + ing; }).join('\n');
+      var res = await fetch('https://relais-groq.smartgrocer.workers.dev', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+          model: 'qwen/qwen3.8-27b',
+          reasoning_effort: 'none',
+          max_tokens: 1500,
+          messages: [{role:'user',content:'Reponds UNIQUEMENT en JSON valide. Pour CHAQUE ingredient numerote ci-dessous, sans exception, donne le prix le moins cher (nombre en dollars, jamais 0), l epicerie (UN seul nom parmi: '+localStores+') ET la bonne categorie d epicerie (EXACTEMENT une de ces valeurs: frozen, meat_fish, fruits_veg, dairy, bakery, beverages, snacks, dry_goods, household, other). Ingredients:\n'+numbered+'\nFormat strict, un objet par ingredient avec son numero: [{"i":1,"prix":6.99,"store":"Maxi","categorie":"meat_fish"},{"i":2,"prix":3.49,"store":"IGA","categorie":"dry_goods"}]'}]
+        })
+      });
+      var data = await res.json();
+      if(!data.choices || !data.choices[0]) throw new Error('No response');
+      var text = data.choices[0].message.content.replace(/```json|```/g,'').trim();
+      var jsonMatch = text.match(/\[[\s\S]*\]/);
+      if(!jsonMatch) throw new Error('No JSON array found: ' + text.substring(0,100));
+      return JSON.parse(jsonMatch[0]);
+    }
+
+    var priced = {}; // ingrédient (texte d'origine) -> {prix, store, categorie}
+    var BATCH = 12;
+    for(var b = 0; b < stillNeeded.length; b += BATCH){
+      var batch = stillNeeded.slice(b, b + BATCH);
+      var arr = [];
+      try { arr = await priceBatch(batch); }
+      catch(e1){
+        console.log('Planner price batch error (nouvel essai):', e1);
+        try { arr = await priceBatch(batch); } catch(e2){ console.log('Planner price batch abandonné:', e2); arr = []; }
       }
-    });
-    
-    // Add any remaining ingredients not returned by Groq
-    stillNeeded.forEach(function(ing) {
+      // On retrouve l'ingrédient par son NUMÉRO, pas par son nom : l'IA reformule souvent
+      // le nom, et l'ancien appariement par nom ajoutait l'ingrédient une 2e fois à 0 $.
+      arr.forEach(function(item){
+        var ing = batch[(Number(item && item.i) || 0) - 1];
+        var prix = parseFloat(item && item.prix);
+        if(ing && prix > 0) priced[ing] = { prix: prix, store: item.store || '', categorie: item.categorie };
+      });
+    }
+
+    var addedCount = addedCountReal;
+    stillNeeded.forEach(function(ing){
       var alreadyInList = groceries.some(function(g){ return g.name.toLowerCase() === ing.toLowerCase(); });
-      if(!alreadyInList) {
-        var cat = guessCategory(ing);
-        groceries.push({name: ing, price: 0, done: false, category: cat, store: ''});
-        addedCount++;
-      }
+      if(alreadyInList) return;
+      var item = priced[ing];
+      // La catégorie de l'IA est plus fiable que les mots-clés; guessCategory() reste le filet de sécurité.
+      var cat = (item && item.categorie && VALID_CATS.indexOf(item.categorie) !== -1) ? item.categorie : guessCategory(ing);
+      groceries.push({ name: ing, price: item ? item.prix : 0, done: false, category: cat, store: item ? item.store : '' });
+      addedCount++;
     });
-    
+
     routeToStoreLists(startIdx);
     renderGr();
     saveData();
