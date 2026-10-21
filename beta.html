@@ -37,6 +37,8 @@ body{font-family:system-ui,-apple-system,sans-serif;font-size:14px;background:va
 .lsvg{width:60px;height:60px;flex-shrink:0;border-radius:14px;}
 .lt{font-size:20px;font-weight:800;color:#fff;line-height:1;}
 .ls{font-size:10px;color:rgba(255,255,255,0.75);margin-top:2px;}
+.pw{display:inline-flex;align-items:center;gap:4px;margin-top:5px;font-size:11px;color:#fff;text-decoration:none;border:1px solid rgba(255,255,255,0.7);border-radius:999px;padding:2px 10px;}
+.key-card{border:1.5px dashed var(--g);border-radius:20px;padding:12px 14px;margin-bottom:1.5rem;display:flex;align-items:center;gap:10px;cursor:pointer;color:var(--g);font-size:12px;font-weight:700;}
 .hstats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
 .hs{background:rgba(255,255,255,0.15);border-radius:14px;padding:10px;text-align:center;}
 .hs-n{font-size:20px;font-weight:700;color:#fff;}
@@ -688,7 +690,7 @@ ml('account', '2355363');
     <div class="hero-content">
       <div class="logo-row">
         <img class="lsvg" src="icon-512.png" alt="SmartGrocer"/>
-        <div><div class="ls">Bonjour <span id="h-name">Tim</span> 👋</div></div>
+        <div><div class="ls">Bonjour <span id="h-name">Tim</span> 👋</div><a class="pw" href="https://lancetonapp.com" target="_blank" rel="noopener"><span data-i18n="powered_by">Propulsé par</span> Lance ton app ↗</a></div>
       </div>
       <div class="hstats">
         <div class="hs"><div class="hs-n" id="h-scans">∞</div><div class="hs-l">Scans restants</div></div>
@@ -725,6 +727,10 @@ ml('account', '2355363');
       <div style="font-size:28px;">🏆</div>
       <div style="flex:1"><div style="font-size:20px;font-weight:700;color:#fff;" id="pts-home">0 pts</div><div style="font-size:10px;color:rgba(255,255,255,0.85);">Clique pour voir tes récompenses</div></div>
       <div style="background:rgba(255,255,255,0.2);color:#fff;font-size:10px;font-weight:700;padding:4px 10px;border-radius:999px;" id="h-level">Bronze</div>
+    </div>
+    <div class="key-card" onclick="showToast(t('key_soon'),4000)">
+      <div style="font-size:22px;">🔑</div>
+      <div style="flex:1" data-i18n="key_btn">Partage ta clé Lance ton app : 1 mois gratuit chacun</div>
     </div>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
       <div class="sl" style="margin-bottom:0;" data-i18n="home_specials">🔥 Spéciaux cette semaine</div>
@@ -1945,6 +1951,7 @@ var translations = {
     premium_manage_btn: 'Gérer / annuler mon abonnement',
     premium_sub_monthly: "⭐ S'abonner — 5,00$ le 1er mois", premium_sub_annual: "S'abonner — 39,99$ la 1re année",
     premium_then: 'Ensuite 6,25$/mois, ou 75$/an après la première année. Annulez à tout moment.', premium_terms_link: "Conditions d'abonnement, annulation et remboursement",
+    key_btn: 'Partage ta clé Lance ton app : 1 mois gratuit chacun', key_soon: 'Bientôt disponible : le parrainage n\'est pas offert en version bêta',
     powered_by: 'Propulsé par', premium_save33: '(-47%)',premium_family_title: '👨‍👩‍👧‍👦 Famille',
     premium_family_f1: "Tout Premium + jusqu'à 5 comptes", premium_family_f2: 'Liste partagée en temps réel',
     premium_family_btn: 'Choisir Famille',
@@ -2086,6 +2093,7 @@ var translations = {
     premium_manage_btn: 'Manage / cancel subscription',
     premium_sub_monthly: '⭐ Subscribe — $5.00 first month', premium_sub_annual: 'Subscribe — $39.99 first year',
     premium_then: 'Then $6.25/month, or $75/year after the first year. Cancel anytime.', premium_terms_link: 'Subscription terms, cancellation and refunds',
+    key_btn: 'Share your Lance ton app key: 1 free month each', key_soon: 'Coming soon: referrals aren\'t available in the beta version',
     powered_by: 'Powered by', premium_save33: '(save 47%)',premium_family_title: '👨‍👩‍👧‍👦 Family',
     premium_family_f1: 'Everything in Premium + up to 5 accounts', premium_family_f2: 'Real-time shared list',
     premium_family_btn: 'Choose Family',
