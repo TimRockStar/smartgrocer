@@ -4724,6 +4724,13 @@ async function sendVerificationEmail(name, email) {
   sgVerifyEmail = email;
   sgVerifyName = name;
 
+  // Compte de démonstration pour la révision de l'App Store : code fixe, aucun courriel envoyé.
+  // Ne fonctionne que pour cette adresse précise; tous les autres comptes passent par EmailJS.
+  if (email === 'smartgrocer.canada+apple@gmail.com') {
+    sgVerifyCode = '539271';
+    return true;
+  }
+
   try {
     await emailjs.send('service_lleoy3h', 'template_fa18vqs', {
       to_name: name,
