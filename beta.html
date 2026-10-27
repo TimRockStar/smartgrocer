@@ -7204,6 +7204,7 @@ function showTourStep(idx) {
   if(step.target) {
     var el = document.querySelector(step.target);
     if(el) {
+      el.scrollIntoView({block: 'center', behavior: 'instant'});
       var rect = el.getBoundingClientRect();
       var pad = 8;
       spotlight.style.left = (rect.left - pad) + 'px';
@@ -7219,10 +7220,19 @@ function showTourStep(idx) {
         bubble.style.left = Math.max(10, Math.min(rect.left - 40, window.innerWidth - 300)) + 'px';
         bubble.classList.add('arrow-top');
       } else if(step.position === 'top') {
-        bubble.style.top = Math.max(10, rect.top - 180) + 'px';
+        bubble.style.top = (rect.top - 20 - bubble.offsetHeight) + 'px';
         bubble.style.left = Math.max(10, Math.min(rect.left - 40, window.innerWidth - 300)) + 'px';
         bubble.classList.add('arrow-bottom');
       }
+
+      // La bulle ne doit jamais sortir de l'écran (sinon le bouton Suivant est inaccessible).
+      var bh = bubble.offsetHeight, vh = window.innerHeight;
+      if(rect.bottom + 20 + bh > vh - 10 && rect.top - 20 - bh >= 10) {
+        bubble.style.top = (rect.top - 20 - bh) + 'px';
+        bubble.classList.remove('arrow-top');
+        bubble.classList.add('arrow-bottom');
+      }
+      bubble.style.top = Math.max(10, Math.min(parseFloat(bubble.style.top), vh - bh - 10)) + 'px';
     }
   } else {
     // Centré — pas de spotlight
