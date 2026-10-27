@@ -3696,7 +3696,13 @@ function finishOb(){
   // permettait de contourner la vérification en fermant/rouvrant l'app.
   // Save data for after verification
   sgVerifyData = {name: name, email: email, city: fullCity, budget: budget};
-  
+
+  // Compte de démonstration pour les réviseurs Apple et Google : aucun code demandé (exigé par les deux magasins).
+  if (sgCleanEmail(email) === 'smartgrocer.canada+apple@gmail.com') {
+    finishOb_complete();
+    return;
+  }
+
   // Show verification screen
   document.getElementById('onboarding').style.display='none';
   document.getElementById('verify-email-display').textContent = email;
@@ -4728,13 +4734,6 @@ async function sendVerificationEmail(name, email) {
   sgVerifyCode = generateCode();
   sgVerifyEmail = email;
   sgVerifyName = name;
-
-  // Compte de démonstration pour la révision de l'App Store : code fixe, aucun courriel envoyé.
-  // Ne fonctionne que pour cette adresse précise; tous les autres comptes passent par EmailJS.
-  if (email === 'smartgrocer.canada+apple@gmail.com') {
-    sgVerifyCode = '539271';
-    return true;
-  }
 
   try {
     await emailjs.send('service_lleoy3h', 'template_fa18vqs', {
