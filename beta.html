@@ -2,7 +2,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<meta name="description" content="SmartGrocer — Compare grocery prices, find AI recipes, manage your food budget and store loyalty cards.">
+<meta name="description" content="SmartGrocer — Plan your meals, build your grocery list and track your prices, wherever you shop.">
 <meta name="theme-color" content="#1554EB">
 <script>try{if(window.Capacitor&&window.Capacitor.getPlatform&&window.Capacitor.getPlatform()==="ios")document.documentElement.classList.add("sg-ios");}catch(e){}</script>
 <title>SmartGrocer — Smart Grocery App</title>
@@ -539,7 +539,7 @@ ml('account', '2355363');
       </div>
       <div class="plus-item" onclick="goExtra('speciaux');closePlus()">
         <div class="plus-item-icon" style="background:#dcfce7;"><i class="ti ti-flame" style="color:#16a34a;"></i></div>
-        <div class="plus-item-text"><div class="plus-item-label" data-i18n="plus_speciaux">Spéciaux de la semaine</div><div class="plus-item-sub" data-i18n="plus_speciaux_sub">Vrais prix, par magasin et catégorie</div></div>
+        <div class="plus-item-text"><div class="plus-item-label" data-i18n="plus_speciaux">Spéciaux de la semaine</div><div class="plus-item-sub" data-i18n="plus_speciaux_sub">Bêta · circulaires de ta région</div></div>
         <div class="plus-item-arrow">›</div>
       </div>
       <div class="plus-item" onclick="openCircularScanner();closePlus()">
@@ -1149,10 +1149,11 @@ ml('account', '2355363');
     <div class="hc1"></div>
     <div class="logo-row">
       <img class="lsvg" src="icon-512.png" alt="SmartGrocer"/>
-      <div><div class="ls" data-i18n="page_speciaux_sub">🔥 Spéciaux de la semaine — vrais prix</div></div>
+      <div><div class="ls" data-i18n="page_speciaux_sub">🔥 Spéciaux de la semaine 🧪 Bêta</div></div>
     </div>
   </div>
   <div class="px">
+    <div data-i18n="speciaux_beta_note" style="background:var(--gold-bg);border-radius:12px;padding:0.75rem;margin-bottom:0.875rem;font-size:12px;line-height:1.5;">🧪 Bêta : les spéciaux viennent des circulaires ajoutées par la communauté de ta région. Ajoute celle de ton épicerie et gagne des points!</div>
     <div style="margin-bottom:0.875rem;position:relative;">
       <label style="font-size:11px;font-weight:700;color:var(--sub);text-transform:uppercase;display:block;margin-bottom:4px;">🔍 Rechercher un produit</label>
       <input type="text" id="speciaux-search-input" placeholder="Ex: poulet, pommes, fromage..." oninput="renderSpeciauxList()" style="width:100%;"/>
@@ -1947,7 +1948,10 @@ var translations = {
     // Sous-titres de page
     page_prix_sub: 'Comparateur de prix', page_rec_sub: 'Recettes IA + Vidéos virales',
     page_liste_sub: "Liste d'épicerie", page_wallet_sub: 'Portefeuille numérique',
-    page_alertes_sub: 'Alertes spéciaux', page_speciaux_sub: '🔥 Spéciaux de la semaine — vrais prix',
+    page_alertes_sub: 'Alertes spéciaux', page_speciaux_sub: '🔥 Spéciaux de la semaine 🧪 Bêta',
+    speciaux_beta_note: '🧪 Bêta : les spéciaux viennent des circulaires ajoutées par la communauté de ta région. Ajoute celle de ton épicerie et gagne des points!',
+    speciaux_empty: "Aucun spécial dans ta région pour l'instant. Sois le premier à ajouter une circulaire!",
+    circ_public_note: "⚠️ Ajoute seulement des circulaires publiques de ton épicerie.",
     page_profil_sub: 'Mon profil', page_premium_sub: 'Plans & Abonnements',
     page_planner_sub: '📅 Planificateur de repas', page_nutrition_sub: '🍎 Analyse Nutritionnelle IA', nut_scan_barcode: 'Scanner un code-barres', nut_scan_barcode_desc: 'Affiche les infos nutritionnelles du produit',
     // Profil
@@ -2033,7 +2037,7 @@ var translations = {
     plus_budget: 'Budget épicerie', plus_budget_sub: 'Suivi mensuel',
     plus_planner: 'Planificateur de repas', plus_planner_sub: 'Menu de la semaine',
     plus_nutrition: 'Nutrition & Calories', plus_nutrition_sub: 'Analyse IA de tes repas',
-    plus_speciaux: 'Spéciaux de la semaine', plus_speciaux_sub: 'Vrais prix, par magasin et catégorie',
+    plus_speciaux: 'Spéciaux de la semaine', plus_speciaux_sub: 'Bêta · circulaires de ta région',
     plus_circular: 'Scanner une circulaire', plus_circular_sub: 'Ajoute les vrais spéciaux de la semaine',
     plus_profil: 'Mon profil',
     plus_premium: 'Premium', plus_premium_sub: 'Plans et abonnements',
@@ -2089,7 +2093,10 @@ var translations = {
     // Page subtitles
     page_prix_sub: 'Price comparison', page_rec_sub: 'AI Recipes + Viral Videos',
     page_liste_sub: 'Grocery list', page_wallet_sub: 'Digital wallet',
-    page_alertes_sub: 'Price alerts', page_speciaux_sub: '🔥 Specials this week — real prices',
+    page_alertes_sub: 'Price alerts', page_speciaux_sub: '🔥 Specials this week 🧪 Beta',
+    speciaux_beta_note: "🧪 Beta: specials come from flyers added by people in your area. Add your store's flyer and earn points!",
+    speciaux_empty: 'No specials in your area yet. Be the first to add a flyer!',
+    circ_public_note: "⚠️ Only add public flyers from your own grocery store.",
     page_profil_sub: 'My profile', page_premium_sub: 'Plans & Subscriptions',
     page_planner_sub: '📅 Meal planner', page_nutrition_sub: '🍎 AI Nutrition Analysis', nut_scan_barcode: 'Scan a barcode', nut_scan_barcode_desc: 'Shows the product\'s nutrition facts',
     // Profile
@@ -2175,7 +2182,7 @@ var translations = {
     plus_budget: 'Grocery budget', plus_budget_sub: 'Monthly tracking',
     plus_planner: 'Meal planner', plus_planner_sub: "This week's menu",
     plus_nutrition: 'Nutrition & Calories', plus_nutrition_sub: 'AI analysis of your meals',
-    plus_speciaux: 'This week\'s specials', plus_speciaux_sub: 'Real prices, by store and category',
+    plus_speciaux: 'This week\'s specials', plus_speciaux_sub: 'Beta · flyers from your area',
     plus_circular: 'Scan a flyer', plus_circular_sub: "Add this week's real specials",
     plus_profil: 'My profile',
     plus_premium: 'Premium', plus_premium_sub: 'Plans and subscriptions',
@@ -3122,10 +3129,11 @@ async function generatePlannerList() {
 
 
 var _weeklySpecials = [];
+var _specialsLoaded = false;
 
 async function genRecipesFromSpecials() {
   if(_weeklySpecials.length === 0) {
-    showToast('⚠️ Les spéciaux ne sont pas encore chargés — réessaie dans un instant!');
+    showToast(_specialsLoaded ? "⚠️ Aucun spécial dans ta région pour l'instant — ajoute une circulaire (📰) pour générer des recettes basées sur les spéciaux!" : '⚠️ Les spéciaux ne sont pas encore chargés — réessaie dans un instant!', 5000);
     return;
   }
   
@@ -3905,7 +3913,7 @@ function updateLimitDots(){
   const rc=document.getElementById('rec-count-text');if(rc)rc.textContent=recsToday+'/'+LIMITS.recs;
   const lc=document.getElementById('list-count-text');if(lc)lc.textContent=groceries.length+'/'+LIMITS.list;
 }
-function addPoints(n){ if(!isPremium) return; points += 5; }
+function addPoints(n){ points += 5; } // points pour tous (VIP ou non), +5 par action
 function updatePointsUI(){
   [['pts-home',points+' pts'],['pts-hero',points],['h-pts',points],['prof-pts',points]].forEach(([id,val])=>{const el=document.getElementById(id);if(el)el.textContent=val;});
   const pb=document.getElementById('pts-bar');if(pb)pb.style.width=Math.min(points/500*100,100)+'%';
@@ -4128,7 +4136,7 @@ function shareRecipeToCommunity(rec) {
   
   filterC();
   addPoints(5);
-  showToast('🎉 Recette partagée dans la communauté!' + (isPremium?' +5 pts':''));
+  showToast('🎉 Recette partagée dans la communauté!' + ' +5 pts');
   
   // Show confirmation with link to social
   var btn = document.getElementById('share-to-community-btn');
@@ -4413,7 +4421,7 @@ async function submitUp(){
   });
   filterC();
   addPoints(pts);
-  showToast('🎉 Recette partagée avec la communauté!' + (isPremium?' +5 pts':'') + (hasVideo ? ' 🎬' : ' 📝'));
+  showToast('🎉 Recette partagée avec la communauté!' + ' +5 pts' + (hasVideo ? ' 🎬' : ' 📝'));
   // Clear form
   document.getElementById('up-nm').value='';
   document.getElementById('up-ig').value='';
@@ -5965,43 +5973,21 @@ async function loadSpecials() {
         }).join('');
         _weeklySpecials = realData.items.map(function(s){ return {nom:s.nom, magasin:s.magasin, prix:s.prixSpecial, prixReg:s.prixRegulier, emoji:'🔥'}; });
         document.getElementById('specials-scroll').innerHTML = realHtml;
+        _specialsLoaded = true;
         return; // On a de vrais spéciaux, pas besoin de l'estimation IA
       }
     }
   } catch(e) { console.log('Real specials check failed, falling back to AI:', e); }
 
-  // 2. Aucun vrai spécial trouvé pour cette ville — repli sur l'estimation IA (comme avant)
-  try {
-    var jours = ['dim','lun','mar','mer','jeu','ven','sam'];
-    var dateNow = new Date();
-    var expiry = jours[(dateNow.getDay()+3)%7] + '.';
-    var res = await fetch('https://relais-groq.smartgrocer.workers.dev', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({
-        model: 'qwen/qwen3.8-27b',
-        reasoning_effort: 'none',
-        max_tokens: 800,
-        messages: [{
-          role: 'user',
-          content: 'Langue des noms de produits: '+(currentLang==="en"?"English":"francais")+'. Genere 6 specials epiceirie realistes cette semaine au Quebec. JSON seulement:\n[{"emoji":"🥜","nom":"Beurre arachide Kraft 1kg","magasin":"IGA","prix":5.99,"prixReg":7.49,"expire":"dim."},{"emoji":"🥛","nom":"Lait 2% 4L","magasin":"Maxi","prix":5.49,"prixReg":6.29,"expire":"sam."},{"emoji":"🍗","nom":"Poulet entier","magasin":"Metro","prix":7.99,"prixReg":10.49,"expire":"ven."},{"emoji":"🥚","nom":"Oeufs 12","magasin":"Walmart","prix":3.97,"prixReg":5.49,"expire":"jeu."},{"emoji":"🧀","nom":"Cheddar fort 400g","magasin":"IGA","prix":4.99,"prixReg":6.99,"expire":"dim."},{"emoji":"🍞","nom":"Pain baguette","magasin":"Maxi","prix":1.99,"prixReg":2.99,"expire":"sam."}]'
-        }]
-      })
-    });
-    var data = await res.json();
-    var text = data.choices[0].message.content.replace(/```json|```/g,'').trim();
-    var specials = JSON.parse(text);
-    var html = specials.map(function(s) {
-      var pct = Math.round((1 - s.prix/s.prixReg)*100);
-      return '<div class="dc"><div style="font-size:24px;margin-bottom:6px;">'+s.emoji+'</div><div class="sg-nom" style="font-size:12px;font-weight:700;">'+s.nom+'</div><div style="font-size:10px;color:var(--sub);">'+s.magasin+' · Expire '+s.expire+'</div><div style="display:flex;align-items:baseline;gap:6px;margin-top:6px;"><div style="font-size:16px;font-weight:700;color:var(--g);">$'+s.prix.toFixed(2)+'</div><div style="font-size:11px;color:#9ca3af;text-decoration:line-through;">$'+s.prixReg.toFixed(2)+'</div></div><div class="badge bdg" style="margin-top:4px;">-'+pct+'%</div></div>';
-    }).join('');
-    _weeklySpecials = specials;
-    document.getElementById('specials-scroll').innerHTML = html;
-  } catch(e) {
-    console.log('Specials error:', e);
-    // Fallback to static specials
-    document.getElementById('specials-scroll').innerHTML = '<div class="dc"><div style="font-size:24px;margin-bottom:6px;">🥜</div><div style="font-size:12px;font-weight:700;">Kraft 1kg</div><div style="font-size:10px;color:var(--sub);">IGA</div><div style="font-size:16px;font-weight:700;color:var(--g);margin-top:6px;">$5.99</div><div class="badge bdg" style="margin-top:4px;">-20%</div></div><div class="dc"><div style="font-size:24px;margin-bottom:6px;">🥛</div><div style="font-size:12px;font-weight:700;">Lait 2% 4L</div><div style="font-size:10px;color:var(--sub);">Maxi</div><div style="font-size:16px;font-weight:700;color:var(--g);margin-top:6px;">$5.49</div><div class="badge bdg" style="margin-top:4px;">-13%</div></div>';
-  }
+  // 2. Aucun vrai spécial pour cette ville : on n'invente plus de faux prix.
+  // On affiche un message honnête et on invite à ajouter une circulaire (+ points).
+  _weeklySpecials = [];
+  _specialsLoaded = true;
+  var en = (typeof currentLang !== 'undefined' && currentLang === 'en');
+  var emptyMsg = en ? 'No specials in your area yet. Be the first to add a flyer!' : "Aucun spécial dans ta région pour l'instant. Sois le premier à ajouter une circulaire!";
+  var emptyBtn = en ? '📰 Scan a flyer' : '📰 Scanner une circulaire';
+  var el = document.getElementById('specials-scroll');
+  if(el) el.innerHTML = '<div style="padding:1rem;text-align:center;font-size:12px;color:var(--sub);line-height:1.5;min-width:240px;">' + emptyMsg + '<br><button class="btn bg" style="margin-top:8px;" onclick="openCircularScanner()">' + emptyBtn + '</button></div>';
 }
 
 
@@ -6253,7 +6239,7 @@ async function submitNewProduct(){
       localStorage.setItem('sg_receipt_points_cap', JSON.stringify(capData));
       addPoints(5);
       updatePointsUI();
-      showToast('✅ "' + fullName + '" et son prix ajoutés!' + (isPremium?' +5 pts':''));
+      showToast('✅ "' + fullName + '" et son prix ajoutés!' + ' +5 pts');
     } else {
       showToast('✅ "' + fullName + '" et son prix ajoutés à la communauté!');
     }
@@ -7125,7 +7111,7 @@ var tourSteps = [
   {
     emoji: '🛒',
     title: "Ma liste d'épicerie",
-    text: "Ta liste d'épicerie intelligente — ajoute des articles, coche-les en magasin et compare les prix.",
+    text: "Ta liste d'épicerie intelligente — ajoute des articles, coche-les en magasin et suis tes prix.",
     target: '.qc:nth-child(3)',
     position: 'bottom'
   },
@@ -7139,7 +7125,7 @@ var tourSteps = [
   {
     emoji: '💲',
     title: 'Section Prix',
-    text: 'Compare les prix en temps réel entre toutes les épiceries — des vrais prix vérifiés par la communauté, pas juste des estimations!',
+    text: 'Suis tes prix au fil du temps — et consulte les spéciaux ajoutés par la communauté de ta région (bêta).',
     target: '.nb:nth-child(2)',
     position: 'top'
   },
@@ -7599,6 +7585,10 @@ var _menuGenerating = false;
 async function generateMenuFromSpecials() {
   if(_menuGenerating) return; // évite les doubles clics
   if(_weeklySpecials.length === 0) {
+    if(_specialsLoaded) {
+      showToast("⚠️ Aucun spécial dans ta région pour l'instant — ajoute une circulaire (📰) pour générer un menu basé sur les spéciaux!", 5000);
+      return;
+    }
     showToast('⏳ Chargement des spéciaux en cours — réessaie dans un instant!');
     loadSpecials();
     return;
@@ -8082,6 +8072,7 @@ function handleStripeSuccess() {
         <input type="file" id="circular-gallery-input" accept="image/*,application/pdf" style="display:none;" onchange="analyzeCircular(this)"/>
         <input type="file" id="circular-pdf-input" accept="application/pdf" style="display:none;" onchange="analyzeCircular(this)"/>
         <div style="font-size:11px;color:var(--sub);text-align:center;" data-i18n="circ_hint">💡 Photo papier, ou capture d'écran de Flipp/Reebee — une page à la fois</div>
+        <div style="font-size:11px;color:var(--sub);text-align:center;margin-top:4px;font-weight:700;" data-i18n="circ_public_note">⚠️ Ajoute seulement des circulaires publiques de ton épicerie.</div>
         <div style="font-size:11px;color:var(--sub);text-align:center;margin-top:4px;" data-i18n="circ_hint_pdf">💡 Le bouton PDF t'amène directement dans tes fichiers — pratique si tu as téléchargé la circulaire depuis le site de l'épicerie</div>
         <div style="text-align:center;margin-top:8px;"><button type="button" onclick="var b=document.getElementById('circ-how');b.style.display=b.style.display==='none'?'block':'none';" style="background:none;border:none;color:var(--gold);font-weight:700;font-size:13px;cursor:pointer;" data-i18n="circ_how_btn">❓ Comment faire ?</button></div>
         <div id="circ-how" style="display:none;background:var(--gold-bg);border-radius:12px;padding:0.85rem;margin-top:6px;font-size:12px;line-height:1.5;text-align:left;">
@@ -8309,7 +8300,7 @@ function addAllReceiptItems() {
     localStorage.setItem('sg_receipt_points_cap', JSON.stringify(capData));
     addPoints(5);
     updatePointsUI();
-    showToast('✅ ' + items.length + ' prix ajoutés à la banque de données!' + (isPremium?' +5 pts':''));
+    showToast('✅ ' + items.length + ' prix ajoutés à la banque de données!' + ' +5 pts');
   } else {
     showToast('✅ ' + items.length + ' prix ajoutés — merci! (Limite de points quotidienne atteinte)');
   }
@@ -8544,7 +8535,7 @@ async function addAllCircularItems() {
         localStorage.setItem('sg_circular_points_cap', JSON.stringify(capData));
         addPoints(5);
         updatePointsUI();
-        showToast('🎉 Spéciaux partagés!' + (isPremium?' +5 pts':'') + ' — merci d\'aider la communauté!', 4000);
+        showToast('🎉 Spéciaux partagés!' + ' +5 pts' + ' — merci d\'aider la communauté!', 4000);
       } else {
         showToast('✅ Spéciaux partagés — merci! (Limite de points quotidienne atteinte, reviens demain)', 4000);
       }
@@ -8567,7 +8558,7 @@ async function addAllCircularItems() {
   var manifestData = {
     name: "SmartGrocer — Épicerie Intelligente",
     short_name: "SmartGrocer",
-    description: "L'app IA qui planifie vos repas et compare les prix d'épicerie",
+    description: "Planifie tes repas, génère ta liste d'épicerie et suis tes prix, peu importe où tu magasines.",
     start_url: "/beta.html",
     display: "standalone",
     background_color: "#f0f9f4",
