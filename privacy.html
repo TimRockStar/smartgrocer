@@ -18,7 +18,7 @@
 <body>
 
 <h1>Politique de confidentialité</h1>
-<div class="updated">SmartGrocer — Dernière mise à jour : 24 juillet 2026</div>
+<div class="updated">SmartGrocer — Dernière mise à jour : 31 octobre 2026</div>
 
 <p>Cette politique explique quelles informations SmartGrocer collecte, comment elles sont utilisées, et quels droits tu as sur tes propres données.</p>
 
@@ -28,6 +28,7 @@
 <h2>Renseignements que nous collectons</h2>
 <ul>
   <li><strong>Renseignements personnels :</strong> ton prénom et ton adresse courriel, utilisés pour créer et sécuriser ton compte (avec un code de vérification à usage unique envoyé par courriel — aucun mot de passe n'est utilisé)</li>
+  <li><strong>Profil et listes synchronisés :</strong> ton prénom, ta ville, ton pays, ton régime alimentaire et tes listes d'épicerie sont sauvegardés sur notre serveur et liés à ton courriel, pour que tu les retrouves sur tous tes appareils. La date de début de ton essai gratuit y est aussi notée. Tes cartes de fidélité et tes points restent seulement sur ton appareil.</li>
   <li><strong>Localisation approximative :</strong> ta ville, pour te montrer les prix et spéciaux pertinents à ta région</li>
   <li><strong>Photos :</strong> reçus, circulaires, codes-barres, photos de produits et de repas, que tu choisis de soumettre pour l'analyse par intelligence artificielle (prix, valeur nutritive, reconnaissance de produit)</li>
   <li><strong>Contenu que tu partages :</strong> recettes publiées dans la section communautaire, si tu choisis d'en publier</li>
@@ -39,6 +40,8 @@
 <h2>Comment tes données sont utilisées</h2>
 <ul>
   <li>Reconnaître ton compte et ton statut d'abonnement</li>
+  <li>Synchroniser ton profil et tes listes entre tes appareils</li>
+  <li>Limiter l'essai gratuit à un seul par personne</li>
   <li>Te montrer des prix et spéciaux pertinents à ta ville</li>
   <li>Analyser tes photos (produits, repas, reçus, circulaires) grâce à l'intelligence artificielle, pour t'offrir des prix, une reconnaissance de produits et une analyse nutritionnelle</li>
   <li>Permettre le fonctionnement de la banque de prix communautaire, alimentée de façon anonyme par les contributions des utilisateurs</li>
@@ -49,17 +52,20 @@
 <ul>
   <li><strong>Groq</strong> — pour l'analyse par intelligence artificielle des photos que tu soumets volontairement</li>
   <li><strong>Stripe</strong> — pour le traitement sécurisé des paiements d'abonnement</li>
+  <li><strong>Google (Apps Script et Google Sheets)</strong> — pour héberger notre serveur et y stocker ton profil, tes listes et ton statut d'abonnement</li>
+  <li><strong>EmailJS</strong> — pour envoyer le code de vérification à ton adresse courriel</li>
 </ul>
 <p>Nous ne vendons jamais tes données personnelles à des tiers, à des fins publicitaires ou autres.</p>
 
 <h2>Sécurité</h2>
 <p>Toutes les communications entre ton appareil et nos serveurs sont chiffrées (HTTPS). Les données sont stockées de façon sécurisée et ne sont accessibles qu'aux fins décrites dans cette politique.</p>
+<p>Le code de vérification est créé et vérifié par notre serveur; il expire après 10 minutes, et le nombre d'essais et de demandes est limité. Une fois le code accepté, ton appareil reçoit une clé de connexion secrète. Seule une empreinte irréversible de cette clé est gardée sur le serveur : sans la clé, personne ne peut lire, modifier ou supprimer ton profil.</p>
 
 <h2>Contenu généré par les utilisateurs et modération</h2>
-<p>Les recettes partagées publiquement sont vérifiées automatiquement par intelligence artificielle avant publication, et peuvent être signalées par n'importe quel utilisateur via le bouton 🚩 présent sur chaque recette. Les signalements sont révisés manuellement.</p>
+<p>Les recettes partagées publiquement sont vérifiées automatiquement par intelligence artificielle avant publication, et peuvent être signalées par n'importe quel utilisateur via le bouton 🚩 présent sur chaque recette. Les signalements sont révisés manuellement. Tu peux aussi bloquer une recette et son auteur avec le bouton 🚫.</p>
 
 <h2>Suppression de ton compte</h2>
-<p>Tu peux supprimer ton compte et tes données personnelles en tout temps, directement dans l'application (Profil → Supprimer mon compte). Des instructions détaillées sont disponibles sur notre <a href="https://smartgrocer.health/delete-account.html">page de suppression de compte</a>.</p>
+<p>Tu peux supprimer ton compte et tes données personnelles en tout temps, directement dans l'application (Profil → Supprimer mon compte). Cela supprime ton profil, tes listes et ton statut d'abonnement de notre serveur, ainsi que les données gardées sur ton appareil. Des instructions détaillées sont disponibles sur notre <a href="https://smartgrocer.health/delete-account.html">page de suppression de compte</a>.</p>
 <p>Les contributions déjà faites à la banque de prix communautaire (prix, spéciaux) restent dans la base de données partagée après la suppression de ton compte, puisqu'elles ne sont jamais rattachées personnellement à ton identité — il s'agit d'une base de données anonyme et collective par conception.</p>
 
 <h2>Tes droits</h2>
@@ -70,6 +76,67 @@
 
 <h2>Modifications de cette politique</h2>
 <p>Cette politique peut être mise à jour de temps à autre pour refléter des changements dans l'application. La date de la dernière mise à jour est indiquée en haut de cette page.</p>
+
+<hr style="margin:3rem 0 1rem;border:none;border-top:1px solid #d1d5db;">
+<h1 id="english">Privacy Policy</h1>
+<div class="updated">SmartGrocer — Last updated: October 31, 2026</div>
+
+<p>This policy explains what information SmartGrocer collects, how it is used, and what rights you have over your own data.</p>
+
+<h2>Who we are</h2>
+<p>SmartGrocer is an app independently developed and operated by Timmy Villeneuve, based in Joliette, Quebec. For any question, write to <a href="mailto:smartgrocer.canada@gmail.com">smartgrocer.canada@gmail.com</a>.</p>
+
+<h2>Information we collect</h2>
+<ul>
+  <li><strong>Personal information:</strong> your first name and email address, used to create and secure your account (with a one-time verification code sent by email — no password is used)</li>
+  <li><strong>Synced profile and lists:</strong> your first name, city, country, diet and grocery lists are saved on our server and linked to your email, so you can find them on all your devices. The start date of your free trial is also recorded. Your loyalty cards and points stay on your device only.</li>
+  <li><strong>Approximate location:</strong> your city, to show you prices and specials relevant to your area</li>
+  <li><strong>Photos:</strong> receipts, flyers, barcodes, product and meal photos that you choose to submit for artificial intelligence analysis (prices, nutrition, product recognition)</li>
+  <li><strong>Content you share:</strong> recipes published in the community section, if you choose to publish any</li>
+</ul>
+
+<h2>What we never collect</h2>
+<p>SmartGrocer does not collect or store <strong>any financial or banking data</strong> (card number, payment details). Premium subscription payments are handled entirely by <a href="https://stripe.com/privacy" target="_blank" rel="noopener">Stripe</a>, a secure third-party payment provider — we never have access to that information.</p>
+
+<h2>How your data is used</h2>
+<ul>
+  <li>Recognize your account and subscription status</li>
+  <li>Sync your profile and lists between your devices</li>
+  <li>Limit the free trial to one per person</li>
+  <li>Show you prices and specials relevant to your city</li>
+  <li>Analyze your photos (products, meals, receipts, flyers) with artificial intelligence, to provide prices, product recognition and nutrition analysis</li>
+  <li>Run the community price bank, fed anonymously by user contributions</li>
+</ul>
+
+<h2>Sharing with third parties</h2>
+<p>Your data may be shared with the following providers, only as needed for the app to work:</p>
+<ul>
+  <li><strong>Groq</strong> — for artificial intelligence analysis of the photos you voluntarily submit</li>
+  <li><strong>Stripe</strong> — for secure processing of subscription payments</li>
+  <li><strong>Google (Apps Script and Google Sheets)</strong> — to host our server and store your profile, lists and subscription status</li>
+  <li><strong>EmailJS</strong> — to send the verification code to your email address</li>
+</ul>
+<p>We never sell your personal data to third parties, for advertising or any other purpose.</p>
+
+<h2>Security</h2>
+<p>All communication between your device and our servers is encrypted (HTTPS). Data is stored securely and is only accessible for the purposes described in this policy.</p>
+<p>The verification code is created and checked by our server; it expires after 10 minutes, and the number of attempts and requests is limited. Once the code is accepted, your device receives a secret sign-in key. Only an irreversible fingerprint of that key is kept on the server: without the key, no one can read, change or delete your profile.</p>
+
+<h2>User-generated content and moderation</h2>
+<p>Publicly shared recipes are automatically checked by artificial intelligence before publication, and can be reported by any user with the 🚩 button on each recipe. Reports are reviewed manually. You can also block a recipe and its author with the 🚫 button.</p>
+
+<h2>Deleting your account</h2>
+<p>You can delete your account and personal data at any time, directly in the app (Profile → Delete my account). This removes your profile, lists and subscription status from our server, as well as the data stored on your device. Detailed instructions are available on our <a href="https://smartgrocer.health/delete-account.html">account deletion page</a>.</p>
+<p>Contributions already made to the community price bank (prices, specials) remain in the shared database after your account is deleted, since they are never personally linked to your identity — it is an anonymous, collective database by design.</p>
+
+<h2>Your rights</h2>
+<p>You have the right to access, correct or delete your personal information at any time. For any request, write to <a href="mailto:smartgrocer.canada@gmail.com">smartgrocer.canada@gmail.com</a>.</p>
+
+<h2>Children</h2>
+<p>SmartGrocer is not intended for children under 18. We do not knowingly collect information from minors.</p>
+
+<h2>Changes to this policy</h2>
+<p>This policy may be updated from time to time to reflect changes in the app. The date of the last update is shown at the top of this section.</p>
 
 <div class="note">
   💡 Des questions sur cette politique ou sur tes données personnelles? Écris-nous à <a href="mailto:smartgrocer.canada@gmail.com">smartgrocer.canada@gmail.com</a> — on répond directement, pas de robot ni de formulaire compliqué.
