@@ -4926,19 +4926,22 @@ async function showRecipeModal(nom, emoji, recipeObj) {
       var html = formatRecipeText(recipeText);
 
       // YouTube links
-      var ytUrl1 = 'https://www.youtube.com/results?search_query=' + encodeURIComponent(nom + ' recette facile');
-      var ytUrl2 = 'https://www.youtube.com/results?search_query=' + encodeURIComponent(nom + ' recette rapide maison');
-      var ytUrl3 = 'https://www.youtube.com/results?search_query=' + encodeURIComponent(nom + ' recette economique');
+      // Le bloc suit la langue de l'app ; le nom est celui affiché dans le titre (déjà traduit si besoin)
+      var _en = currentLang === 'en';
+      var _ytNom = ((document.getElementById('rm-title') || {}).textContent || '').trim() || nom;
+      var ytUrl1 = 'https://www.youtube.com/results?search_query=' + encodeURIComponent(_ytNom + (_en ? ' easy recipe' : ' recette facile'));
+      var ytUrl2 = 'https://www.youtube.com/results?search_query=' + encodeURIComponent(_ytNom + (_en ? ' quick homemade recipe' : ' recette rapide maison'));
+      var ytUrl3 = 'https://www.youtube.com/results?search_query=' + encodeURIComponent(_ytNom + (_en ? ' budget recipe' : ' recette economique'));
 
       html += '<div style="margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--border);">';
-      html += '<div style="font-size:13px;font-weight:700;margin-bottom:10px;">🎬 Vidéos YouTube</div>';
-      html += '<a href="' + ytUrl1 + '" target="_blank" style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--light);border-radius:12px;margin-bottom:8px;text-decoration:none;"><div style="width:36px;height:36px;background:#FF0000;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="ti ti-brand-youtube" style="color:#fff;font-size:18px;"></i></div><div style="flex:1;font-size:12px;font-weight:700;color:var(--text);">' + nom + ' — Recette facile</div><i class="ti ti-external-link" style="color:var(--sub);font-size:14px;"></i></a>';
-      html += '<a href="' + ytUrl2 + '" target="_blank" style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--light);border-radius:12px;margin-bottom:8px;text-decoration:none;"><div style="width:36px;height:36px;background:#FF0000;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="ti ti-brand-youtube" style="color:#fff;font-size:18px;"></i></div><div style="flex:1;font-size:12px;font-weight:700;color:var(--text);">' + nom + ' — Rapide à la maison</div><i class="ti ti-external-link" style="color:var(--sub);font-size:14px;"></i></a>';
-      html += '<a href="' + ytUrl3 + '" target="_blank" style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--light);border-radius:12px;margin-bottom:8px;text-decoration:none;"><div style="width:36px;height:36px;background:#FF0000;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="ti ti-brand-youtube" style="color:#fff;font-size:18px;"></i></div><div style="flex:1;font-size:12px;font-weight:700;color:var(--text);">' + nom + ' — Version économique</div><i class="ti ti-external-link" style="color:var(--sub);font-size:14px;"></i></a>';
+      html += '<div style="font-size:13px;font-weight:700;margin-bottom:10px;">' + (_en ? '🎬 YouTube videos' : '🎬 Vidéos YouTube') + '</div>';
+      html += '<a href="' + ytUrl1 + '" target="_blank" style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--light);border-radius:12px;margin-bottom:8px;text-decoration:none;"><div style="width:36px;height:36px;background:#FF0000;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="ti ti-brand-youtube" style="color:#fff;font-size:18px;"></i></div><div style="flex:1;font-size:12px;font-weight:700;color:var(--text);">' + _ytNom + ' — ' + (_en ? 'Easy recipe' : 'Recette facile') + '</div><i class="ti ti-external-link" style="color:var(--sub);font-size:14px;"></i></a>';
+      html += '<a href="' + ytUrl2 + '" target="_blank" style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--light);border-radius:12px;margin-bottom:8px;text-decoration:none;"><div style="width:36px;height:36px;background:#FF0000;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="ti ti-brand-youtube" style="color:#fff;font-size:18px;"></i></div><div style="flex:1;font-size:12px;font-weight:700;color:var(--text);">' + _ytNom + ' — ' + (_en ? 'Quick at home' : 'Rapide à la maison') + '</div><i class="ti ti-external-link" style="color:var(--sub);font-size:14px;"></i></a>';
+      html += '<a href="' + ytUrl3 + '" target="_blank" style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--light);border-radius:12px;margin-bottom:8px;text-decoration:none;"><div style="width:36px;height:36px;background:#FF0000;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="ti ti-brand-youtube" style="color:#fff;font-size:18px;"></i></div><div style="flex:1;font-size:12px;font-weight:700;color:var(--text);">' + _ytNom + ' — ' + (_en ? 'Budget version' : 'Version économique') + '</div><i class="ti ti-external-link" style="color:var(--sub);font-size:14px;"></i></a>';
       html += '</div>';
 
       document.getElementById('rm-content').innerHTML = html;
-      document.getElementById('rm-meta').textContent = 'Recette complète';
+      document.getElementById('rm-meta').textContent = _en ? 'Full recipe' : 'Recette complète';
       return;
 
     } catch(e) {
@@ -7902,7 +7905,7 @@ function handleStripeSuccess() {
     <div style="background:linear-gradient(135deg,#D85A30,#993C1D);padding:1.25rem;display:flex;align-items:center;justify-content:space-between;">
       <div style="display:flex;align-items:center;gap:10px;">
         <div style="font-size:28px;" id="rm-emoji">🍳</div>
-        <div><div style="font-size:16px;font-weight:700;color:#fff;" id="rm-title">Recette</div><div style="font-size:11px;color:rgba(255,255,255,0.85);" id="rm-meta"></div></div>
+        <div><div style="font-size:16px;font-weight:700;color:#fff;" class="sg-nom" id="rm-title">Recette</div><div style="font-size:11px;color:rgba(255,255,255,0.85);" id="rm-meta"></div></div>
       </div>
       <div style="display:flex;gap:8px;">
         <button id="rm-fav-btn" onclick="toggleFavFromModal()" style="background:rgba(255,255,255,0.2);border:none;color:#fff;border-radius:8px;padding:6px 10px;cursor:pointer;font-size:18px;">☆</button>
