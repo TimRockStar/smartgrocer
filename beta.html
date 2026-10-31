@@ -7126,6 +7126,19 @@ var tourSteps = [
   }
 ];
 
+// Version anglaise du tour (même ordre que tourSteps) — le tour suit currentLang
+var tourStepsEn = [
+  { title: 'Welcome to SmartGrocer!', text: "Let me show you around the app in a few seconds. You can skip at any time." },
+  { title: 'Scan prices', text: "Tap here to scan a product's barcode and compare prices across all grocery stores!" },
+  { title: 'AI recipes + YouTube', text: "AI generates personalized recipes with automatic YouTube videos for every meal." },
+  { title: 'My grocery list', text: "Your smart grocery list — add items, check them off in store and track your prices." },
+  { title: 'Digital wallet', text: "Keep all your loyalty cards (IGA, Maxi, Metro, Walmart) in the app — no more digging for them!" },
+  { title: 'Prices section', text: "Track your prices over time — and browse the specials added by your region's community (beta)." },
+  { title: 'Recipes section', text: "Plan your weekly meals, generate recipes and build your grocery list automatically." },
+  { title: 'More menu', text: "Find the store map, your budget, nutrition, the planner and much more here!" },
+  { title: "Let's go!", text: "You're ready to use SmartGrocer. Happy shopping and enjoy your meals! 🛒" }
+];
+
 var tourCurrent = 0;
 
 function startTour() {
@@ -7143,13 +7156,17 @@ function showTourStep(idx) {
 
   // Mettre à jour le contenu
   document.getElementById('tour-emoji').textContent = step.emoji;
-  document.getElementById('tour-step').textContent = 'Étape ' + (idx + 1) + ' / ' + total;
-  document.getElementById('tour-title').textContent = step.title;
-  document.getElementById('tour-text').textContent = step.text;
+  var en = currentLang === 'en';
+  var tr = (en && tourStepsEn[idx]) ? tourStepsEn[idx] : step;
+  document.getElementById('tour-step').textContent = (en ? 'Step ' : 'Étape ') + (idx + 1) + ' / ' + total;
+  document.getElementById('tour-title').textContent = tr.title;
+  document.getElementById('tour-text').textContent = tr.text;
 
-  // Bouton dernier step
+  // Bouton passer + dernier step
+  var skipBtn = document.querySelector('#tour-bubble .tour-btn-skip');
+  if(skipBtn) skipBtn.textContent = en ? 'Skip' : 'Passer';
   var nextBtn = document.getElementById('tour-next-btn');
-  nextBtn.textContent = idx === total - 1 ? 'Terminer ✓' : 'Suivant →';
+  nextBtn.textContent = idx === total - 1 ? (en ? 'Done ✓' : 'Terminer ✓') : (en ? 'Next →' : 'Suivant →');
 
   // Dots
   var dotsEl = document.getElementById('tour-dots');
