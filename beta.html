@@ -433,14 +433,6 @@ html.sg-ios #ob-trial-card{display:none !important;}
 </style>
 <!-- Stripe Buy Button -->
 <script async src="https://js.stripe.com/v3/buy-button.js"></script>
-<!-- MailerLite Universal -->
-<script>
-(function(w,d,e,u,f,l,n){w[f]=w[f]||function(){(w[f].q=w[f].q||[])
-.push(arguments);},l=d.createElement(e),l.async=1,l.src=u,
-n=d.getElementsByTagName(e)[0],n.parentNode.insertBefore(l,n);})
-(window,document,'script','https://assets.mailerlite.com/js/universal.js','ml');
-ml('account', '2355363');
-</script>
 <!-- PDF.js — pour convertir les pages d'un PDF de circulaire en images avant l'analyse IA -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>
@@ -3816,11 +3808,6 @@ function finishOb_complete() {
     if(leNew) leNew.className = 'lang-btn' + (currentLang === 'en' ? ' active' : '');
   } catch(e) {}
   
-  // Subscribe to MailerLite
-  try {
-    if(typeof ml !== 'undefined') ml('webforms', 'show', 'mypcHz', {email: email, name: name});
-  } catch(e) {}
-
   updatePlanUI(); renderRewards(); renderC(); renderBCats(); renderWallet(); renderGr(); updatePointsUI(); loadSpecials();
   loadProductDB(); loadTrendingRecipes(); loadFavorites(); renderFavorites(); loadLocalStores(); loadMealPlan(); renderPlannerDays();
   applyPlayStorePaymentRules();
