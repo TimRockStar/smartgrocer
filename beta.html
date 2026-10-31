@@ -1874,7 +1874,11 @@ async function openStore(name, icon, address, mapsQuery) {
 
 // ===== LANGUAGE SYSTEM =====
 // Anglais par défaut pour les nouveaux utilisateurs; un utilisateur existant sans choix enregistré reste en français
-var currentLang = localStorage.getItem('sg_lang') || (localStorage.getItem('smartgrocer_data') ? 'fr' : 'en');
+// Langue de départ : choix déjà fait > anciens comptes (français) > langue de l'appareil (français si fr, sinon anglais)
+var currentLang = localStorage.getItem('sg_lang') || (localStorage.getItem('smartgrocer_data') ? 'fr' : (function(){
+  try { var l = String((navigator.languages && navigator.languages[0]) || navigator.language || 'en').toLowerCase(); return l.indexOf('fr') === 0 ? 'fr' : 'en'; }
+  catch(e) { return 'en'; }
+})());
 
 // ============================================================
 // DÉTECTION TWA (app installée via Google Play) — conformité
