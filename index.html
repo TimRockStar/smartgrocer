@@ -4,18 +4,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <meta name="description" content="SmartGrocer — Compare grocery prices, find AI recipes, manage your food budget and store loyalty cards.">
-<meta name="theme-color" content="#1D9E75">
+<meta name="theme-color" content="#1554EB">
 <title>SmartGrocer — Smart Grocery App</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/3.19.0/iconfont/tabler-icons.min.css">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-:root{--g:#1D9E75;--g2:#0F6E56;--c:#D85A30;--p:#534AB7;--b:#378ADD;--gold:#C9A227;--bg:#FFF8F0;--card:#fff;--border:#e5e7eb;--text:#1a1a2e;--sub:#6b7280;}
+:root{--g:#1554EB;--g2:#0B2F99;--c:#D85A30;--p:#534AB7;--b:#378ADD;--gold:#C9A227;--bg:#F2F5FF;--card:#fff;--border:#E1E6F5;--text:#161A2E;--sub:#5B6478;}
 body{font-family:system-ui,-apple-system,sans-serif;font-size:14px;background:var(--bg);max-width:480px;margin:0 auto;min-height:100vh;}
 .btn{padding:8px 14px;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:5px;transition:opacity 0.15s;}
 .btn:hover{opacity:0.88;}
 .bg{background:var(--g);color:#fff;}
 .bf{width:100%;padding:12px;font-size:14px;}
-.hero-landing{background:linear-gradient(160deg,#1D9E75 0%,#0F6E56 60%,#085041 100%);padding:3rem 1.5rem;text-align:center;position:relative;overflow:hidden;}
+.hero-landing{background:linear-gradient(160deg,#1554EB 0%,#0B2F99 70%,#08236F 100%);padding:3rem 1.5rem;text-align:center;position:relative;overflow:hidden;}
 .feature-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:1.5rem 0;}
 .feature-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1rem;text-align:center;}
 .feature-card i{font-size:28px;color:var(--g);margin-bottom:8px;display:block;}
@@ -27,20 +27,7 @@ body{font-family:system-ui,-apple-system,sans-serif;font-size:14px;background:va
 <div id="landing">
   <div class="hero-landing">
     <div style="position:absolute;top:-60px;right:-60px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,0.06);"></div>
-    <div style="margin:0 auto 1rem;width:100px;">
-      <svg width="100" height="100" viewBox="0 0 680 500">
-        <path d="M340,60 L430,95 L430,190 Q430,240 340,270 Q250,240 250,190 L250,95 Z" fill="#1D9E75"/>
-        <path d="M340,70 L422,102 L422,188 Q422,234 340,262 Q258,234 258,188 L258,102 Z" fill="#0F6E56"/>
-        <path d="M308,215 L312,183 L368,183 L372,215 Z" fill="white"/>
-        <path d="M301,183 Q301,170 312,170 L368,170 Q379,170 379,183" fill="none" stroke="white" stroke-width="6" stroke-linecap="round"/>
-        <circle cx="320" cy="224" r="9" fill="white"/>
-        <circle cx="360" cy="224" r="9" fill="white"/>
-        <path d="M305,100 L314,85 L323,98 L340,80 L357,98 L366,85 L375,100 L372,112 L308,112 Z" fill="#C9A227"/>
-        <circle cx="292" cy="88" r="20" fill="#D85A30"/>
-        <text x="292" y="94" text-anchor="middle" font-family="system-ui" font-size="13" font-weight="700" fill="white">SG</text>
-      </svg>
-    </div>
-    <h1 style="font-size:32px;font-weight:800;color:#fff;margin-bottom:6px;"><span style="color:#fff;">Smart</span><span style="color:#C9A227;">Grocer</span></h1>
+    <img src="icon-512.png" alt="SmartGrocer" width="170" height="170" style="display:block;margin:0 auto 1rem;border-radius:32px;box-shadow:0 8px 24px rgba(0,0,0,0.25);">
     <p style="font-size:13px;color:rgba(255,255,255,0.85);margin-bottom:4px;">Compare · Cuisinez · Économisez</p>
     <p style="font-size:12px;color:rgba(255,255,255,0.7);margin-bottom:1.5rem;">Compare · Cook · Save</p>
     <button class="btn bf" style="background:#fff;color:var(--g);font-size:15px;padding:14px;" onclick="window.location.href='/beta.html'">🚀 Commencer gratuitement / Start for free</button>
