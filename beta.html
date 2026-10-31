@@ -3804,7 +3804,13 @@ function finishOb_complete() {
   
   // Show app
   document.getElementById('app').style.display='block';
-  
+  // Aligne l'affichage sur la langue active (sinon l'app reste en français alors que la langue est « en »)
+  try { applyTranslations(); } catch(e) {}
+  try {
+    var lfNew = document.getElementById('lang-fr'), leNew = document.getElementById('lang-en');
+    if(lfNew) lfNew.className = 'lang-btn' + (currentLang !== 'en' ? ' active' : '');
+    if(leNew) leNew.className = 'lang-btn' + (currentLang === 'en' ? ' active' : '');
+  } catch(e) {}
   
   // Subscribe to MailerLite
   try {
