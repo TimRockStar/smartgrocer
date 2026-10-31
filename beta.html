@@ -3741,7 +3741,9 @@ function finishOb(){
       // On reste sur l'écran de vérification et on explique le problème,
       // avec la possibilité de réessayer via le bouton "Renvoyer le code".
       showToast('⚠️ Envoi impossible — vérifie ton adresse courriel et réessaie');
-      document.getElementById('verify-error').textContent = "⚠️ Impossible d'envoyer le code à cette adresse. Vérifie qu'elle est bien écrite, puis clique \"Renvoyer le code\".";
+      document.getElementById('verify-error').textContent = (sgSendError === 'too_many')
+        ? (currentLang === 'en' ? '⛔ Too many codes requested. Please wait an hour and try again.' : '⛔ Trop de codes demandés. Attends une heure puis réessaie.')
+        : "⚠️ Impossible d'envoyer le code à cette adresse. Vérifie qu'elle est bien écrite, puis clique \"Renvoyer le code\".";
       document.getElementById('verify-error').style.display = 'block';
     }
   });
@@ -3765,8 +3767,28 @@ function finishOb_complete() {
     isPremium: false, points: 0, totalScans: 0, totalSaved: 0,
     groceries: [], walletCards: [], referralCode: referralCode, firstUseDate: new Date().toISOString()
   };
+  // Compte synchronisé : le profil du serveur (retrouvé sur un autre appareil) et le début d'essai du serveur
+  var srvProfile = (sgServerAuth && sgServerAuth.profile) || null;
+  if (srvProfile) {
+    if (srvProfile.name) { savedData.name = srvProfile.name; name = srvProfile.name; }
+    if (srvProfile.city) { savedData.city = srvProfile.city; fullCity = srvProfile.city; }
+    if (srvProfile.country) savedData.country = srvProfile.country;
+    if (srvProfile.diet) savedData.diet = srvProfile.diet;
+    if (srvProfile.groceryLists && srvProfile.allListsData) {
+      savedData.groceryLists = srvProfile.groceryLists;
+      savedData.allListsData = srvProfile.allListsData;
+      savedData.activeListId = srvProfile.activeListId || srvProfile.groceryLists[0].id;
+    }
+  }
+  if (sgServerAuth && sgServerAuth.trialStart) savedData.firstUseDate = sgServerAuth.trialStart;
   try { localStorage.setItem('smartgrocer_data', JSON.stringify(savedData)); } catch(e) { console.error('Save error:', e); }
   try { localStorage.setItem('sg_trial_start', savedData.firstUseDate); } catch(e) {} // début de la semaine Premium gratuite
+  if (sgServerAuth) {
+    try { localStorage.setItem('sg_auth', JSON.stringify({ email: email, token: sgServerAuth.token })); } catch(e) {}
+    if (srvProfile) { try { loadData(); } catch(e) {} } // recharge listes et profil dans l'app
+    setTimeout(function(){ try { sgPushProfile(); } catch(e) {} }, 1500);
+    sgServerAuth = null;
+  }
   updateSavingsDisplay();
   
   // Update UI
@@ -3877,6 +3899,78 @@ function activatePremium(){/* Disabled - use Stripe */document.getElementById('p
 // URL du Google Apps Script déployé (stripe_premium_system.gs).
 // Remplace par ta vraie URL une fois déployé — voir instructions dans le fichier .gs
 var STRIPE_API_URL = 'https://script.google.com/macros/s/AKfycbyCQ3IMSdpu8LMdnZfAsZIANnYIUsstsD3MAXpwFDh_Th3NivPfz_af7UrWjTIF7Pjq/exec';
+
+// ===== SYNCHRONISATION DU PROFIL (compte sécurisé par une clé propre à chaque appareil) =====
+// La clé (sg_auth) est remise par le serveur après la vérification du code par courriel.
+// Sans clé valide, le serveur refuse de lire, écrire ou supprimer un profil.
+function sgGetAuth() {
+  try { var a = JSON.parse(localStorage.getItem('sg_auth') || 'null'); return (a && a.email && a.token) ? a : null; }
+  catch(e) { return null; }
+}
+function sgBuildProfile() {
+  var d = {};
+  try { d = JSON.parse(localStorage.getItem('smartgrocer_data') || '{}'); } catch(e) {}
+  return { name: d.name, city: d.city, country: d.country, diet: d.diet,
+           groceryLists: d.groceryLists, activeListId: d.activeListId, allListsData: d.allListsData,
+           lang: (typeof currentLang !== 'undefined' ? currentLang : 'fr') };
+}
+var _sgSyncTimer = null;
+function sgScheduleProfileSync() {
+  if (!sgGetAuth()) return;
+  try {
+    if (JSON.stringify(sgBuildProfile()) === localStorage.getItem('sg_sync_hash')) return; // rien de changé
+    localStorage.setItem('sg_sync_dirty', '1');
+  } catch(e) {}
+  clearTimeout(_sgSyncTimer);
+  _sgSyncTimer = setTimeout(sgPushProfile, 3000);
+}
+async function sgPushProfile() {
+  var a = sgGetAuth();
+  if (!a || STRIPE_API_URL.indexOf('REMPLACE_PAR') === 0) return;
+  try {
+    var d = JSON.parse(localStorage.getItem('smartgrocer_data') || '{}');
+    if (String(d.email || '').toLowerCase() !== a.email) return;
+    var profile = sgBuildProfile();
+    var r = await fetch(STRIPE_API_URL, { method: 'POST', body: JSON.stringify({ action: 'profileSave', email: a.email, token: a.token, profile: profile }) });
+    var j = await r.json();
+    if (j && j.ok) {
+      localStorage.removeItem('sg_sync_dirty');
+      localStorage.setItem('sg_sync_hash', JSON.stringify(profile));
+    } else if (j && j.error === 'unauthorized') {
+      localStorage.removeItem('sg_auth'); // clé révoquée (ex.: compte supprimé depuis un autre appareil)
+    }
+  } catch(e) {}
+}
+async function sgPullProfile() {
+  var a = sgGetAuth();
+  if (!a || STRIPE_API_URL.indexOf('REMPLACE_PAR') === 0) return;
+  if (localStorage.getItem('sg_sync_dirty')) { sgPushProfile(); return; } // changements locaux pas encore envoyés
+  try {
+    var r = await fetch(STRIPE_API_URL, { method: 'POST', body: JSON.stringify({ action: 'profileGet', email: a.email, token: a.token }) });
+    var j = await r.json();
+    if (!j) return;
+    if (j.error === 'unauthorized') { localStorage.removeItem('sg_auth'); return; }
+    if (!j.ok) return;
+    if (j.trialStart) { try { localStorage.setItem('sg_trial_start', j.trialStart); } catch(e) {} } // l'essai appartient au compte
+    var p = j.profile;
+    if (!p) return;
+    var d = JSON.parse(localStorage.getItem('smartgrocer_data') || '{}');
+    var changed = false;
+    ['name', 'city', 'country', 'diet'].forEach(function(k) { if (p[k] && p[k] !== d[k]) { d[k] = p[k]; changed = true; } });
+    if (p.groceryLists && p.allListsData && JSON.stringify(p.allListsData) !== JSON.stringify(d.allListsData)) {
+      d.groceryLists = p.groceryLists; d.allListsData = p.allListsData;
+      d.activeListId = p.activeListId || d.activeListId; changed = true;
+    }
+    if (changed) {
+      localStorage.setItem('smartgrocer_data', JSON.stringify(d));
+      loadData();
+      try { renderGr(); } catch(e) {}
+      try { loadSpecials(); } catch(e) {}
+    }
+    localStorage.setItem('sg_sync_hash', JSON.stringify(sgBuildProfile()));
+    try { updatePlanUI(); } catch(e) {}
+  } catch(e) {}
+}
 
 // Vérifie le vrai statut Premium chez Stripe (via la feuille Google Sheets),
 // peu importe l'appareil ou si le localStorage a été vidé.
@@ -4816,6 +4910,9 @@ var sgVerifyCode = '';
 var sgVerifyEmail = '';
 var sgVerifyName = '';
 var sgVerifyData = null;
+var sgVerifyMode = 'local'; // 'server' = code créé et vérifié par le serveur (compte synchronisé)
+var sgServerAuth = null;    // {token, profile, trialStart, isNew} après une vérification réussie
+var sgSendError = '';
 
 function generateCode() {
   return Math.floor(100000 + Math.random() * 900000).toString();
@@ -4846,9 +4943,23 @@ async function sendVerificationEmail(name, email) {
     // Adresse invalide : on n'appelle pas EmailJS (évite l'erreur 422 « adresse corrompue »)
     return false;
   }
-  sgVerifyCode = generateCode();
   sgVerifyEmail = email;
   sgVerifyName = name;
+  sgSendError = '';
+
+  // 1) Le serveur crée, envoie et vérifie le code (compte synchronisé et sécurisé)
+  if (STRIPE_API_URL.indexOf('REMPLACE_PAR') !== 0) {
+    try {
+      var rs = await fetch(STRIPE_API_URL, { method: 'POST', body: JSON.stringify({ action: 'authStart', email: email, name: name }) });
+      var js = await rs.json();
+      if (js && js.ok) { sgVerifyMode = 'server'; sgVerifyCode = ''; return true; }
+      if (js && js.error === 'too_many_requests') { sgVerifyMode = 'server'; sgSendError = 'too_many'; return false; }
+    } catch (e) { console.error('Serveur injoignable, ancien mode:', e); }
+  }
+
+  // 2) Secours : serveur injoignable ou pas configuré → ancien mode (code vérifié dans l'app, sans synchronisation)
+  sgVerifyMode = 'local';
+  sgVerifyCode = generateCode();
 
   try {
     await emailjs.send('service_lleoy3h', 'template_fa18vqs', {
@@ -4863,19 +4974,47 @@ async function sendVerificationEmail(name, email) {
   }
 }
 
-function verifyCode() {
+async function verifyCode() {
   var input = document.getElementById('verify-code-input').value.trim();
+  var fr = currentLang !== 'en';
   if (!input || input.length < 6) {
     showToast('Entre le code à 6 chiffres!');
     return;
   }
+  var errEl = document.getElementById('verify-error');
+  function showErr(msg) {
+    errEl.textContent = msg;
+    errEl.style.display = 'block';
+    setTimeout(function(){ errEl.style.display = 'none'; }, 3500);
+  }
+  // Mode serveur : le code est vérifié par le serveur, qui remet une clé secrète à cet appareil
+  if (sgVerifyMode === 'server') {
+    var res;
+    try {
+      var r = await fetch(STRIPE_API_URL, { method: 'POST', body: JSON.stringify({ action: 'authVerify', email: sgVerifyEmail, code: input }) });
+      res = await r.json();
+    } catch (e) {
+      showErr(fr ? '⚠️ Connexion impossible — réessaie' : '⚠️ Connection failed — try again');
+      return;
+    }
+    if (res && res.ok) {
+      sgServerAuth = { token: res.token, profile: res.profile || null, trialStart: res.trialStart || '', isNew: !!res.isNew };
+      document.getElementById('verification').style.display = 'none';
+      finishOb_complete();
+    } else {
+      var er = res && res.error;
+      if (er === 'code_expired') showErr(fr ? '⌛ Code expiré — clique « Renvoyer le code »' : '⌛ Code expired — tap "Resend code"');
+      else if (er === 'too_many_attempts') showErr(fr ? '⛔ Trop d\'essais — demande un nouveau code' : '⛔ Too many attempts — request a new code');
+      else showErr(fr ? '❌ Code incorrect — réessaie!' : '❌ Wrong code — try again!');
+    }
+    return;
+  }
+  // Ancien mode (serveur injoignable) : code vérifié dans l'app
   if (sgVerifyCode && input === sgVerifyCode) {
     document.getElementById('verification').style.display = 'none';
     finishOb_complete();
   } else {
-    document.getElementById('verify-error').textContent = '❌ Code incorrect — réessaie!';
-    document.getElementById('verify-error').style.display = 'block';
-    setTimeout(function(){ document.getElementById('verify-error').style.display = 'none'; }, 3000);
+    showErr(fr ? '❌ Code incorrect — réessaie!' : '❌ Wrong code — try again!');
   }
 }
 
@@ -5221,7 +5360,7 @@ async function performAccountDeletion() {
     try {
       await fetch(STRIPE_API_URL, {
         method: 'POST',
-        body: JSON.stringify({ action: 'deleteAccount', email: email })
+        body: JSON.stringify({ action: 'deleteAccount', email: email, token: (sgGetAuth() || {}).token })
       });
     } catch(e) {
       console.log('Suppression côté serveur échouée (on continue quand même localement):', e);
@@ -5284,6 +5423,7 @@ function saveData() {
       groceryLists: groceryLists, activeListId: activeListId, allListsData: allListsData, walletCards: walletCards
     };
     localStorage.setItem('smartgrocer_data', JSON.stringify(data));
+    sgScheduleProfileSync();
   } catch(e) { console.error('saveData error:', e); }
 }
 
@@ -6667,6 +6807,7 @@ function showApp() {
     if(leInit) leInit.className = 'lang-btn' + (currentLang === 'en' ? ' active' : '');
     showToast(t('toast_welcome'));
     checkRecommendSurvey();
+    try { sgPullProfile(); } catch(e) {}
   } else {
     document.getElementById('onboarding').style.display = 'block';
     document.getElementById('app').style.display = 'none';
