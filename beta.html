@@ -4862,6 +4862,15 @@ function closeRecipeModal() {
   document.getElementById('recipe-modal').style.display = 'none';
 }
 
+// Ouvre la recherche YouTube avec le titre AFFICHÉ au moment du clic (déjà traduit) et la langue de l'app
+function sgYtOpen(a, k) {
+  var n = ((document.getElementById('rm-title') || {}).textContent || '').trim();
+  if(!n) return;
+  var s = {easy: [' recette facile', ' easy recipe'], quick: [' recette rapide maison', ' quick homemade recipe'], budget: [' recette economique', ' budget recipe']}[k];
+  if(!s) return;
+  a.href = 'https://www.youtube.com/results?search_query=' + encodeURIComponent(n + s[currentLang === 'en' ? 1 : 0]);
+}
+
 async function showRecipeModal(nom, emoji, recipeObj) {
   document.getElementById('recipe-modal').style.display = 'block';
   document.getElementById('rm-emoji').textContent = emoji || '🍳';
@@ -4935,9 +4944,9 @@ async function showRecipeModal(nom, emoji, recipeObj) {
 
       html += '<div style="margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--border);">';
       html += '<div style="font-size:13px;font-weight:700;margin-bottom:10px;">' + (_en ? '🎬 YouTube videos' : '🎬 Vidéos YouTube') + '</div>';
-      html += '<a href="' + ytUrl1 + '" target="_blank" style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--light);border-radius:12px;margin-bottom:8px;text-decoration:none;"><div style="width:36px;height:36px;background:#FF0000;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="ti ti-brand-youtube" style="color:#fff;font-size:18px;"></i></div><div style="flex:1;font-size:12px;font-weight:700;color:var(--text);">' + _ytNom + ' — ' + (_en ? 'Easy recipe' : 'Recette facile') + '</div><i class="ti ti-external-link" style="color:var(--sub);font-size:14px;"></i></a>';
-      html += '<a href="' + ytUrl2 + '" target="_blank" style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--light);border-radius:12px;margin-bottom:8px;text-decoration:none;"><div style="width:36px;height:36px;background:#FF0000;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="ti ti-brand-youtube" style="color:#fff;font-size:18px;"></i></div><div style="flex:1;font-size:12px;font-weight:700;color:var(--text);">' + _ytNom + ' — ' + (_en ? 'Quick at home' : 'Rapide à la maison') + '</div><i class="ti ti-external-link" style="color:var(--sub);font-size:14px;"></i></a>';
-      html += '<a href="' + ytUrl3 + '" target="_blank" style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--light);border-radius:12px;margin-bottom:8px;text-decoration:none;"><div style="width:36px;height:36px;background:#FF0000;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="ti ti-brand-youtube" style="color:#fff;font-size:18px;"></i></div><div style="flex:1;font-size:12px;font-weight:700;color:var(--text);">' + _ytNom + ' — ' + (_en ? 'Budget version' : 'Version économique') + '</div><i class="ti ti-external-link" style="color:var(--sub);font-size:14px;"></i></a>';
+      html += '<a href="' + ytUrl1 + '" onclick="sgYtOpen(this,\'easy\')" target="_blank" style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--light);border-radius:12px;margin-bottom:8px;text-decoration:none;"><div style="width:36px;height:36px;background:#FF0000;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="ti ti-brand-youtube" style="color:#fff;font-size:18px;"></i></div><div style="flex:1;font-size:12px;font-weight:700;color:var(--text);"><span class="sg-nom">' + _ytNom + '</span> — ' + (_en ? 'Easy recipe' : 'Recette facile') + '</div><i class="ti ti-external-link" style="color:var(--sub);font-size:14px;"></i></a>';
+      html += '<a href="' + ytUrl2 + '" onclick="sgYtOpen(this,\'quick\')" target="_blank" style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--light);border-radius:12px;margin-bottom:8px;text-decoration:none;"><div style="width:36px;height:36px;background:#FF0000;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="ti ti-brand-youtube" style="color:#fff;font-size:18px;"></i></div><div style="flex:1;font-size:12px;font-weight:700;color:var(--text);"><span class="sg-nom">' + _ytNom + '</span> — ' + (_en ? 'Quick at home' : 'Rapide à la maison') + '</div><i class="ti ti-external-link" style="color:var(--sub);font-size:14px;"></i></a>';
+      html += '<a href="' + ytUrl3 + '" onclick="sgYtOpen(this,\'budget\')" target="_blank" style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--light);border-radius:12px;margin-bottom:8px;text-decoration:none;"><div style="width:36px;height:36px;background:#FF0000;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="ti ti-brand-youtube" style="color:#fff;font-size:18px;"></i></div><div style="flex:1;font-size:12px;font-weight:700;color:var(--text);"><span class="sg-nom">' + _ytNom + '</span> — ' + (_en ? 'Budget version' : 'Version économique') + '</div><i class="ti ti-external-link" style="color:var(--sub);font-size:14px;"></i></a>';
       html += '</div>';
 
       document.getElementById('rm-content').innerHTML = html;
