@@ -1291,7 +1291,7 @@ ml('account', '2355363');
           <div style="font-size:10px;color:var(--sub);text-align:center;margin-top:6px;" data-i18n="prof_delete_hint">Efface définitivement ton compte et toutes tes données de cet appareil</div>
           <div id="sg-build" style="font-size:10px;color:var(--sub);text-align:center;margin-top:14px;opacity:.8;">Version du 5 octobre, 18 h 10</div>
         </div>
-        <button class="btn bo bf" onclick="showInstallInstructions()" style="margin-top:8px;"><i class="ti ti-device-mobile"></i> 📱 Installer sur mon téléphone</button>
+        <button class="btn bo bf" id="install-btn" onclick="showInstallInstructions()" style="margin-top:8px;"><i class="ti ti-device-mobile"></i> 📱 Installer sur mon téléphone</button>
         <button class="btn bo bf" onclick="shareAppNative()" style="margin-top:8px;border-color:#3730a3;color:#3730a3;"><i class="ti ti-share"></i> 🙌 Inviter mes amis</button>
         <button class="btn bo bf" onclick="openBugReport()" style="margin-top:8px;border-color:#f59e0b;color:#92400e;"><i class="ti ti-bug"></i> <span data-i18n="bug_report_btn">🐞 Signaler un bug</span></button>
       </div>
@@ -1879,6 +1879,24 @@ var currentLang = localStorage.getItem('sg_lang') || (localStorage.getItem('smar
 function isLaunchedFromPlayStore() {
   return document.referrer.indexOf('android-app://') === 0;
 }
+
+// Le bouton « Installer sur mon téléphone » n'a pas de sens quand l'app est déjà installée
+// (Google Play / TWA, écran d'accueil en mode autonome, ou app iPhone Capacitor).
+function sgHideInstallBtn() {
+  var installed = false;
+  try {
+    installed = isLaunchedFromPlayStore()
+      || (window.matchMedia && (window.matchMedia('(display-mode: standalone)').matches || window.matchMedia('(display-mode: fullscreen)').matches))
+      || window.navigator.standalone === true
+      || typeof window.Capacitor !== 'undefined'
+      || !!localStorage.getItem('sg_app_installed');
+    if(installed) localStorage.setItem('sg_app_installed', '1'); // le referrer disparaît après la 1re navigation
+  } catch(e) {}
+  var b = document.getElementById('install-btn');
+  if(b) b.style.display = installed ? 'none' : '';
+}
+sgHideInstallBtn();
+document.addEventListener('DOMContentLoaded', sgHideInstallBtn);
 
 function applyPlayStorePaymentRules() {
   if (!isLaunchedFromPlayStore()) return; // navigateur normal — rien à changer
