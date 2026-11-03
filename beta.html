@@ -6637,8 +6637,20 @@ function initVoice() {
     };
 
     recognition.onresult = function(e) {
-      var texte = '';
-      for(var i = 0; i < e.results.length; i++) texte += e.results[i][0].transcript + ' ';
+      // Android/Chrome renvoie parfois des résultats cumulatifs (« crème », « crème à », « crème à café »).
+      // On fusionne : si un segment prolonge (ou répète) le précédent, on le remplace au lieu de l'ajouter.
+      var segs = [];
+      for(var i = 0; i < e.results.length; i++) {
+        var t = (e.results[i][0].transcript || '').trim();
+        if(!t) continue;
+        var tl = t.toLowerCase();
+        var last = segs.length ? segs[segs.length - 1] : null;
+        var ll = last ? last.toLowerCase() : '';
+        if(last && tl.indexOf(ll) === 0) segs[segs.length - 1] = t;
+        else if(last && ll.indexOf(tl) === 0) continue;
+        else segs.push(t);
+      }
+      var texte = segs.join(' ');
       _voixFinal = texte;
       if(currentVoiceTarget) { var champ = document.getElementById(currentVoiceTarget); if(champ) champ.value = texte.trim(); }
       if(_voixTimer) clearTimeout(_voixTimer);
