@@ -1905,7 +1905,14 @@ var currentLang = localStorage.getItem('sg_lang') || (localStorage.getItem('smar
 // les boutons de paiement direct et on affiche un message texte
 // seulement (sans lien cliquable), comme le permet la politique.
 function isLaunchedFromPlayStore() {
-  return document.referrer.indexOf('android-app://') === 0;
+  // Le referrer disparaît après la 1re navigation : on le retient pour la session
+  // (sessionStorage, pas localStorage, pour ne pas affecter Chrome hors de l'app)
+  var fromPlay = document.referrer.indexOf('android-app://') === 0;
+  try {
+    if (fromPlay) sessionStorage.setItem('sg_from_play', '1');
+    else if (sessionStorage.getItem('sg_from_play') === '1') fromPlay = true;
+  } catch(e) {}
+  return fromPlay;
 }
 
 // Le bouton « Installer sur mon téléphone » n'a pas de sens quand l'app est déjà installée
@@ -1940,6 +1947,10 @@ function applyPlayStorePaymentRules() {
     if (btns) btns.style.display = 'none';
     if (msg) msg.style.display = 'block';
   });
+  // Aucune offre d'essai avec carte ni prix d'abonnement dans l'app Google Play
+  var trialCard = document.getElementById('ob-trial-card');
+  if (trialCard) trialCard.style.display = 'none';
+  document.querySelectorAll('.sg-pay-offer').forEach(function(el) { el.style.display = 'none'; });
 }
 
 var translations = {
